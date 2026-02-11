@@ -20,6 +20,8 @@ import { SyncButton } from '@/components/pwa/OfflineIndicator';
 import { StampCard } from '@/components/tour/StampCard';
 import { StampEarnedOverlay } from '@/components/tour/StampEarnedOverlay';
 import { TourCompleteOverlay } from '@/components/tour/TourCompleteOverlay';
+import { DidYouKnowPopup } from '@/components/tour/DidYouKnowPopup';
+import { getFactsForSite } from '@/data/fun-facts';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
 import { cn, formatDistance, formatDuration, calculateDistance } from '@/lib/utils';
@@ -44,6 +46,10 @@ export default function TourPage() {
   const [stampedSiteOrder, setStampedSiteOrder] = useState(1);
   const [showTourComplete, setShowTourComplete] = useState(false);
 
+  const [showDidYouKnow, setShowDidYouKnow] = useState(false);
+  const [currentFact, setCurrentFact] = useState('');
+  const [shownFactIndices, setShownFactIndices] = useState<Record<string, number[]>>({});
+
   const {
     selectedSite,
     setSelectedSite,
@@ -57,6 +63,21 @@ export default function TourPage() {
   } = useTourStore();
 
   const { userLocation } = useGeolocation();
+
+  const showFactForSite = useCallback((siteName: string) => {
+    const facts = getFactsForSite(siteName);
+    if (facts.length === 0) return;
+    const shown = shownFactIndices[siteName] || [];
+    const unseen = facts.map((_, i) => i).filter((i) => !shown.includes(i));
+    if (unseen.length === 0) return;
+    const pick = unseen[Math.floor(Math.random() * unseen.length)];
+    setShownFactIndices((prev) => ({
+      ...prev,
+      [siteName]: [...(prev[siteName] || []), pick],
+    }));
+    setCurrentFact(facts[pick]);
+    setShowDidYouKnow(true);
+  }, [shownFactIndices]);
 
   // Fetch tour data
   useEffect(() => {
@@ -138,10 +159,13 @@ export default function TourPage() {
         setTimeout(() => setShowTourComplete(true), 2400);
       }
 
+      // Show fact after stamp overlay dismisses (2.2s)
+      setTimeout(() => showFactForSite(site.name), 2400);
+
       // Clear stamp animation after it plays
       setTimeout(() => setJustStampedSiteId(null), 600);
     },
-    [tour, tourProgress, markSiteVisited, completeTour]
+    [tour, tourProgress, markSiteVisited, completeTour, showFactForSite]
   );
 
   const handleSiteClick = (site: Site) => {
@@ -152,8 +176,8 @@ export default function TourPage() {
       if (!alreadyVisited) {
         triggerStampCelebration(site.id);
       } else {
-        // Already visited, just select it
-        markSiteVisited(tour.id, site.id);
+        // Already visited — show a fact
+        showFactForSite(site.name);
       }
     }
   };
@@ -175,12 +199,14 @@ export default function TourPage() {
             completeTour(tour.id);
             setTimeout(() => setShowTourComplete(true), 2400);
           }
+          // Show fact after stamp overlay
+          setTimeout(() => showFactForSite(site.name), 2400);
           setTimeout(() => setJustStampedSiteId(null), 600);
         }
       }
       clearLastVisited();
     }
-  }, [lastVisitedSiteId, tour, tourProgress, clearLastVisited, completeTour]);
+  }, [lastVisitedSiteId, tour, tourProgress, clearLastVisited, completeTour, showFactForSite]);
 
   if (loading) {
     return (
@@ -428,6 +454,14 @@ export default function TourPage() {
           visitedCount={visitedCount}
           totalSites={totalSites}
           onDismiss={() => setShowStampEarned(false)}
+        />
+      )}
+
+      {/* "Did You Know?" fact popup */}
+      {showDidYouKnow && (
+        <DidYouKnowPopup
+          fact={currentFact}
+          onDismiss={() => setShowDidYouKnow(false)}
         />
       )}
 
