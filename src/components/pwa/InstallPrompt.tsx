@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, X, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -10,18 +10,48 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+function isIOS(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+}
+
+function isInStandaloneMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone);
+}
+
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (isInStandaloneMode()) {
       setIsInstalled(true);
       return;
     }
 
+    // Check dismissal
+    const dismissed = localStorage.getItem('pwa-install-dismissed');
+    if (dismissed) {
+      const dismissedTime = parseInt(dismissed, 10);
+      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
+      if (daysSinceDismissed < 7) {
+        return;
+      }
+    }
+
+    // iOS — show custom instructions
+    if (isIOS()) {
+      setShowIOSInstructions(true);
+      setIsVisible(true);
+      return;
+    }
+
+    // Android/Chrome — use beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -57,21 +87,8 @@ export function InstallPrompt() {
 
   const handleDismiss = () => {
     setIsVisible(false);
-    // Store dismissal in localStorage to not show again for a while
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
-
-  // Check if user previously dismissed
-  useEffect(() => {
-    const dismissed = localStorage.getItem('pwa-install-dismissed');
-    if (dismissed) {
-      const dismissedTime = parseInt(dismissed, 10);
-      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) {
-        setIsVisible(false);
-      }
-    }
-  }, []);
 
   if (isInstalled || !isVisible) return null;
 
@@ -93,16 +110,37 @@ export function InstallPrompt() {
 
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-          <Download className="w-5 h-5 text-primary" />
+          {showIOSInstructions ? (
+            <Share className="w-5 h-5 text-primary" />
+          ) : (
+            <Download className="w-5 h-5 text-primary" />
+          )}
         </div>
         <div className="flex-1">
           <h3 className="font-semibold">Install App</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Install this app for offline access and a better experience.
-          </p>
-          <Button size="sm" className="mt-3" onClick={handleInstall}>
-            Install
-          </Button>
+          {showIOSInstructions ? (
+            <div className="text-sm text-muted-foreground mt-1 space-y-2">
+              <p>To install this app on your iPhone:</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>
+                  Tap the <strong>Share</strong> button
+                  <Share className="w-3.5 h-3.5 inline mx-1 -mt-0.5" />
+                  at the bottom of Safari
+                </li>
+                <li>Scroll down and tap <strong>&ldquo;Add to Home Screen&rdquo;</strong></li>
+                <li>Tap <strong>&ldquo;Add&rdquo;</strong></li>
+              </ol>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mt-1">
+                Install this app for offline access and a better experience.
+              </p>
+              <Button size="sm" className="mt-3" onClick={handleInstall}>
+                Install
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>
