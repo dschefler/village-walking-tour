@@ -68,8 +68,14 @@ export async function updateSession(request: NextRequest) {
   }
 
   // --- Custom domain routing ---
-  // southamptonwalkingtour.com serves the (public) homepage directly
-  // (no rewrite needed — falls through to (public)/page.tsx)
+  // southamptonwalkingtour.com → falls through to (public)/page.tsx (no rewrite)
+  // walkingtourbuilder.com → serves the marketing/product page
+  const isWTBDomain = hostname.includes('walkingtourbuilder.com') || hostname.includes('village-walking-tour.vercel.app');
+  const isSouthamptonDomain = hostname.includes('southamptonwalkingtour.com');
+
+  if (isWTBDomain && pathname === '/') {
+    return NextResponse.rewrite(new URL('/product', request.url));
+  }
 
   // --- Protect /admin routes (legacy) ---
   if (pathname.startsWith('/admin')) {
