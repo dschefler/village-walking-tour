@@ -36,7 +36,13 @@ export default async function DashboardLayout({
   const orgSlug = orgData?.slug;
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex" style={{
+      '--primary': '177 82% 24%',
+      '--primary-foreground': '0 0% 100%',
+      '--accent': '20 66% 56%',
+      '--accent-foreground': '0 0% 100%',
+      '--ring': '177 82% 24%',
+    } as React.CSSProperties}>
       {/* Sidebar */}
       <aside className="w-64 bg-card border-r flex flex-col">
         <div className="p-4 border-b">
