@@ -29,7 +29,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
       <div className="container mx-auto px-4">
         <div className="flex h-14 items-center justify-between">
           {/* Logo / Site Name */}
-          <Link href={prefix || '/'} className={`flex items-center gap-2 font-semibold ${textClass}`}>
+          <Link href="/" className={`flex items-center gap-2 font-semibold ${textClass}`}>
             <Image
               src="/logo.png"
               alt="Walking Tour"
