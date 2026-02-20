@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,15 +10,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { MediaUploader } from '@/components/admin/MediaUploader';
 import { slugify } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 import type { Organization } from '@/types';
 
 interface Step1Props {
   existingOrg: Organization | null;
   existingCoverImageUrl?: string;
+  existingTourId?: string | null;
   onComplete: (org: Organization, coverImageUrl: string) => void;
+  onSave?: (org: Organization, coverImageUrl: string) => void;
 }
 
-export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }: Step1Props) {
+export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTourId, onComplete, onSave }: Step1Props) {
   const [name, setName] = useState(existingOrg?.name || '');
   const [slug, setSlug] = useState(existingOrg?.slug || '');
   const [description, setDescription] = useState(existingOrg?.app_description || '');
@@ -36,7 +39,9 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }
     }
   };
 
-  const handleSubmit = async () => {
+  const [savingOnly, setSavingOnly] = useState(false);
+
+  const saveData = async (advanceStep: boolean) => {
     if (!name.trim()) {
       setError('Organization name is required');
       return;
@@ -46,7 +51,11 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }
       return;
     }
 
-    setSaving(true);
+    if (advanceStep) {
+      setSaving(true);
+    } else {
+      setSavingOnly(true);
+    }
     setError('');
 
     try {
@@ -61,7 +70,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }
             app_description: description,
             primary_color: primaryColor,
             secondary_color: secondaryColor,
-            onboarding_step: 2,
+            ...(advanceStep ? { onboarding_step: 2 } : {}),
           }),
         });
         if (!res.ok) {
@@ -69,7 +78,32 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }
           throw new Error(data.error || 'Failed to update');
         }
         const updated = await res.json();
-        onComplete(updated, coverImage);
+
+        // Save cover image directly to the tour if one exists
+        if (coverImage && existingTourId) {
+          const tourRes = await fetch(`/api/tours/${existingTourId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cover_image_url: coverImage }),
+          });
+          if (tourRes.ok) {
+            toast({ title: 'Cover image saved', description: 'Tour cover photo updated.' });
+          } else {
+            const errText = await tourRes.text();
+            toast({ title: 'Cover image failed', description: errText, variant: 'destructive' });
+          }
+        } else if (!coverImage) {
+          toast({ title: 'No cover image', description: 'Upload a cover photo first.', variant: 'destructive' });
+        } else if (!existingTourId) {
+          toast({ title: 'No tour yet', description: 'Cover will be saved when you create sites in Step 2.' });
+        }
+
+        if (advanceStep) {
+          onComplete(updated, coverImage);
+        } else {
+          onSave?.(updated, coverImage);
+          toast({ title: 'Progress saved', description: 'Your organization info has been saved.' });
+        }
       } else {
         // Create new
         const res = await fetch('/api/organizations', {
@@ -89,14 +123,23 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }
           throw new Error(data.error || 'Failed to create organization');
         }
         const newOrg = await res.json();
-        onComplete(newOrg, coverImage);
+        if (advanceStep) {
+          onComplete(newOrg, coverImage);
+        } else {
+          onSave?.(newOrg, coverImage);
+          toast({ title: 'Progress saved', description: 'Your organization has been created.' });
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setSaving(false);
+      setSavingOnly(false);
     }
   };
+
+  const handleSubmit = () => saveData(true);
+  const handleSave = () => saveData(false);
 
   return (
     <div className="space-y-6">
@@ -242,6 +285,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }
             <MediaUploader
               accept="image/*"
               path={`${slug || 'org'}/tours`}
+              organizationId={existingOrg?.id}
               onUpload={(url) => setCoverImage(url)}
             />
           )}
@@ -252,16 +296,31 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, onComplete }
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      <Button onClick={handleSubmit} disabled={saving} size="lg">
-        {saving ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Saving...
-          </>
-        ) : (
-          'Continue to Add Sites'
-        )}
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button variant="outline" onClick={handleSave} disabled={saving || savingOnly} size="lg">
+          {savingOnly ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </>
+          )}
+        </Button>
+        <Button onClick={handleSubmit} disabled={saving || savingOnly} size="lg">
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Continue to Add Sites'
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

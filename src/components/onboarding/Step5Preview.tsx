@@ -27,7 +27,7 @@ export function Step5Preview({ org, tourId, onPublish }: Step5Props) {
     try {
       // Publish the tour
       await fetch(`/api/tours/${tourId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_published: true }),
       });

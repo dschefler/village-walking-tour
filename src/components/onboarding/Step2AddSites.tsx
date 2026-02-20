@@ -2,20 +2,33 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Plus, Trash2, GripVertical, Loader2, MapPin, X, ImageIcon } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Loader2, MapPin, Save, X, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { MediaUploader } from '@/components/admin/MediaUploader';
-import type { Organization, Site } from '@/types';
+import { toast } from '@/hooks/use-toast';
+import type { Organization, Site, SiteMedia, Media } from '@/types';
+
+type SiteWithMedia = Site & {
+  site_media?: (SiteMedia & { media: Media })[];
+};
+
+function getMediaUrl(storagePath: string): string {
+  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
+    return storagePath;
+  }
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
+}
 
 interface Step2Props {
   org: Organization;
   existingTourId: string | null;
   coverImageUrl?: string;
   onComplete: (tourId: string) => void;
+  onSave?: (tourId: string) => void;
 }
 
 interface SiteImage {
@@ -44,7 +57,7 @@ const emptySite = (): SiteFormData => ({
   images: [],
 });
 
-export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete }: Step2Props) {
+export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete, onSave }: Step2Props) {
   const [sites, setSites] = useState<SiteFormData[]>([emptySite()]);
   const [tourId, setTourId] = useState(existingTourId);
   const [saving, setSaving] = useState(false);
@@ -61,19 +74,32 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete }
       try {
         const res = await fetch(`/api/sites?tourId=${existingTourId}`);
         if (res.ok) {
-          const data: Site[] = await res.json();
+          const data: SiteWithMedia[] = await res.json();
           if (data.length > 0) {
             setSites(
-              data.map((s) => ({
-                id: s.id,
-                name: s.name,
-                description: s.description || '',
-                address: s.address || '',
-                latitude: String(s.latitude),
-                longitude: String(s.longitude),
-                featuredImage: null,
-                images: [],
-              }))
+              data.map((s) => {
+                const mediaItems = s.site_media || [];
+                const primary = mediaItems.find((m) => m.is_primary && m.media);
+                const gallery = mediaItems
+                  .filter((m) => !m.is_primary && m.media)
+                  .sort((a, b) => a.display_order - b.display_order);
+
+                return {
+                  id: s.id,
+                  name: s.name,
+                  description: s.description || '',
+                  address: s.address || '',
+                  latitude: String(s.latitude),
+                  longitude: String(s.longitude),
+                  featuredImage: primary
+                    ? { url: getMediaUrl(primary.media.storage_path), mediaId: primary.media.id }
+                    : null,
+                  images: gallery.map((m) => ({
+                    url: getMediaUrl(m.media.storage_path),
+                    mediaId: m.media.id,
+                  })),
+                };
+              })
             );
           }
         }
@@ -128,14 +154,20 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete }
     );
   };
 
-  const handleSubmit = async () => {
+  const [savingOnly, setSavingOnly] = useState(false);
+
+  const saveData = async (advanceStep: boolean) => {
     const validSites = sites.filter((s) => s.name.trim() && s.latitude && s.longitude);
     if (validSites.length === 0) {
       setError('Add at least one site with a name and coordinates.');
       return;
     }
 
-    setSaving(true);
+    if (advanceStep) {
+      setSaving(true);
+    } else {
+      setSavingOnly(true);
+    }
     setError('');
 
     try {
@@ -160,7 +192,7 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete }
       } else if (coverImageUrl) {
         // Update existing tour with cover image from Step 1
         await fetch(`/api/tours/${activeTourId}`, {
-          method: 'PUT',
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ cover_image_url: coverImageUrl }),
         });
@@ -237,20 +269,28 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete }
         }
       }
 
-      // Update onboarding step
-      await fetch(`/api/organizations/${org.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ onboarding_step: 3 }),
-      });
-
-      onComplete(activeTourId!);
+      if (advanceStep) {
+        // Update onboarding step
+        await fetch(`/api/organizations/${org.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ onboarding_step: 3 }),
+        });
+        onComplete(activeTourId!);
+      } else {
+        onSave?.(activeTourId!);
+        toast({ title: 'Progress saved', description: 'Your sites have been saved.' });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setSaving(false);
+      setSavingOnly(false);
     }
   };
+
+  const handleSubmit = () => saveData(true);
+  const handleSave = () => saveData(false);
 
   if (loading) {
     return (
@@ -418,16 +458,31 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete }
           <MapPin className="w-4 h-4 inline mr-1" />
           {sites.filter((s) => s.name.trim()).length} site(s) added
         </p>
-        <Button onClick={handleSubmit} disabled={saving} size="lg">
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Continue to Fun Facts'
-          )}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={handleSave} disabled={saving || savingOnly} size="lg">
+            {savingOnly ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </>
+            )}
+          </Button>
+          <Button onClick={handleSubmit} disabled={saving || savingOnly} size="lg">
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Continue to Fun Facts'
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

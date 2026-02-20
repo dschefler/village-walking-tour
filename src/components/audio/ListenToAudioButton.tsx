@@ -32,7 +32,7 @@ export function ListenToAudioButton({
     <>
       <Button
         onClick={() => hasAudio && setIsOpen(true)}
-        className={`w-full bg-[#A40000] hover:bg-[#8a0000] text-white font-semibold ${className}`}
+        className={`w-full bg-primary hover:bg-primary/80 text-primary-foreground font-semibold ${className}`}
         size="lg"
         disabled={!hasAudio}
       >

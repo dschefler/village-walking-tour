@@ -59,10 +59,28 @@ export default function OnboardingPage() {
     loadExistingOrg();
   }, []);
 
+  // Persist cover image directly to the tour record (if tour exists)
+  const saveCoverImageToTour = async (newCoverImageUrl: string) => {
+    if (!tourId || !newCoverImageUrl) return;
+    try {
+      await fetch(`/api/tours/${tourId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cover_image_url: newCoverImageUrl }),
+      });
+    } catch {
+      // Best-effort; Step 2 will also save it
+    }
+  };
+
   const handleStepComplete = (step: number, data?: { org?: Organization; tourId?: string; coverImageUrl?: string }) => {
     if (data?.org) setOrg(data.org);
     if (data?.tourId) setTourId(data.tourId);
-    if (data?.coverImageUrl !== undefined) setCoverImageUrl(data.coverImageUrl);
+    if (data?.coverImageUrl !== undefined) {
+      setCoverImageUrl(data.coverImageUrl);
+      // Save cover image to tour immediately so it's in the DB for preview
+      saveCoverImageToTour(data.coverImageUrl);
+    }
 
     if (step < 5) {
       setCurrentStep(step + 1);
@@ -135,7 +153,13 @@ export default function OnboardingPage() {
           <Step1OrgSetup
             existingOrg={org}
             existingCoverImageUrl={coverImageUrl}
+            existingTourId={tourId}
             onComplete={(newOrg, newCoverImageUrl) => handleStepComplete(1, { org: newOrg, coverImageUrl: newCoverImageUrl })}
+            onSave={(newOrg, newCoverImageUrl) => {
+              setOrg(newOrg);
+              setCoverImageUrl(newCoverImageUrl);
+              saveCoverImageToTour(newCoverImageUrl);
+            }}
           />
         )}
         {currentStep === 2 && org && (
@@ -144,6 +168,9 @@ export default function OnboardingPage() {
             existingTourId={tourId}
             coverImageUrl={coverImageUrl}
             onComplete={(newTourId) => handleStepComplete(2, { tourId: newTourId })}
+            onSave={(newTourId) => {
+              setTourId(newTourId);
+            }}
           />
         )}
         {currentStep === 3 && org && tourId && (
@@ -152,6 +179,7 @@ export default function OnboardingPage() {
             tourId={tourId}
             onComplete={() => handleStepComplete(3)}
             onSkip={() => handleStepComplete(3)}
+            onSave={() => {}}
           />
         )}
         {currentStep === 4 && org && tourId && (

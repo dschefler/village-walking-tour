@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 export async function GET(
   request: NextRequest,
@@ -43,17 +43,20 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  // Only include fields that were actually sent in the request body
+  const allowedFields = ['name', 'slug', 'description', 'estimated_time', 'distance_km', 'cover_image_url', 'is_published'] as const;
+  const updateFields: Record<string, unknown> = {};
+  for (const field of allowedFields) {
+    if (body[field] !== undefined) {
+      updateFields[field] = body[field];
+    }
+  }
+
+  // Use service client to bypass RLS (auth already verified above)
+  const serviceClient = createServiceClient();
+  const { data, error } = await serviceClient
     .from('tours')
-    .update({
-      name: body.name,
-      slug: body.slug,
-      description: body.description,
-      estimated_time: body.estimated_time,
-      distance_km: body.distance_km,
-      cover_image_url: body.cover_image_url,
-      is_published: body.is_published,
-    })
+    .update(updateFields)
     .eq('id', tourId)
     .select()
     .single();
@@ -64,6 +67,9 @@ export async function PATCH(
 
   return NextResponse.json(data);
 }
+
+// PUT alias for PATCH — ensures compatibility with any callers using PUT
+export const PUT = PATCH;
 
 export async function DELETE(
   request: NextRequest,

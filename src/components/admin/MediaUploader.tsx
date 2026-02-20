@@ -58,19 +58,20 @@ export function MediaUploader({
     async function fetchLibrary() {
       setLibraryLoading(true);
       const isImageOnly = accept === 'image/*';
-      let query = supabase
-        .from('media')
-        .select('id, filename, storage_path, file_type, created_at')
-        .eq('organization_id', organizationId!)
-        .order('created_at', { ascending: false });
+      const params = new URLSearchParams({ organizationId: organizationId! });
+      if (isImageOnly) params.set('fileType', 'image');
 
-      if (isImageOnly) {
-        query = query.eq('file_type', 'image');
+      try {
+        const res = await fetch(`/api/media?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          setLibraryItems(data || []);
+        }
+      } catch {
+        // Library fetch failed, user can still upload
+      } finally {
+        setLibraryLoading(false);
       }
-
-      const { data } = await query;
-      setLibraryItems(data || []);
-      setLibraryLoading(false);
     }
 
     fetchLibrary();
@@ -108,22 +109,26 @@ export function MediaUploader({
         throw new Error('Failed to get public URL');
       }
 
-      // Create media record
+      // Create media record via API (bypasses RLS)
       const fileType = file.type.startsWith('image/') ? 'image' : 'audio';
-      const { data: mediaData, error: mediaError } = await supabase
-        .from('media')
-        .insert({
-          filename: file.name,
-          storage_path: storagePath,
-          file_type: fileType,
-          file_size: file.size,
-          ...(organizationId ? { organization_id: organizationId } : {}),
-        })
-        .select()
-        .single();
-
-      if (mediaError) {
-        console.error('Failed to create media record:', mediaError);
+      let mediaData: { id: string } | null = null;
+      try {
+        const mediaRes = await fetch('/api/media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: file.name,
+            storage_path: storagePath,
+            file_type: fileType,
+            file_size: file.size,
+            ...(organizationId ? { organization_id: organizationId } : {}),
+          }),
+        });
+        if (mediaRes.ok) {
+          mediaData = await mediaRes.json();
+        }
+      } catch {
+        // Media record creation failed, but upload still succeeded
       }
 
       setProgress(100);

@@ -70,7 +70,7 @@ export function DirectionsButton({
       <CardContent className="py-4 space-y-3">
         <Button
           onClick={handleClick}
-          className="w-full bg-[#A40000] hover:bg-[#8a0000] text-white"
+          className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
           size="lg"
         >
           <Navigation className="w-5 h-5 mr-2" />

@@ -127,7 +127,7 @@ export function ProximityNotification({
             {!showAudioPlayer && (
               <Button
                 onClick={handleListenToAudio}
-                className="w-full bg-[#A40000] hover:bg-[#8a0000] text-white"
+                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
                 size="sm"
               >
                 <Volume2 className="w-4 h-4 mr-2" />
@@ -159,7 +159,7 @@ export function ProximityNotification({
                   <div className="flex-1">
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[#A40000] transition-all"
+                        className="h-full bg-primary transition-all"
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>

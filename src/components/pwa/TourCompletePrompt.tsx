@@ -47,7 +47,7 @@ export function TourCompletePrompt({
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
-      <div className="bg-gradient-to-r from-[#A40000] to-[#014487] border rounded-lg shadow-xl p-5 max-w-md mx-auto text-white">
+      <div className="bg-gradient-to-r from-primary to-primary/60 border rounded-lg shadow-xl p-5 max-w-md mx-auto text-white">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 p-2 bg-white/20 rounded-full">
             <PartyPopper className="w-6 h-6 text-white" />
@@ -76,7 +76,7 @@ export function TourCompletePrompt({
           <Button
             asChild
             size="sm"
-            className="flex-1 bg-white text-[#A40000] hover:bg-white/90"
+            className="flex-1 bg-white text-primary hover:bg-white/90"
           >
             <Link href="/historic-sites">
               <MapPin className="w-4 h-4 mr-2" />

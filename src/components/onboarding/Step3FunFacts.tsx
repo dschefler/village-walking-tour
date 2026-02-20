@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Loader2, Lightbulb, SkipForward } from 'lucide-react';
+import { Plus, Trash2, Loader2, Lightbulb, Save, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
 import type { Site } from '@/types';
 
 interface Step3Props {
@@ -13,6 +14,7 @@ interface Step3Props {
   tourId: string;
   onComplete: () => void;
   onSkip: () => void;
+  onSave?: () => void;
 }
 
 interface SiteFacts {
@@ -21,7 +23,7 @@ interface SiteFacts {
   facts: string[];
 }
 
-export function Step3FunFacts({ orgId, tourId, onComplete, onSkip }: Step3Props) {
+export function Step3FunFacts({ orgId, tourId, onComplete, onSkip, onSave }: Step3Props) {
   const [sitesFacts, setSitesFacts] = useState<SiteFacts[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -91,8 +93,14 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip }: Step3Props)
     );
   };
 
-  const handleSubmit = async () => {
-    setSaving(true);
+  const [savingOnly, setSavingOnly] = useState(false);
+
+  const saveData = async (advanceStep: boolean) => {
+    if (advanceStep) {
+      setSaving(true);
+    } else {
+      setSavingOnly(true);
+    }
     setError('');
 
     try {
@@ -117,20 +125,28 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip }: Step3Props)
         }
       }
 
-      // Update onboarding step
-      await fetch(`/api/organizations/${orgId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ onboarding_step: 4 }),
-      });
-
-      onComplete();
+      if (advanceStep) {
+        // Update onboarding step
+        await fetch(`/api/organizations/${orgId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ onboarding_step: 4 }),
+        });
+        onComplete();
+      } else {
+        onSave?.();
+        toast({ title: 'Progress saved', description: 'Your fun facts have been saved.' });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setSaving(false);
+      setSavingOnly(false);
     }
   };
+
+  const handleSubmit = () => saveData(true);
+  const handleSave = () => saveData(false);
 
   if (loading) {
     return (
@@ -200,16 +216,31 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip }: Step3Props)
           <SkipForward className="w-4 h-4" />
           Skip for now
         </Button>
-        <Button onClick={handleSubmit} disabled={saving} size="lg">
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Continue to Stamp Card'
-          )}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={handleSave} disabled={saving || savingOnly} size="lg">
+            {savingOnly ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </>
+            )}
+          </Button>
+          <Button onClick={handleSubmit} disabled={saving || savingOnly} size="lg">
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Continue to Stamp Card'
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

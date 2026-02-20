@@ -44,8 +44,8 @@ export function LocationsDropdown({ transparent = false }: LocationsDropdownProp
   }, []);
 
   const buttonClass = transparent
-    ? 'text-white hover:text-[#A40000] hover:bg-white/60'
-    : 'hover:text-[#A40000] hover:bg-gray-100';
+    ? 'text-white hover:text-primary hover:bg-white/60'
+    : 'hover:text-primary hover:bg-gray-100';
 
   return (
     <DropdownMenu>

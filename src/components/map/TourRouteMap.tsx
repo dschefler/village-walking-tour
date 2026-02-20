@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Map, { Marker, NavigationControl, Source, Layer, Popup, type MapRef } from 'react-map-gl';
 import { MapPin } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -36,6 +37,9 @@ export function TourRouteMap({
   const mapRef = useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
+
+  const tenant = useTenantOptional();
+  const primaryColor = tenant?.organization?.primary_color || '#A40000';
 
   // Don't render if no sites
   if (sites.length === 0) {
@@ -145,7 +149,7 @@ export function TourRouteMap({
             id="route-line"
             type="line"
             paint={{
-              'line-color': '#A40000',
+              'line-color': primaryColor,
               'line-width': 4,
               'line-dasharray': [2, 2],
             }}
@@ -178,7 +182,7 @@ export function TourRouteMap({
               <div
                 className={`
                   flex items-center justify-center w-8 h-8 rounded-full
-                  ${isHovered ? 'bg-[#A40000]' : 'bg-black'}
+                  ${isHovered ? 'bg-primary' : 'bg-black'}
                   shadow-lg border-2 border-white font-bold text-white text-sm
                 `}
               >
@@ -188,7 +192,7 @@ export function TourRouteMap({
               {/* Pulse animation on hover */}
               {isHovered && (
                 <div className="absolute inset-0 -z-10">
-                  <div className="absolute inset-0 rounded-full bg-[#A40000] animate-ping opacity-50" />
+                  <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-50" />
                 </div>
               )}
             </div>

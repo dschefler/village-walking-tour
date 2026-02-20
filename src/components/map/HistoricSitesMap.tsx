@@ -124,7 +124,7 @@ export function HistoricSitesMap({
               <div
                 className={`
                   flex items-center justify-center w-8 h-8 rounded-full
-                  ${isHovered ? 'bg-[#A40000]' : 'bg-black'}
+                  ${isHovered ? 'bg-primary' : 'bg-black'}
                   shadow-lg border-2 border-white
                 `}
               >
@@ -143,7 +143,7 @@ export function HistoricSitesMap({
               {/* Pulse animation on hover */}
               {isHovered && (
                 <div className="absolute inset-0 -z-10">
-                  <div className="absolute inset-0 rounded-full bg-[#A40000] animate-ping opacity-50" />
+                  <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-50" />
                 </div>
               )}
             </div>

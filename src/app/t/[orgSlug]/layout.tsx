@@ -59,8 +59,9 @@ function buildThemeCSS(org: Organization): string {
     ? hexToHsl('#334155')
     : hexToHsl('#e2e8f0');
 
-  return `
-    .tenant-theme {
+  // Also target [data-radix-portal] so dropdowns, dialogs, and popovers
+  // (which render outside .tenant-theme via portals) use the tenant colors.
+  const vars = `
       --primary: ${primaryHsl};
       --primary-foreground: ${primaryFg};
       --secondary: ${secondaryHsl};
@@ -77,8 +78,11 @@ function buildThemeCSS(org: Organization): string {
       --input: ${borderHsl};
       --ring: ${primaryHsl};
       --accent: ${mutedHsl};
-      --accent-foreground: ${fgHsl};
-    }
+      --accent-foreground: ${fgHsl};`;
+
+  return `
+    .tenant-theme { ${vars} }
+    [data-radix-portal] { ${vars} }
   `;
 }
 
