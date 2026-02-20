@@ -34,25 +34,25 @@ export function Footer() {
             <h3 className="font-semibold mb-3 text-black">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/historic-sites" className="flex items-center gap-2 text-black hover:text-[#A40000] transition-colors">
+                <Link href="/historic-sites" className="flex items-center gap-2 text-black hover:text-primary transition-colors">
                   <MapPin className="w-4 h-4" />
                   Historic Sites
                 </Link>
               </li>
               <li>
-                <Link href="/how-to-use" className="flex items-center gap-2 text-black hover:text-[#A40000] transition-colors">
+                <Link href="/how-to-use" className="flex items-center gap-2 text-black hover:text-primary transition-colors">
                   <HelpCircle className="w-4 h-4" />
                   How to Use
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="flex items-center gap-2 text-black hover:text-[#A40000] transition-colors">
+                <Link href="/contact" className="flex items-center gap-2 text-black hover:text-primary transition-colors">
                   <Mail className="w-4 h-4" />
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="/contact#donate" className="flex items-center gap-2 text-black hover:text-[#A40000] transition-colors">
+                <Link href="/contact#donate" className="flex items-center gap-2 text-black hover:text-primary transition-colors">
                   <Heart className="w-4 h-4" />
                   Support Us
                 </Link>
@@ -68,7 +68,7 @@ export function Footer() {
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 text-sm text-black hover:text-[#A40000] transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-black hover:text-primary transition-colors"
             >
               <Mail className="w-4 h-4" />
               Send us a message
@@ -79,7 +79,7 @@ export function Footer() {
         </div>
 
       {/* Copyright Bar */}
-      <div className="bg-[#A40000]">
+      <div className="bg-primary">
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-white">
             &copy; {currentYear} Southampton Village Walking Tour. All rights reserved.

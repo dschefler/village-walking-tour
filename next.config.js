@@ -56,6 +56,36 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  async redirects() {
+    return [
+      // Backward compatibility: old Southampton routes → tenant-scoped routes
+      {
+        source: '/tour/:id',
+        destination: '/t/southampton/tour/:id',
+        permanent: true,
+      },
+      {
+        source: '/location/:id',
+        destination: '/t/southampton/location/:id',
+        permanent: true,
+      },
+      {
+        source: '/historic-sites',
+        destination: '/t/southampton/historic-sites',
+        permanent: true,
+      },
+      {
+        source: '/how-to-use',
+        destination: '/t/southampton/how-to-use',
+        permanent: true,
+      },
+      {
+        source: '/contact',
+        destination: '/t/southampton/contact',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = withPWA(nextConfig);

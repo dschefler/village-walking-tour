@@ -40,12 +40,15 @@ export async function POST(request: NextRequest) {
     .from('sites')
     .insert({
       tour_id: body.tour_id,
+      organization_id: body.organization_id,
       name: body.name,
       description: body.description,
+      address: body.address,
       latitude: body.latitude,
       longitude: body.longitude,
       audio_url: body.audio_url,
       display_order: body.display_order,
+      is_published: body.is_published ?? true,
     })
     .select()
     .single();

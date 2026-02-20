@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 interface QRCodeGeneratorProps {
   url: string;
   tourName: string;
+  color?: string;
 }
 
-export function QRCodeGenerator({ url, tourName }: QRCodeGeneratorProps) {
+export function QRCodeGenerator({ url, tourName, color = '#A30000' }: QRCodeGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -24,7 +25,7 @@ export function QRCodeGenerator({ url, tourName }: QRCodeGeneratorProps) {
           width: 256,
           margin: 2,
           color: {
-            dark: '#000000',
+            dark: color,
             light: '#ffffff',
           },
         },
@@ -33,7 +34,7 @@ export function QRCodeGenerator({ url, tourName }: QRCodeGeneratorProps) {
         }
       );
     }
-  }, [url]);
+  }, [url, color]);
 
   const handleDownload = () => {
     if (!canvasRef.current) return;

@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/admin';
+  const redirect = searchParams.get('redirect') || '/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,17 +37,16 @@ export default function LoginForm() {
       return;
     }
 
-    router.push(redirect);
-    router.refresh();
+    window.location.href = redirect;
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-muted/50">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
+          <CardTitle className="text-2xl">Sign In</CardTitle>
           <CardDescription>
-            Sign in to manage tours and content
+            Sign in to your tour dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>

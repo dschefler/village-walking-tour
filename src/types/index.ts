@@ -1,5 +1,6 @@
 export interface Tour {
   id: string;
+  organization_id: string | null;
   name: string;
   slug: string;
   description: string | null;
@@ -14,6 +15,7 @@ export interface Tour {
 export interface Site {
   id: string;
   tour_id: string;
+  organization_id: string | null;
   name: string;
   description: string | null;
   latitude: number;
@@ -53,6 +55,7 @@ export interface User {
   id: string;
   email: string;
   role: 'admin' | 'editor' | 'viewer';
+  platform_role: 'super_admin' | 'customer';
   created_at: string;
 }
 
@@ -160,4 +163,66 @@ export interface ProximityAlert {
   timestamp: string;
   audioUrl?: string | null;
   transcript?: string | null; // Description/transcript for accessibility
+}
+
+// Organization / multi-tenant types
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  icon_url: string | null;
+  primary_color: string;
+  secondary_color: string;
+  theme_mode: 'light' | 'dark';
+  font_family: string;
+  background_color: string;
+  text_color: string;
+  app_name: string | null;
+  app_short_name: string | null;
+  app_description: string | null;
+  default_lat: number;
+  default_lng: number;
+  default_zoom: number;
+  contact_email: string | null;
+  contact_phone: string | null;
+  contact_address: string | null;
+  custom_domain: string | null;
+  is_active: boolean;
+  onboarding_completed: boolean;
+  onboarding_step: number;
+  stripe_customer_id: string | null;
+  subscription_tier: 'trial' | 'starter' | 'pro' | 'enterprise';
+  subscription_status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid';
+  trial_ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  role: 'owner' | 'admin' | 'editor';
+  created_at: string;
+}
+
+export interface FunFact {
+  id: string;
+  site_id: string;
+  fact_text: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface AnalyticsEvent {
+  id: string;
+  organization_id: string;
+  tour_id: string | null;
+  site_id: string | null;
+  event_type: string;
+  session_id: string | null;
+  device_type: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
 }

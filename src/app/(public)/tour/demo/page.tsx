@@ -12,11 +12,11 @@ import type { Site } from '@/types';
 
 // Fake sites for the demo
 const DEMO_SITES: Site[] = [
-  { id: '1', tour_id: 'demo', name: 'Rogers Memorial Library', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 1, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
-  { id: '2', tour_id: 'demo', name: 'Southampton History Museum', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 2, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
-  { id: '3', tour_id: 'demo', name: 'Pelletreau Silver Shop', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 3, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
-  { id: '4', tour_id: 'demo', name: 'WWI Memorial', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 4, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
-  { id: '5', tour_id: 'demo', name: 'Agawam Park', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 5, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
+  { id: '1', tour_id: 'demo', organization_id: null, name: 'Rogers Memorial Library', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 1, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
+  { id: '2', tour_id: 'demo', organization_id: null, name: 'Southampton History Museum', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 2, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
+  { id: '3', tour_id: 'demo', organization_id: null, name: 'Pelletreau Silver Shop', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 3, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
+  { id: '4', tour_id: 'demo', organization_id: null, name: 'WWI Memorial', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 4, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
+  { id: '5', tour_id: 'demo', organization_id: null, name: 'Agawam Park', description: null, latitude: 0, longitude: 0, audio_url: null, display_order: 5, address: null, address_formatted: null, is_published: true, slug: null, created_at: '', updated_at: '' },
 ];
 
 export default function DemoPage() {

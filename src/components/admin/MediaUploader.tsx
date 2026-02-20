@@ -14,6 +14,7 @@ interface MediaUploaderProps {
   path?: string;
   maxSize?: number; // in MB
   className?: string;
+  organizationId?: string;
 }
 
 export function MediaUploader({
@@ -23,6 +24,7 @@ export function MediaUploader({
   path = '',
   maxSize = 10,
   className,
+  organizationId,
 }: MediaUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +73,7 @@ export function MediaUploader({
           storage_path: storagePath,
           file_type: fileType,
           file_size: file.size,
+          ...(organizationId ? { organization_id: organizationId } : {}),
         })
         .select()
         .single();

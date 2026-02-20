@@ -1,52 +1,16 @@
 {
-  "name": "Village Walking Tour",
-  "short_name": "Village Tour",
-  "description": "Explore the history and heritage of our village with this self-guided walking tour.",
+  "name": "Southampton Village Walking Tour",
+  "short_name": "SH Walking Tour",
+  "description": "Explore the rich history and hidden stories of Southampton Village through this self-guided walking tour.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3B82F6",
+  "theme_color": "#A30000",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
       "type": "image/png",
       "purpose": "maskable any"
     },
@@ -57,20 +21,5 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["travel", "navigation"],
-  "screenshots": [
-    {
-      "src": "/screenshots/tour-map.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "View Tours",
-      "url": "/",
-      "description": "Browse available walking tours"
-    }
-  ]
+  "categories": ["travel", "navigation"]
 }

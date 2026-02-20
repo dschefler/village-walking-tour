@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   const supabase = createClient();
   const { searchParams } = new URL(request.url);
   const published = searchParams.get('published');
+  const orgId = searchParams.get('orgId');
 
   let query = supabase.from('tours').select(`
     *,
@@ -14,6 +15,10 @@ export async function GET(request: NextRequest) {
       display_order
     )
   `);
+
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
 
   if (published === 'true') {
     query = query.eq('is_published', true);
@@ -43,6 +48,7 @@ export async function POST(request: NextRequest) {
       name: body.name,
       slug: body.slug,
       description: body.description,
+      organization_id: body.organization_id,
       estimated_time: body.estimated_time,
       distance_km: body.distance_km,
       cover_image_url: body.cover_image_url,

@@ -18,14 +18,20 @@ interface LocationItem {
   address: string | null;
 }
 
-export function StartExploringButton() {
+interface StartExploringButtonProps {
+  orgSlug?: string;
+}
+
+export function StartExploringButton({ orgSlug }: StartExploringButtonProps) {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const prefix = orgSlug ? `/t/${orgSlug}` : '';
 
   useEffect(() => {
     async function fetchLocations() {
       try {
-        const response = await fetch('/api/locations');
+        const url = orgSlug ? `/api/locations?orgSlug=${orgSlug}` : '/api/locations';
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         setLocations(data);
@@ -37,7 +43,7 @@ export function StartExploringButton() {
     }
 
     fetchLocations();
-  }, []);
+  }, [orgSlug]);
 
   if (loading) {
     return (
@@ -64,7 +70,7 @@ export function StartExploringButton() {
         {locations.map((location) => (
           <DropdownMenuItem key={location.id} asChild>
             <Link
-              href={`/location/${location.slug || location.id}`}
+              href={`${prefix}/location/${location.slug || location.id}`}
               className="flex items-start gap-3 cursor-pointer py-2 text-left w-full"
             >
               <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />

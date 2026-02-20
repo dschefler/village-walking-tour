@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Map, { Marker, type MapRef, type MapMouseEvent } from 'react-map-gl';
-import { MapPin, Trash2, Eye, ExternalLink } from 'lucide-react';
+import { MapPin, Trash2, Eye, ExternalLink, Star, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,14 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Image management state
+  const [siteImages, setSiteImages] = useState<
+    { mediaId: string; url: string; storagePath: string; isPrimary: boolean; displayOrder: number }[]
+  >([]);
+  const [pendingUploads, setPendingUploads] = useState<
+    { mediaId: string; url: string; storagePath: string; isPrimary: boolean; displayOrder: number }[]
+  >([]);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -58,6 +66,34 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
         is_published: site.is_published,
         slug: site.slug || '',
       });
+
+      // Load existing images for this site
+      const loadImages = async () => {
+        const { data, error } = await supabase
+          .from('site_media')
+          .select('media_id, display_order, is_primary, media:media_id(id, storage_path)')
+          .eq('site_id', site.id)
+          .order('display_order');
+
+        if (!error && data) {
+          const bucket = 'tour-media';
+          setSiteImages(
+            data.map((row: any) => {
+              const { data: urlData } = supabase.storage
+                .from(bucket)
+                .getPublicUrl(row.media.storage_path);
+              return {
+                mediaId: row.media_id,
+                url: urlData.publicUrl,
+                storagePath: row.media.storage_path,
+                isPrimary: row.is_primary,
+                displayOrder: row.display_order,
+              };
+            })
+          );
+        }
+      };
+      loadImages();
     }
   }, [site]);
 
@@ -153,6 +189,94 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
     setFormData((prev) => ({ ...prev, audio_url: url }));
   };
 
+  // All images (saved + pending) for display
+  const allImages = site ? siteImages : pendingUploads;
+
+  const handleImageUpload = async (url: string, mediaId?: string) => {
+    if (!mediaId) return;
+
+    const newImage = {
+      mediaId,
+      url,
+      storagePath: '',
+      isPrimary: allImages.length === 0,
+      displayOrder: allImages.length,
+    };
+
+    if (site) {
+      // Existing site: link immediately
+      await fetch('/api/site-media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          records: [{
+            site_id: site.id,
+            media_id: mediaId,
+            display_order: siteImages.length,
+            is_primary: siteImages.length === 0,
+          }],
+        }),
+      });
+      setSiteImages((prev) => [...prev, newImage]);
+    } else {
+      // New site: store for later
+      setPendingUploads((prev) => [...prev, newImage]);
+    }
+  };
+
+  const handleSetPrimary = async (mediaId: string) => {
+    if (site) {
+      // Update all to non-primary, then set the chosen one
+      await supabase
+        .from('site_media')
+        .update({ is_primary: false })
+        .eq('site_id', site.id);
+      await supabase
+        .from('site_media')
+        .update({ is_primary: true })
+        .eq('site_id', site.id)
+        .eq('media_id', mediaId);
+      setSiteImages((prev) =>
+        prev.map((img) => ({ ...img, isPrimary: img.mediaId === mediaId }))
+      );
+    } else {
+      setPendingUploads((prev) =>
+        prev.map((img) => ({ ...img, isPrimary: img.mediaId === mediaId }))
+      );
+    }
+  };
+
+  const handleRemoveImage = async (mediaId: string) => {
+    if (site) {
+      await fetch('/api/site-media', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ site_id: site.id, media_id: mediaId }),
+      });
+      setSiteImages((prev) => {
+        const remaining = prev.filter((img) => img.mediaId !== mediaId);
+        // If we removed the primary, make the first remaining one primary
+        if (remaining.length > 0 && !remaining.some((img) => img.isPrimary)) {
+          remaining[0].isPrimary = true;
+          supabase
+            .from('site_media')
+            .update({ is_primary: true })
+            .eq('site_id', site.id)
+            .eq('media_id', remaining[0].mediaId);
+        }
+        return remaining;
+      });
+    } else {
+      setPendingUploads((prev) => {
+        const remaining = prev.filter((img) => img.mediaId !== mediaId);
+        if (remaining.length > 0 && !remaining.some((img) => img.isPrimary)) {
+          remaining[0].isPrimary = true;
+        }
+        return remaining;
+      });
+    }
+  };
+
   const handleSave = async () => {
     if (!formData.name.trim()) {
       toast({
@@ -191,21 +315,41 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
         });
       } else {
         // Create new site
-        const { error } = await supabase.from('sites').insert({
-          tour_id: tourId,
-          name: formData.name,
-          description: formData.description || null,
-          latitude: formData.latitude,
-          longitude: formData.longitude,
-          audio_url: formData.audio_url || null,
-          address: formData.address || null,
-          address_formatted: formData.address_formatted || null,
-          is_published: formData.is_published,
-          slug: formData.slug || null,
-          display_order: displayOrder,
-        });
+        const { data: newSite, error } = await supabase
+          .from('sites')
+          .insert({
+            tour_id: tourId,
+            name: formData.name,
+            description: formData.description || null,
+            latitude: formData.latitude,
+            longitude: formData.longitude,
+            audio_url: formData.audio_url || null,
+            address: formData.address || null,
+            address_formatted: formData.address_formatted || null,
+            is_published: formData.is_published,
+            slug: formData.slug || null,
+            display_order: displayOrder,
+          })
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Link any pending images to the new site
+        if (pendingUploads.length > 0 && newSite) {
+          await fetch('/api/site-media', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              records: pendingUploads.map((img, i) => ({
+                site_id: newSite.id,
+                media_id: img.mediaId,
+                display_order: i,
+                is_primary: img.isPrimary,
+              })),
+            }),
+          });
+        }
 
         toast({
           title: 'Created',
@@ -391,6 +535,60 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
         ) : (
           <MediaUploader onUpload={handleAudioUpload} accept="audio/*" path={`sites/${site?.id || 'new'}`} />
         )}
+      </div>
+
+      {/* Images */}
+      <div className="space-y-2">
+        <Label>Images</Label>
+        <p className="text-xs text-muted-foreground">Upload a hero image and gallery photos</p>
+
+        {allImages.length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            {allImages.map((img) => (
+              <div
+                key={img.mediaId}
+                className="relative group aspect-square rounded-lg overflow-hidden border bg-muted"
+              >
+                <img
+                  src={img.url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+                {img.isPrimary && (
+                  <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] font-medium px-1.5 py-0.5 rounded">
+                    Primary
+                  </span>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                  {!img.isPrimary && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPrimary(img.mediaId)}
+                      className="p-1.5 bg-white rounded-full text-primary hover:bg-primary hover:text-white transition-colors"
+                      title="Set as primary"
+                    >
+                      <Star className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(img.mediaId)}
+                    className="p-1.5 bg-white rounded-full text-destructive hover:bg-destructive hover:text-white transition-colors"
+                    title="Remove image"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <MediaUploader
+          onUpload={handleImageUpload}
+          accept="image/*"
+          path={`sites/${site?.id || 'new'}`}
+        />
       </div>
 
       {/* Publish Toggle */}

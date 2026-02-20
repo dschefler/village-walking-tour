@@ -3,6 +3,7 @@
 import { Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StampCard } from './StampCard';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 import type { Site } from '@/types';
 
 interface TourCompleteOverlayProps {
@@ -12,11 +13,7 @@ interface TourCompleteOverlayProps {
   onNewTour: () => void;
 }
 
-const CONFETTI_COLORS = [
-  '#A40000', '#014487', '#FFD700', '#22C55E',
-  '#F97316', '#A855F7', '#EC4899', '#06B6D4',
-  '#A40000', '#014487', '#FFD700', '#22C55E',
-];
+const EXTRA_CONFETTI = ['#FFD700', '#22C55E', '#F97316', '#A855F7', '#EC4899', '#06B6D4'];
 
 export function TourCompleteOverlay({
   sites,
@@ -24,10 +21,20 @@ export function TourCompleteOverlay({
   onBrowseSites,
   onNewTour,
 }: TourCompleteOverlayProps) {
+  const tenant = useTenantOptional();
+  const primaryColor = tenant?.organization.primary_color ?? '#A40000';
+  const secondaryColor = tenant?.organization.secondary_color ?? '#014487';
+
+  const confettiColors = [
+    primaryColor, secondaryColor,
+    ...EXTRA_CONFETTI,
+    primaryColor, secondaryColor,
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       {/* Confetti pieces */}
-      {CONFETTI_COLORS.map((color, i) => (
+      {confettiColors.map((color, i) => (
         <div
           key={i}
           className="absolute w-3 h-3 animate-confetti-fall"
@@ -44,8 +51,13 @@ export function TourCompleteOverlay({
 
       {/* Content card */}
       <div className="relative mx-4 max-w-sm w-full bg-background rounded-2xl shadow-2xl overflow-hidden">
-        {/* Gradient header */}
-        <div className="bg-gradient-to-r from-[#A40000] to-[#014487] px-6 pt-8 pb-6 text-center text-white">
+        {/* Gradient header — uses org colors */}
+        <div
+          className="px-6 pt-8 pb-6 text-center text-white"
+          style={{
+            background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+          }}
+        >
           {/* Trophy + Stars */}
           <div className="flex items-center justify-center gap-3 mb-3">
             <Star

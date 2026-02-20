@@ -16,7 +16,11 @@ interface ContactFormData {
   message: string;
 }
 
-export function ContactForm() {
+interface ContactFormProps {
+  orgSlug?: string;
+}
+
+export function ContactForm({ orgSlug }: ContactFormProps = {}) {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);

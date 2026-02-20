@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { Stamp } from 'lucide-react';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 
 interface StampEarnedOverlayProps {
   siteOrder: number;
@@ -10,7 +11,6 @@ interface StampEarnedOverlayProps {
   onDismiss: () => void;
 }
 
-const PARTICLE_COLORS = ['#A40000', '#014487', '#FFD700', '#22C55E'];
 const PARTICLE_OFFSETS = [
   { x: -60, y: -50, rotate: -20 },
   { x: 60, y: -40, rotate: 15 },
@@ -24,6 +24,11 @@ export function StampEarnedOverlay({
   totalSites,
   onDismiss,
 }: StampEarnedOverlayProps) {
+  const tenant = useTenantOptional();
+  const primary = tenant?.organization.primary_color ?? '#A40000';
+  const secondary = tenant?.organization.secondary_color ?? '#014487';
+  const colors = [primary, secondary, '#FFD700', '#22C55E'];
+
   useEffect(() => {
     const timer = setTimeout(onDismiss, 2200);
     return () => clearTimeout(timer);
@@ -42,12 +47,11 @@ export function StampEarnedOverlay({
             key={i}
             className="absolute w-3 h-3 rounded-full animate-confetti-burst"
             style={{
-              backgroundColor: PARTICLE_COLORS[i],
+              backgroundColor: colors[i],
               left: '50%',
               top: '50%',
               marginLeft: -6,
               marginTop: -6,
-              // Each particle animates to its offset position
               animation: `confetti-burst 0.8s ease-out forwards`,
               transform: `translate(${offset.x}px, ${offset.y}px) rotate(${offset.rotate}deg)`,
               animationDelay: `${i * 0.05}s`,

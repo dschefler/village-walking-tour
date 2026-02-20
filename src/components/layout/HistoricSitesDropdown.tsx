@@ -21,16 +21,19 @@ interface LocationItem {
 
 interface HistoricSitesDropdownProps {
   transparent?: boolean;
+  orgSlug?: string;
 }
 
-export function HistoricSitesDropdown({ transparent = false }: HistoricSitesDropdownProps) {
+export function HistoricSitesDropdown({ transparent = false, orgSlug }: HistoricSitesDropdownProps) {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const prefix = orgSlug ? `/t/${orgSlug}` : '';
 
   useEffect(() => {
     async function fetchLocations() {
       try {
-        const response = await fetch('/api/locations');
+        const url = orgSlug ? `/api/locations?orgSlug=${orgSlug}` : '/api/locations';
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         setLocations(data);
@@ -42,11 +45,11 @@ export function HistoricSitesDropdown({ transparent = false }: HistoricSitesDrop
     }
 
     fetchLocations();
-  }, []);
+  }, [orgSlug]);
 
   const buttonClass = transparent
-    ? 'text-white hover:text-[#A40000] hover:bg-white/60'
-    : 'hover:text-[#A40000] hover:bg-gray-100';
+    ? 'text-white hover:text-primary hover:bg-white/60'
+    : 'hover:text-primary hover:bg-gray-100';
 
   return (
     <DropdownMenu>
@@ -61,8 +64,8 @@ export function HistoricSitesDropdown({ transparent = false }: HistoricSitesDrop
         {/* View All Link */}
         <DropdownMenuItem asChild>
           <Link
-            href="/historic-sites"
-            className="flex items-center gap-2 cursor-pointer font-medium text-[#A40000]"
+            href={`${prefix}/historic-sites`}
+            className="flex items-center gap-2 cursor-pointer font-medium text-primary"
           >
             <Map className="w-4 h-4" />
             View All Sites & Map
@@ -83,12 +86,12 @@ export function HistoricSitesDropdown({ transparent = false }: HistoricSitesDrop
           locations.map((location) => (
             <DropdownMenuItem key={location.id} asChild>
               <Link
-                href={`/location/${location.slug || location.id}`}
+                href={`${prefix}/location/${location.slug || location.id}`}
                 className="flex flex-col items-start gap-0.5 cursor-pointer text-left w-full"
               >
                 <span className="font-medium text-left">{location.name}</span>
                 {location.address && (
-                  <span className="text-xs text-[#014487] line-clamp-1 text-left">
+                  <span className="text-xs text-secondary line-clamp-1 text-left">
                     {location.address}
                   </span>
                 )}

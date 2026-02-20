@@ -502,7 +502,7 @@ export default function EditTourPage() {
             </DialogDescription>
           </DialogHeader>
           <QRCodeGenerator
-            url={`${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/tour/${formData.slug}`}
+            url={`https://southamptonwalkingtour.com/t/southampton/tour/${formData.slug}`}
             tourName={formData.name}
           />
         </DialogContent>

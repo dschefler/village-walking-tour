@@ -1,15 +1,30 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = createClient();
+  const orgSlug = request.nextUrl.searchParams.get('orgSlug');
+
+  // If orgSlug provided, resolve the org first
+  let orgId: string | null = null;
+  if (orgSlug) {
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('slug', orgSlug)
+      .single();
+    if (!org) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+    }
+    orgId = org.id;
+  }
 
   // Get all published locations with their media
-  const { data, error } = await supabase
+  let query = supabase
     .from('sites')
     .select(`
       *,
-      tour:tours!inner(name, slug, is_published),
+      tour:tours(name, slug),
       site_media(
         display_order,
         is_primary,
@@ -18,6 +33,12 @@ export async function GET() {
     `)
     .eq('is_published', true)
     .order('name');
+
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching locations:', error);
