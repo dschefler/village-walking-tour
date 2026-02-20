@@ -1,10 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Route } from 'lucide-react';
+import { Route, Smartphone } from 'lucide-react';
+import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { StartExploringButton } from '@/components/layout/StartExploringButton';
+import { HideWhenInstalled } from '@/components/pwa/HideWhenInstalled';
 import { Button } from '@/components/ui/button';
 import type { Tour } from '@/types';
 
@@ -27,6 +29,20 @@ async function getPublishedTour(): Promise<Tour | null> {
 
 export default async function HomePage() {
   const tour = await getPublishedTour();
+
+  // Generate QR code for desktop visitors
+  const siteUrl = 'https://southamptonwalkingtour.com';
+  let qrSvg = '';
+  try {
+    qrSvg = await QRCode.toString(siteUrl, {
+      type: 'svg',
+      width: 200,
+      margin: 2,
+      color: { dark: '#A40000', light: '#ffffff' },
+    });
+  } catch (e) {
+    // QR generation failed, section will be hidden
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-black">
@@ -79,6 +95,43 @@ export default async function HomePage() {
           </div>
         </div>
       </header>
+
+      {/* Get the App section — hidden when running as installed PWA */}
+      <HideWhenInstalled>
+        <section className="bg-white py-16">
+          <div className="container mx-auto px-4 text-center">
+            <Smartphone className="w-10 h-10 mx-auto mb-4 text-[#A40000]" />
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900">
+              Get the App on Your Phone
+            </h2>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Scan the QR code with your phone camera to open the tour. Then tap &ldquo;Add to Home Screen&rdquo; to install it as an app.
+            </p>
+
+            {/* QR code — visible on desktop, hidden on mobile */}
+            {qrSvg && (
+              <div className="hidden md:flex flex-col items-center gap-4">
+                <div
+                  className="inline-block p-4 bg-white rounded-xl shadow-lg border"
+                  dangerouslySetInnerHTML={{ __html: qrSvg }}
+                />
+                <p className="text-sm text-gray-500">
+                  Scan with your phone camera
+                </p>
+              </div>
+            )}
+
+            {/* Mobile — show direct install hint */}
+            <div className="md:hidden">
+              <p className="text-sm text-gray-500">
+                On iPhone: tap the Share button, then &ldquo;Add to Home Screen.&rdquo;
+                <br />
+                On Android: tap the menu, then &ldquo;Install app.&rdquo;
+              </p>
+            </div>
+          </div>
+        </section>
+      </HideWhenInstalled>
 
       <Footer />
     </div>
