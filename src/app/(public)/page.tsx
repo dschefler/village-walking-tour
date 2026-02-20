@@ -85,7 +85,7 @@ export default async function HomePage() {
             <Button
               size="lg"
               asChild
-              className="bg-[#A40000] text-white hover:bg-black hover:text-white gap-2"
+              className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
             >
               <Link href="/create-your-tour">
                 <Route className="w-5 h-5" />

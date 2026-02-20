@@ -47,7 +47,7 @@ export function StartExploringButton({ orgSlug }: StartExploringButtonProps) {
 
   if (loading) {
     return (
-      <Button size="lg" className="bg-[#A40000] text-white hover:bg-black hover:text-white gap-2" disabled>
+      <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2" disabled>
         <Loader2 className="w-5 h-5 animate-spin" />
         Loading...
       </Button>
@@ -61,7 +61,7 @@ export function StartExploringButton({ orgSlug }: StartExploringButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="lg" className="bg-[#A40000] text-white hover:bg-black hover:text-white gap-2">
+        <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2">
           Start Exploring
           <ChevronDown className="w-5 h-5" />
         </Button>
