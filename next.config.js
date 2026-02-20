@@ -58,7 +58,7 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // Backward compatibility: old Southampton routes → tenant-scoped routes
+      // Dynamic Southampton routes → tenant-scoped (need org data)
       {
         source: '/tour/:id',
         destination: '/t/southampton/tour/:id',
@@ -67,21 +67,6 @@ const nextConfig = {
       {
         source: '/location/:id',
         destination: '/t/southampton/location/:id',
-        permanent: true,
-      },
-      {
-        source: '/historic-sites',
-        destination: '/t/southampton/historic-sites',
-        permanent: true,
-      },
-      {
-        source: '/how-to-use',
-        destination: '/t/southampton/how-to-use',
-        permanent: true,
-      },
-      {
-        source: '/contact',
-        destination: '/t/southampton/contact',
         permanent: true,
       },
     ];
