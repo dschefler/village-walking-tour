@@ -56,6 +56,16 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  async rewrites() {
+    return [
+      // walkingtourbuilder.com/ → serve the marketing landing page
+      {
+        source: '/',
+        destination: '/product',
+        has: [{ type: 'host', value: 'walkingtourbuilder.com' }],
+      },
+    ];
+  },
   async redirects() {
     return [
       // Dynamic Southampton routes → tenant-scoped (need org data)
