@@ -77,6 +77,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.rewrite(new URL('/product', request.url));
   }
 
+  // --- /admin is Southampton-only; redirect to /dashboard on WTB domain ---
+  if (isWTBDomain && pathname.startsWith('/admin')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
   // --- Protect /admin routes (legacy) ---
   if (pathname.startsWith('/admin')) {
     if (!user) {
