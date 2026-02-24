@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Map, Image, LogOut, Home, Settings } from 'lucide-react';
+import { Map, Image, LogOut, Home, Settings, Megaphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 
@@ -53,6 +53,13 @@ export default async function AdminLayout({
           >
             <Image className="w-5 h-5" />
             Media Library
+          </Link>
+          <Link
+            href="/admin/marketing"
+            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors"
+          >
+            <Megaphone className="w-5 h-5" />
+            Marketing
           </Link>
         </nav>
 

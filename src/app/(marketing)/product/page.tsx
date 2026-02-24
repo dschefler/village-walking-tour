@@ -17,6 +17,38 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { WhoItsForGrid } from '@/components/marketing/WhoItsForGrid';
+import { TrialCTA } from '@/components/marketing/TrialCTA';
+import { createServiceClient } from '@/lib/supabase/server';
+
+export const revalidate = 300; // re-fetch content every 5 min
+
+const DEFAULTS = {
+  hero_headline: 'Build a Walking Tour App for Your Community',
+  hero_subheadline:
+    'Create branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support — in minutes, not months.',
+  trial_days: '7',
+  pricing_subheadline: 'Start with a 7-day free trial. No credit card required.',
+  dfy_label: 'Tour Builder Concierge',
+  dfy_headline: 'Rather Have Us Build It For You?',
+  dfy_subheadline:
+    'Our team handles everything — branding, content entry, audio narration, and launch. You provide the materials; we deliver a ready-to-share tour app.',
+  cta_headline: 'Ready to Build Your Walking Tour?',
+  cta_subheadline:
+    'Join towns, museums, parks, and historical societies who use Walking Tour Builder to share their stories with the world.',
+};
+
+async function getContent(): Promise<typeof DEFAULTS> {
+  try {
+    const supabase = createServiceClient();
+    const { data } = await supabase.from('marketing_content').select('key, value');
+    if (!data) return DEFAULTS;
+    const overrides: Record<string, string> = {};
+    data.forEach((row) => { overrides[row.key] = row.value; });
+    return { ...DEFAULTS, ...overrides };
+  } catch {
+    return DEFAULTS;
+  }
+}
 
 const features = [
   {
@@ -143,14 +175,17 @@ const buildPackages = [
   },
 ];
 
-const stats = [
-  { value: 'No-code', label: 'Setup required' },
-  { value: '14-day', label: 'Free trial' },
-  { value: 'Any device', label: 'iOS & Android' },
-  { value: 'Offline', label: 'Works without WiFi' },
-];
+export default async function MarketingLandingPage() {
+  const content = await getContent();
+  const trialDays = content.trial_days || '7';
 
-export default function MarketingLandingPage() {
+  const stats = [
+    { value: 'No-code', label: 'Setup required' },
+    { value: `${trialDays}-day`, label: 'Free trial' },
+    { value: 'Any device', label: 'iOS & Android' },
+    { value: 'Offline', label: 'Works without WiFi' },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
@@ -169,9 +204,7 @@ export default function MarketingLandingPage() {
             <Button asChild variant="ghost" size="sm">
               <Link href="/login">Log In</Link>
             </Button>
-            <Button asChild size="sm">
-              <Link href="/signup">Start Free Trial</Link>
-            </Button>
+            <TrialCTA label="Start Free Trial" size="sm" />
           </div>
         </div>
       </nav>
@@ -188,19 +221,18 @@ export default function MarketingLandingPage() {
             No app store. No coding. Just your tour.
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 max-w-3xl mx-auto">
-            Build a Walking Tour App for Your Community
+            {content.hero_headline}
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Create branded, GPS-guided walking tour apps with stamp cards, AI audio
-            narration, and offline support — in minutes, not months.
+            {content.hero_subheadline}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]">
-              <Link href="/signup">
-                Start Free 14-Day Trial
-                <ChevronRight className="w-5 h-5 ml-1" />
-              </Link>
-            </Button>
+            <TrialCTA
+              label={`Start Free ${trialDays}-Day Trial`}
+              size="lg"
+              className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]"
+              showArrow
+            />
             <Button asChild variant="outline" size="lg" className="text-lg px-8">
               <Link href="/t/southampton">
                 See Live Demo
@@ -278,7 +310,7 @@ export default function MarketingLandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Simple Pricing</h2>
             <p className="text-muted-foreground">
-              Start with a 14-day free trial. No credit card required.
+              {content.pricing_subheadline}
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
@@ -309,13 +341,12 @@ export default function MarketingLandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    asChild
+                  <TrialCTA
+                    label="Start Free Trial"
                     className="w-full mt-6"
                     variant={tier.popular ? 'default' : 'outline'}
-                  >
-                    <Link href="/signup">Start Free Trial</Link>
-                  </Button>
+                    plan={tier.name}
+                  />
                 </CardContent>
               </Card>
             ))}
@@ -332,14 +363,13 @@ export default function MarketingLandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-4">
             <span className="text-sm font-semibold uppercase tracking-widest text-amber-700 mb-3 block">
-              White-Glove Service
+              {content.dfy_label}
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Rather Have Us Build It For You?
+              {content.dfy_headline}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Our team handles everything — branding, content entry, audio narration, and launch.
-              You provide the materials; we deliver a ready-to-share tour app.
+              {content.dfy_subheadline}
             </p>
           </div>
 
@@ -427,18 +457,17 @@ export default function MarketingLandingPage() {
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Ready to Build Your Walking Tour?
+            {content.cta_headline}
           </h2>
           <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
-            Join towns, museums, parks, and historical societies who use Walking Tour
-            Builder to share their stories with the world.
+            {content.cta_subheadline}
           </p>
-          <Button asChild size="lg" className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]">
-            <Link href="/signup">
-              Get Started Free
-              <ChevronRight className="w-5 h-5 ml-1" />
-            </Link>
-          </Button>
+          <TrialCTA
+            label="Get Started Free"
+            size="lg"
+            className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]"
+            showArrow
+          />
         </div>
       </section>
 
