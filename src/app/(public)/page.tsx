@@ -12,10 +12,18 @@ import type { Tour } from '@/types';
 
 async function getPublishedTour(): Promise<Tour | null> {
   const supabase = createClient();
+
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('id')
+    .eq('slug', 'southampton')
+    .single();
+
   const { data, error } = await supabase
     .from('tours')
     .select('*')
     .eq('is_published', true)
+    .eq('organization_id', org?.id)
     .limit(1)
     .single();
 
