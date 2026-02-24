@@ -29,7 +29,6 @@ export function WalkingAnimation() {
         aria-hidden="true"
       >
         <div className="container mx-auto px-4 pt-3 pb-0">
-          {/* Scene container — sky gradient background always visible */}
           <div
             className="relative mx-auto overflow-hidden"
             style={{
@@ -38,6 +37,7 @@ export function WalkingAnimation() {
               background: 'linear-gradient(to bottom, #c8dff0 0%, #ddeeff 40%, #eee8d8 72%, #ddd4c0 82%, #ccc4b0 100%)',
             }}
           >
+
             {/* ── Scrolling background scene ── */}
             <div
               style={{
@@ -50,12 +50,8 @@ export function WalkingAnimation() {
                 willChange: 'transform',
               }}
             >
-              <svg
-                viewBox="0 0 950 220"
-                width="950"
-                height="220"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg viewBox="0 0 950 220" width="950" height="220" xmlns="http://www.w3.org/2000/svg">
+
                 {/* Ground / sidewalk */}
                 <rect x="0" y="176" width="950" height="14" fill="#e8e0d0"/>
                 <rect x="0" y="190" width="950" height="7"  fill="#d8d0be"/>
@@ -102,7 +98,6 @@ export function WalkingAnimation() {
                 <ellipse cx="358" cy="172" rx="22" ry="8"  fill="#3a8a3a" opacity="0.45"/>
                 <ellipse cx="416" cy="173" rx="16" ry="6"  fill="#4a9a4a" opacity="0.4"/>
                 <ellipse cx="469" cy="170" rx="19" ry="7"  fill="#3a8a3a" opacity="0.45"/>
-                {/* Bench */}
                 <rect x="406" y="164" width="32" height="4" rx="1" fill="#9a7855"/>
                 <line x1="409" y1="168" x2="409" y2="178" stroke="#9a7855" strokeWidth="2.5" strokeLinecap="round"/>
                 <line x1="435" y1="168" x2="435" y2="178" stroke="#9a7855" strokeWidth="2.5" strokeLinecap="round"/>
@@ -164,24 +159,99 @@ export function WalkingAnimation() {
               </svg>
             </div>
 
-            {/* ── Walking figure — fixed, scene scrolls past it ── */}
-            <div
+            {/* ── Stick figure — SVG directly on canvas, transparent background ──
+                Coordinate system: feet at y=0, figure grows upward (negative y).
+                Positioned so feet sit on the scene's sidewalk (y=176 in scene = 44px from container bottom).
+                Paint order: back leg → back arm → torso → front leg → front arm → head.
+                Correct counterswing: right arm back ↔ right leg forward (and vice versa).
+            ── */}
+            <svg
+              viewBox="-40 -80 80 80"
+              width="90"
+              height="90"
               style={{
                 position: 'absolute',
-                left: '32px',
-                bottom: '24px',
+                left: '30px',
+                bottom: '44px',
+                overflow: 'visible',
                 zIndex: 10,
-                pointerEvents: 'none',
               }}
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <iframe
-                src="https://tenor.com/embed/19530863"
-                width="172"
-                height="125"
-                frameBorder="0"
-                allowFullScreen
-              />
-            </div>
+              {/* Body bob — whole figure bounces gently up/down each step */}
+              <g>
+                <animateTransform attributeName="transform" type="translate"
+                  values="0,0; 0,-2.5; 0,0"
+                  keyTimes="0;0.5;1"
+                  calcMode="spline"
+                  keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"
+                  dur="0.28s" repeatCount="32" fill="freeze"/>
+
+                <g stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+
+                  {/* ── RIGHT LEG (back layer) — forward at t=0 ── */}
+                  <g>
+                    <path d="M 4,-22 L 8,-7 L 5,12"/>
+                    <ellipse cx="5" cy="15" rx="9" ry="3.5" fill="#222" stroke="none"/>
+                    <animateTransform attributeName="transform" type="rotate"
+                      values="32 4 -22; -30 4 -22; 32 4 -22"
+                      keyTimes="0;0.5;1"
+                      calcMode="spline"
+                      keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
+                      dur="0.56s" repeatCount="16" fill="freeze"/>
+                  </g>
+
+                  {/* ── RIGHT ARM (back layer) — back at t=0 (counterswings right leg fwd) ── */}
+                  <g>
+                    <path d="M 4,-48 L 9,-36 L 5,-24"/>
+                    {/* Briefcase */}
+                    <rect x="2" y="-24" width="9" height="7" rx="1.5" fill="none" stroke="#222" strokeWidth="2"/>
+                    <line x1="4" y1="-24" x2="9" y2="-24" stroke="#222" strokeWidth="1.5"/>
+                    <animateTransform attributeName="transform" type="rotate"
+                      values="-28 4 -48; 28 4 -48; -28 4 -48"
+                      keyTimes="0;0.5;1"
+                      calcMode="spline"
+                      keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
+                      dur="0.56s" repeatCount="16" fill="freeze"/>
+                  </g>
+
+                  {/* ── TORSO ── */}
+                  <ellipse cx="0" cy="-36" rx="11" ry="16" fill="white" stroke="#222" strokeWidth="2.2"/>
+
+                  {/* ── LEFT LEG (front layer) — back at t=0 ── */}
+                  <g>
+                    <path d="M -4,-22 L -8,-7 L -5,12"/>
+                    <ellipse cx="-5" cy="15" rx="9" ry="3.5" fill="#222" stroke="none"/>
+                    <animateTransform attributeName="transform" type="rotate"
+                      values="-32 -4 -22; 30 -4 -22; -32 -4 -22"
+                      keyTimes="0;0.5;1"
+                      calcMode="spline"
+                      keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
+                      dur="0.56s" repeatCount="16" fill="freeze"/>
+                  </g>
+
+                  {/* ── LEFT ARM (front layer) — forward at t=0 (counterswings left leg back) ── */}
+                  <g>
+                    <path d="M -4,-48 L -9,-36 L -5,-24"/>
+                    {/* Fist */}
+                    <circle cx="-5" cy="-22" r="4" fill="#222" stroke="none"/>
+                    <animateTransform attributeName="transform" type="rotate"
+                      values="28 -4 -48; -28 -4 -48; 28 -4 -48"
+                      keyTimes="0;0.5;1"
+                      calcMode="spline"
+                      keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
+                      dur="0.56s" repeatCount="16" fill="freeze"/>
+                  </g>
+
+                  {/* ── HEAD ── */}
+                  <ellipse cx="0" cy="-64" rx="13" ry="15" fill="white" stroke="#222" strokeWidth="2.2"/>
+                  {/* Neck */}
+                  <line x1="0" y1="-52" x2="0" y2="-49"/>
+
+                </g>
+              </g>
+            </svg>
+
           </div>
         </div>
       </div>
