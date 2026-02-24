@@ -46,10 +46,30 @@ export function MediaUploader({
 }: MediaUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resolutionWarning, setResolutionWarning] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [showLibrary, setShowLibrary] = useState(false);
   const [libraryItems, setLibraryItems] = useState<MediaItem[]>([]);
   const [libraryLoading, setLibraryLoading] = useState(false);
+
+  const MIN_WIDTH = 1200;
+  const MIN_HEIGHT = 800;
+
+  const checkImageResolution = (file: File): Promise<{ ok: boolean; width: number; height: number }> => {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const img = new window.Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ ok: img.width >= MIN_WIDTH && img.height >= MIN_HEIGHT, width: img.width, height: img.height });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve({ ok: true, width: 0, height: 0 }); // allow upload if check fails
+      };
+      img.src = url;
+    });
+  };
 
   const supabase = createClient();
 
@@ -144,13 +164,23 @@ export function MediaUploader({
   };
 
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[]) => {
+      setResolutionWarning(null);
       const files = multiple ? acceptedFiles : [acceptedFiles[0]];
       for (const file of files) {
         if (!file) continue;
         if (file.size > maxSize * 1024 * 1024) {
           setError(`File size must be less than ${maxSize}MB`);
           continue;
+        }
+        // Check resolution for images
+        if (file.type.startsWith('image/')) {
+          const { ok, width, height } = await checkImageResolution(file);
+          if (!ok) {
+            setResolutionWarning(
+              `"${file.name}" is ${width}×${height}px — below the recommended ${MIN_WIDTH}×${MIN_HEIGHT}px minimum. It may appear blurry. Uploading anyway.`
+            );
+          }
         }
         uploadFile(file);
       }
@@ -268,6 +298,9 @@ export function MediaUploader({
                 : 'Drag & drop a file, or click to select'}
             </p>
             <p className="text-xs text-muted-foreground">Max size: {maxSize}MB</p>
+            {accept.includes('image') && (
+              <p className="text-xs text-muted-foreground">Recommended: at least 1200×800px for best quality</p>
+            )}
           </div>
         )}
       </div>
@@ -285,6 +318,15 @@ export function MediaUploader({
           <FolderOpen className="w-4 h-4" />
           Choose from Library
         </Button>
+      )}
+
+      {resolutionWarning && (
+        <div className="mt-2 p-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded flex items-start justify-between gap-2">
+          <span>⚠️ {resolutionWarning}</span>
+          <button onClick={() => setResolutionWarning(null)} className="flex-shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       )}
 
       {error && (
