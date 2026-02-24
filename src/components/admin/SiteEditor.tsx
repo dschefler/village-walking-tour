@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { MediaUploader } from './MediaUploader';
+import { TTSGenerator } from './TTSGenerator';
 import { AddressInput } from './AddressInput';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useToast } from '@/hooks/use-toast';
@@ -533,7 +534,21 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
             </Button>
           </div>
         ) : (
-          <MediaUploader onUpload={handleAudioUpload} accept="audio/*" path={`sites/${site?.id || 'new'}`} />
+          <div className="space-y-3">
+            <div className="rounded-lg border p-3 space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Generate with AI</p>
+              <TTSGenerator
+                text={formData.description}
+                onGenerated={(url) => setFormData((prev) => ({ ...prev, audio_url: url }))}
+              />
+            </div>
+            <div className="relative flex items-center gap-2">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">or upload your own</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            <MediaUploader onUpload={handleAudioUpload} accept="audio/*" path={`sites/${site?.id || 'new'}`} />
+          </div>
         )}
       </div>
 

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { MediaUploader } from '@/components/admin/MediaUploader';
+import { TTSGenerator } from '@/components/admin/TTSGenerator';
 import { toast } from '@/hooks/use-toast';
 import type { Organization, Site, SiteMedia, Media } from '@/types';
 
@@ -43,6 +44,7 @@ interface SiteFormData {
   address: string;
   latitude: string;
   longitude: string;
+  audioUrl: string | null;
   featuredImage: SiteImage | null;
   images: SiteImage[];
 }
@@ -53,6 +55,7 @@ const emptySite = (): SiteFormData => ({
   address: '',
   latitude: '',
   longitude: '',
+  audioUrl: null,
   featuredImage: null,
   images: [],
 });
@@ -91,6 +94,7 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete, 
                   address: s.address || '',
                   latitude: String(s.latitude),
                   longitude: String(s.longitude),
+                  audioUrl: s.audio_url || null,
                   featuredImage: primary
                     ? { url: getMediaUrl(primary.media.storage_path), mediaId: primary.media.id }
                     : null,
@@ -209,6 +213,7 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete, 
           address: site.address || null,
           latitude: parseFloat(site.latitude),
           longitude: parseFloat(site.longitude),
+          audio_url: site.audioUrl || null,
           display_order: i + 1,
           is_published: true,
         };
@@ -374,6 +379,49 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete, 
                       onChange={(e) => updateSite(index, 'description', e.target.value)}
                       rows={2}
                     />
+                  </div>
+
+                  {/* Audio Narration */}
+                  <div>
+                    <Label>Audio Narration</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Generate a voice narration from the description above, or upload your own audio file.
+                    </p>
+                    {site.audioUrl ? (
+                      <div className="space-y-2">
+                        <audio controls className="w-full h-10" src={site.audioUrl} />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSites((prev) => prev.map((s, i) => i === index ? { ...s, audioUrl: null } : s))}
+                        >
+                          Remove Audio
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="rounded-lg border p-3 space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Generate with AI</p>
+                          <TTSGenerator
+                            text={site.description}
+                            onGenerated={(url) => setSites((prev) => prev.map((s, i) => i === index ? { ...s, audioUrl: url } : s))}
+                          />
+                        </div>
+                        <div className="relative flex items-center gap-2">
+                          <div className="flex-1 h-px bg-border" />
+                          <span className="text-xs text-muted-foreground">or upload your own</span>
+                          <div className="flex-1 h-px bg-border" />
+                        </div>
+                        <MediaUploader
+                          accept="audio/*"
+                          path={`${org.slug}/audio`}
+                          organizationId={org.id}
+                          onUpload={(url) => setSites((prev) => prev.map((s, i) => i === index ? { ...s, audioUrl: url } : s))}
+                          className="[&_div]:py-3"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Featured Image */}
