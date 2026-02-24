@@ -165,64 +165,64 @@ export function WalkingAnimation() {
              fill="none" opacity="0">
             <animate attributeName="opacity" from="1" to="1" begin="0.05s" dur="0.01s" fill="freeze"/>
 
-            {/* ── RIGHT LEG (back) — forward at t=0 */}
+            {/* ── RIGHT LEG (back) — simple straight pendulum, forward at t=0 */}
             <g>
-              <path d="M 2,-17 L 12,-2 L 10,11"/>
-              <ellipse cx="12" cy="14" rx="10" ry="4" fill="#1a1a1a" stroke="none"/>
+              <line x1="0" y1="-18" x2="0" y2="13"/>
+              <ellipse cx="0" cy="16" rx="9" ry="4" fill="#1a1a1a" stroke="none"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="33 2 -17; -30 2 -17; 33 2 -17"
+                values="32 0 -18; -28 0 -18; 32 0 -18"
                 keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
                 dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
-            {/* ── RIGHT ARM (back) — counterswings: back at t=0 (opposite right leg) */}
+            {/* ── RIGHT ARM (back) — straight line, counterswings: back at t=0 */}
             <g>
-              <path d="M 2,-39 L 16,-27 L 19,-18"/>
-              {/* Briefcase */}
-              <rect x="16" y="-23" width="10" height="8" rx="2" fill="none" stroke="#1a1a1a" strokeWidth="2.5"/>
-              <line x1="18" y1="-23" x2="24" y2="-23" stroke="#1a1a1a" strokeWidth="1.8"/>
+              <line x1="0" y1="-42" x2="0" y2="-20"/>
+              {/* Briefcase at hand */}
+              <rect x="-5" y="-19" width="10" height="8" rx="2" fill="none" stroke="#1a1a1a" strokeWidth="2.5"/>
+              <line x1="-2" y1="-19" x2="2" y2="-19" stroke="#1a1a1a" strokeWidth="1.8"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="-28 2 -39; 28 2 -39; -28 2 -39"
+                values="-30 0 -42; 30 0 -42; -30 0 -42"
                 keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
                 dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
-            {/* ── TORSO — hollow egg shape, slightly wider at hips */}
-            <ellipse cx="0" cy="-28" rx="13" ry="17" fill="white" stroke="#1a1a1a" strokeWidth="3"/>
+            {/* ── TORSO — hollow egg shape */}
+            <ellipse cx="0" cy="-30" rx="12" ry="16" fill="white" stroke="#1a1a1a" strokeWidth="3"/>
 
-            {/* ── LEFT LEG (front) — back at t=0 (opposite right leg) */}
+            {/* ── LEFT LEG (front) — simple straight pendulum, back at t=0 */}
             <g>
-              <path d="M -2,-17 L -12,-2 L -10,11"/>
-              <ellipse cx="-12" cy="14" rx="10" ry="4" fill="#1a1a1a" stroke="none"/>
+              <line x1="0" y1="-18" x2="0" y2="13"/>
+              <ellipse cx="0" cy="16" rx="9" ry="4" fill="#1a1a1a" stroke="none"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="-33 -2 -17; 30 -2 -17; -33 -2 -17"
+                values="-32 0 -18; 28 0 -18; -32 0 -18"
                 keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
                 dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
-            {/* ── LEFT ARM (front) — counterswings: forward at t=0 (opposite left leg) */}
+            {/* ── LEFT ARM (front) — straight line, counterswings: forward at t=0 */}
             <g>
-              <path d="M -2,-39 L -16,-27 L -19,-17"/>
+              <line x1="0" y1="-42" x2="0" y2="-20"/>
               {/* Fist */}
-              <rect x="-26" y="-21" width="8" height="7" rx="2" fill="#1a1a1a" stroke="none"/>
+              <rect x="-4" y="-18" width="8" height="7" rx="2" fill="#1a1a1a" stroke="none"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="28 -2 -39; -28 -2 -39; 28 -2 -39"
+                values="30 0 -42; -30 0 -42; 30 0 -42"
                 keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
                 dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
-            {/* ── HEAD — large hollow oval, slightly forward-leaning */}
-            <ellipse cx="2" cy="-58" rx="15" ry="18" fill="white" stroke="#1a1a1a" strokeWidth="3"/>
+            {/* ── HEAD — large hollow oval */}
+            <ellipse cx="0" cy="-60" rx="14" ry="17" fill="white" stroke="#1a1a1a" strokeWidth="3"/>
             {/* Neck */}
-            <line x1="2" y1="-40" x2="1" y2="-45"/>
+            <line x1="0" y1="-46" x2="0" y2="-43"/>
 
             {/* Walk along gentle wavy path — ease in-out, 6 s */}
             <animateMotion dur="6s" fill="freeze" rotate="0"
