@@ -166,7 +166,7 @@ export default function CreateYourTourPage() {
   useEffect(() => {
     async function fetchSites() {
       try {
-        const response = await fetch('/api/locations');
+        const response = await fetch('/api/locations?orgSlug=southampton');
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         setSites(data);
