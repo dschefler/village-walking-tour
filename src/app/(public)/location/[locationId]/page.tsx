@@ -107,7 +107,7 @@ export default async function LocationPage({ params }: { params: { locationId: s
   }
 
   const primaryImage = location.media?.find((m) => m.is_primary) || location.media?.[0];
-  const images = location.media?.filter((m) => m.file_type === 'image') || [];
+  const images = location.media?.filter((m) => m.file_type === 'image' && m.id !== primaryImage?.id) || [];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
