@@ -59,7 +59,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               </Link>
             </Button>
             <Button variant="ghost" asChild className={hoverClass}>
-              <Link href="/create-your-tour" className={`flex items-center gap-2 ${textClass}`}>
+              <Link href={`${prefix}/create-your-tour`} className={`flex items-center gap-2 ${textClass}`}>
                 <Route className="w-4 h-4" />
                 Create Your Tour
               </Link>
@@ -104,7 +104,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               <span>How to Use</span>
             </Link>
             <Link
-              href="/create-your-tour"
+              href={`${prefix}/create-your-tour`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
             >
