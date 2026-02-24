@@ -211,7 +211,7 @@ export default async function MarketingLandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
+      <section className="pt-16 md:pt-24 pb-0 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
@@ -245,7 +245,7 @@ export default async function MarketingLandingPage() {
           </p>
 
           {/* Stats bar */}
-          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-xl font-bold text-foreground">{stat.value}</div>
@@ -254,10 +254,10 @@ export default async function MarketingLandingPage() {
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Walking animation — plays once then fades out */}
-      <WalkingAnimation />
+        {/* Walking animation — plays once then fades out */}
+        <WalkingAnimation />
+      </section>
 
       {/* Who It's For — animated grid */}
       <WhoItsForGrid />
