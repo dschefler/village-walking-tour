@@ -58,14 +58,12 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
                 How to Use
               </Link>
             </Button>
-            {!isTenant && (
-              <Button variant="ghost" asChild className={hoverClass}>
-                <Link href="/create-your-tour" className={`flex items-center gap-2 ${textClass}`}>
-                  <Route className="w-4 h-4" />
-                  Create Your Tour
-                </Link>
-              </Button>
-            )}
+            <Button variant="ghost" asChild className={hoverClass}>
+              <Link href="/create-your-tour" className={`flex items-center gap-2 ${textClass}`}>
+                <Route className="w-4 h-4" />
+                Create Your Tour
+              </Link>
+            </Button>
             <Button variant="ghost" asChild className={hoverClass}>
               <Link href={`${prefix}/contact`} className={`flex items-center gap-2 ${textClass}`}>
                 <Mail className="w-4 h-4" />
@@ -105,16 +103,14 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               <HelpCircle className="w-5 h-5" />
               <span>How to Use</span>
             </Link>
-            {!isTenant && (
-              <Link
-                href="/create-your-tour"
-                className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Route className="w-5 h-5" />
-                <span>Create Your Tour</span>
-              </Link>
-            )}
+            <Link
+              href="/create-your-tour"
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Route className="w-5 h-5" />
+              <span>Create Your Tour</span>
+            </Link>
             <Link
               href={`${prefix}/contact`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}

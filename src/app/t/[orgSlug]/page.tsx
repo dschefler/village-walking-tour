@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Smartphone } from 'lucide-react';
+import { Smartphone, Route } from 'lucide-react';
 import QRCode from 'qrcode';
+import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -85,6 +86,16 @@ export default async function TenantHomePage({
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <StartExploringButton orgSlug={params.orgSlug} />
+            <Button
+              size="lg"
+              asChild
+              className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+            >
+              <Link href="/create-your-tour">
+                <Route className="w-5 h-5" />
+                Create Your Tour
+              </Link>
+            </Button>
           </div>
         </div>
       </header>
