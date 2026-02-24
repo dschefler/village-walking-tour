@@ -8,12 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 async function getTours() {
   const supabase = createClient();
 
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('id')
+    .eq('slug', 'southampton')
+    .single();
+
   const { data, error } = await supabase
     .from('tours')
     .select(`
       *,
       sites:sites(count)
     `)
+    .eq('organization_id', org?.id)
     .order('updated_at', { ascending: false });
 
   if (error) {

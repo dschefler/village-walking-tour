@@ -4,12 +4,23 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+async function getSouthamptonOrgId() {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('organizations')
+    .select('id')
+    .eq('slug', 'southampton')
+    .single();
+  return data?.id;
+}
+
 async function getStats() {
   const supabase = createClient();
+  const orgId = await getSouthamptonOrgId();
 
   const [toursResult, sitesResult, mediaResult] = await Promise.all([
-    supabase.from('tours').select('id', { count: 'exact' }),
-    supabase.from('sites').select('id', { count: 'exact' }),
+    supabase.from('tours').select('id', { count: 'exact' }).eq('organization_id', orgId),
+    supabase.from('sites').select('id, tour:tours!inner(organization_id)', { count: 'exact' }).eq('tours.organization_id', orgId),
     supabase.from('media').select('id', { count: 'exact' }),
   ]);
 
@@ -22,10 +33,12 @@ async function getStats() {
 
 async function getRecentTours() {
   const supabase = createClient();
+  const orgId = await getSouthamptonOrgId();
 
   const { data } = await supabase
     .from('tours')
     .select('id, name, slug, is_published, updated_at')
+    .eq('organization_id', orgId)
     .order('updated_at', { ascending: false })
     .limit(5);
 
