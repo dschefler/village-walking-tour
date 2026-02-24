@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// Curated voices well-suited for tour narration
-export const VOICE_OPTIONS = [
+const VOICE_OPTIONS = [
   { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'Calm, professional female' },
   { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Warm, engaging male' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Clear, authoritative male' },
