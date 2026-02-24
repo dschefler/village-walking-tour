@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { WhoItsForGrid } from '@/components/marketing/WhoItsForGrid';
 import { TrialCTA } from '@/components/marketing/TrialCTA';
+import { WalkingAnimation } from '@/components/marketing/WalkingAnimation';
 import { createServiceClient } from '@/lib/supabase/server';
 
 export const revalidate = 300; // re-fetch content every 5 min
@@ -254,6 +255,9 @@ export default async function MarketingLandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Walking animation — plays once then fades out */}
+      <WalkingAnimation />
 
       {/* Who It's For — animated grid */}
       <WhoItsForGrid />
