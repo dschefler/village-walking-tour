@@ -165,58 +165,58 @@ export function WalkingAnimation() {
              fill="none" opacity="0">
             <animate attributeName="opacity" from="1" to="1" begin="0.05s" dur="0.01s" fill="freeze"/>
 
-            {/* ── RIGHT LEG (back) ── wider stride, foot tilts naturally */}
+            {/* ── RIGHT LEG (back) — forward at t=0 */}
             <g>
               <path d="M 2,-17 L 12,-2 L 10,11"/>
               <ellipse cx="12" cy="14" rx="10" ry="4" fill="#1a1a1a" stroke="none"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="34 2 -17; 12 2 -17; -30 2 -17; 34 2 -17"
-                keyTimes="0;0.28;0.55;1"
+                values="33 2 -17; -30 2 -17; 33 2 -17"
+                keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.4 0 0.7 1; 0.3 0 0.6 1; 0.5 0 0.8 1"
-                dur="0.44s" repeatCount="14" fill="freeze"/>
+                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
-            {/* ── RIGHT ARM (back) — holds briefcase, swings back */}
+            {/* ── RIGHT ARM (back) — counterswings: back at t=0 (opposite right leg) */}
             <g>
               <path d="M 2,-39 L 16,-27 L 19,-18"/>
               {/* Briefcase */}
               <rect x="16" y="-23" width="10" height="8" rx="2" fill="none" stroke="#1a1a1a" strokeWidth="2.5"/>
               <line x1="18" y1="-23" x2="24" y2="-23" stroke="#1a1a1a" strokeWidth="1.8"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="30 2 -39; 10 2 -39; -26 2 -39; 30 2 -39"
-                keyTimes="0;0.22;0.52;1"
+                values="-28 2 -39; 28 2 -39; -28 2 -39"
+                keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.5 0 0.8 1; 0.3 0 0.6 1; 0.4 0 0.9 1"
-                dur="0.44s" repeatCount="14" fill="freeze"/>
+                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
             {/* ── TORSO — hollow egg shape, slightly wider at hips */}
             <ellipse cx="0" cy="-28" rx="13" ry="17" fill="white" stroke="#1a1a1a" strokeWidth="3"/>
 
-            {/* ── LEFT LEG (front) — widest stride, natural heel strike */}
+            {/* ── LEFT LEG (front) — back at t=0 (opposite right leg) */}
             <g>
               <path d="M -2,-17 L -12,-2 L -10,11"/>
               <ellipse cx="-12" cy="14" rx="10" ry="4" fill="#1a1a1a" stroke="none"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="-32 -2 -17; -10 -2 -17; 32 -2 -17; -32 -2 -17"
-                keyTimes="0;0.3;0.56;1"
+                values="-33 -2 -17; 30 -2 -17; -33 -2 -17"
+                keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.3 0 0.5 1; 0.4 0 0.7 1; 0.5 0 0.8 1"
-                dur="0.44s" repeatCount="14" fill="freeze"/>
+                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
-            {/* ── LEFT ARM (front) — bent up, fist near chest, more exaggerated */}
+            {/* ── LEFT ARM (front) — counterswings: forward at t=0 (opposite left leg) */}
             <g>
               <path d="M -2,-39 L -16,-27 L -19,-17"/>
               {/* Fist */}
               <rect x="-26" y="-21" width="8" height="7" rx="2" fill="#1a1a1a" stroke="none"/>
               <animateTransform attributeName="transform" type="rotate"
-                values="-26 -2 -39; -6 -2 -39; 34 -2 -39; -26 -2 -39"
-                keyTimes="0;0.25;0.55;1"
+                values="28 -2 -39; -28 -2 -39; 28 -2 -39"
+                keyTimes="0;0.5;1"
                 calcMode="spline"
-                keySplines="0.3 0 0.6 1; 0.4 0 0.7 1; 0.5 0 0.8 1"
-                dur="0.44s" repeatCount="14" fill="freeze"/>
+                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                dur="0.52s" repeatCount="12" fill="freeze"/>
             </g>
 
             {/* ── HEAD — large hollow oval, slightly forward-leaning */}
