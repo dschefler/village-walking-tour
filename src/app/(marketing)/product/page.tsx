@@ -11,6 +11,8 @@ import {
   Volume2,
   Lightbulb,
   BarChart3,
+  Paintbrush,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,7 +87,59 @@ const pricingTiers = [
     price: '$299',
     period: '/mo',
     description: 'For large organizations',
-    features: ['Unlimited tours', 'Unlimited sites', 'White-label mode', 'Team members', 'API access', 'Dedicated support'],
+    features: ['Up to 15 tours', 'Up to 50 sites per tour', 'White-label mode', 'Team members', 'API access', 'Dedicated support'],
+  },
+];
+
+const buildPackages = [
+  {
+    name: 'Essential Build',
+    price: '$799',
+    period: 'one-time setup fee',
+    pairsWith: 'Best with Starter plan',
+    timeline: '7–10 business days',
+    scope: '1 tour · up to 10 sites',
+    features: [
+      'Branding setup (logo, colors, fonts)',
+      'Custom domain configuration',
+      'Content entry from your materials',
+      'AI audio narration for all sites',
+      'Photo upload & optimization',
+      'Quality review & launch testing',
+    ],
+  },
+  {
+    name: 'Professional Build',
+    price: '$1,799',
+    period: 'one-time setup fee',
+    pairsWith: 'Best with Pro plan',
+    timeline: '10–15 business days',
+    scope: 'Up to 3 tours · up to 25 sites each',
+    features: [
+      'Everything in Essential Build',
+      'Multi-tour navigation & structure',
+      'Custom descriptions from your notes',
+      'Advanced image editing & layout',
+      'Dedicated project coordinator',
+      'Revision round included',
+    ],
+    popular: true,
+  },
+  {
+    name: 'Enterprise Build',
+    price: '$3,499',
+    period: 'one-time setup fee',
+    pairsWith: 'Best with Enterprise plan',
+    timeline: '15–21 business days',
+    scope: 'Up to 8 tours · up to 40 sites each',
+    features: [
+      'Everything in Professional Build',
+      'Kick-off strategy session',
+      'Content writing from provided notes',
+      'Two revision rounds included',
+      'Priority launch support',
+      'Custom scope beyond limits by quote',
+    ],
   },
 ];
 
@@ -124,7 +178,6 @@ export default function MarketingLandingPage() {
 
       {/* Hero */}
       <section className="py-20 md:py-32 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
-        {/* Subtle background decoration */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
@@ -267,6 +320,106 @@ export default function MarketingLandingPage() {
               </Card>
             ))}
           </div>
+          <p className="text-center text-xs text-muted-foreground mt-6 max-w-2xl mx-auto">
+            Each subscription is licensed to a single organization for its own use only. Subscriptions may not be shared across multiple unrelated organizations or used to create and manage tours on behalf of third parties without a separate license for each. See our{' '}
+            <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link> for full details.
+          </p>
+        </div>
+      </section>
+
+      {/* Done For You */}
+      <section id="done-for-you" className="py-20 bg-gradient-to-b from-amber-50/60 to-background border-y border-amber-100">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-4">
+            <span className="text-sm font-semibold uppercase tracking-widest text-amber-700 mb-3 block">
+              White-Glove Service
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Rather Have Us Build It For You?
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Our team handles everything — branding, content entry, audio narration, and launch.
+              You provide the materials; we deliver a ready-to-share tour app.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mb-12 flex-wrap">
+            <span className="flex items-center gap-1.5"><Paintbrush className="w-4 h-4 text-amber-600" /> Custom branding</span>
+            <span className="flex items-center gap-1.5"><Volume2 className="w-4 h-4 text-amber-600" /> Audio narration</span>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-amber-600" /> Quality tested</span>
+            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-amber-600" /> Fast turnaround</span>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
+            {buildPackages.map((pkg) => (
+              <Card
+                key={pkg.name}
+                className={pkg.popular ? 'border-amber-400 shadow-lg relative' : 'border-border'}
+              >
+                {pkg.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-medium px-3 py-1 rounded-full">
+                    Most Popular
+                  </div>
+                )}
+                <CardHeader>
+                  <CardTitle className="text-lg">{pkg.name}</CardTitle>
+                  <div className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 w-fit">
+                    {pkg.pairsWith}
+                  </div>
+                  <div className="pt-1">
+                    <span className="text-3xl font-bold">{pkg.price}</span>
+                    <p className="text-xs text-muted-foreground mt-0.5">{pkg.period}</p>
+                  </div>
+                  <div className="text-sm font-medium text-foreground">{pkg.scope}</div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" />
+                    {pkg.timeline}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {pkg.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    asChild
+                    className={`w-full ${pkg.popular ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}`}
+                    variant={pkg.popular ? 'default' : 'outline'}
+                  >
+                    <Link href="mailto:hello@walkingtourbuilder.com?subject=Done-For-You Build Inquiry">
+                      Get Started
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Add-ons */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground mb-1">
+              <span className="font-medium text-foreground">Add-ons:</span>{' '}
+              Additional site +$49 &nbsp;·&nbsp; Additional tour +$349 &nbsp;·&nbsp; Rush delivery (timeline halved) +$299
+            </p>
+          </div>
+
+          {/* Fine print */}
+          <div className="mt-6 max-w-2xl mx-auto bg-muted/50 border rounded-lg px-5 py-4 text-xs text-muted-foreground space-y-1.5">
+            <p className="font-medium text-foreground text-sm">Important — Please Read</p>
+            <p>Each build package is provided to a single organization for its own use only and may not be resold, transferred, or used to create tours on behalf of third parties without a separate agreement.</p>
+            <p>Setup fees are <strong>non-refundable once work has commenced</strong>. A full refund is available if cancelled before work begins. A 50% refund is available if cancelled within 3 business days of project kickoff. No refund is available after that point.</p>
+            <p>The client is responsible for supplying accurate content, images, and branding materials. Delivery timelines are estimates and begin upon receipt of all required materials.</p>
+            <p>
+              All services are subject to our{' '}
+              <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -292,10 +445,13 @@ export default function MarketingLandingPage() {
       {/* Footer */}
       <footer className="border-t py-8">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Walking Tour Builder</p>
-          <div className="flex gap-6">
+          <p>&copy; {new Date().getFullYear()} Walking Tour Builder. All rights reserved.</p>
+          <div className="flex flex-wrap justify-center gap-6">
             <Link href="/t/southampton" className="hover:text-foreground">Demo</Link>
             <Link href="#pricing" className="hover:text-foreground">Pricing</Link>
+            <Link href="#done-for-you" className="hover:text-foreground">Done For You</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link>
             <Link href="/login" className="hover:text-foreground">Log In</Link>
           </div>
         </div>
