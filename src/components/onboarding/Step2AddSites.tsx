@@ -406,6 +406,7 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete, 
                           <TTSGenerator
                             text={site.description}
                             onGenerated={(url) => setSites((prev) => prev.map((s, i) => i === index ? { ...s, audioUrl: url } : s))}
+                            orgId={org.id}
                           />
                         </div>
                         <div className="relative flex items-center gap-2">

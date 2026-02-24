@@ -16,10 +16,11 @@ const VOICES = [
 interface TTSGeneratorProps {
   text: string;
   onGenerated: (audioUrl: string) => void;
+  orgId?: string;
   className?: string;
 }
 
-export function TTSGenerator({ text, onGenerated, className = '' }: TTSGeneratorProps) {
+export function TTSGenerator({ text, onGenerated, orgId, className = '' }: TTSGeneratorProps) {
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0].id);
   const [generating, setGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export function TTSGenerator({ text, onGenerated, className = '' }: TTSGenerator
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, voice_id: selectedVoice }),
+        body: JSON.stringify({ text, voice_id: selectedVoice, org_id: orgId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Generation failed');

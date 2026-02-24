@@ -37,15 +37,17 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!site_id || !media_id) {
-    return NextResponse.json({ error: 'site_id and media_id are required' }, { status: 400 });
+  if (!site_id) {
+    return NextResponse.json({ error: 'site_id is required' }, { status: 400 });
   }
 
-  const { error } = await supabase
-    .from('site_media')
-    .delete()
-    .eq('site_id', site_id)
-    .eq('media_id', media_id);
+  // If media_id provided, delete one record; otherwise clear all for the site
+  let query = supabase.from('site_media').delete().eq('site_id', site_id);
+  if (media_id) {
+    query = query.eq('media_id', media_id);
+  }
+
+  const { error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

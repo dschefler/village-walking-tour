@@ -489,6 +489,7 @@ export default function EditTourPage() {
             site={editingSite}
             displayOrder={sites.length + 1}
             onClose={handleSiteEditorClose}
+            organizationId={tour?.organization_id ?? undefined}
           />
         </DialogContent>
       </Dialog>

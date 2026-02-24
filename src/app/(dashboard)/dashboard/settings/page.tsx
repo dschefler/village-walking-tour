@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Loader2, Save, X, Sun, Moon } from 'lucide-react';
+import { Loader2, Save, X, Sun, Moon, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,7 @@ export default function SettingsPage() {
   const [org, setOrg] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [ttsUsage, setTtsUsage] = useState<{ used: number; limit: number; tier: string } | null>(null);
 
   const [name, setName] = useState('');
   const [appName, setAppName] = useState('');
@@ -51,6 +52,13 @@ export default function SettingsPage() {
   const [fontFamily, setFontFamily] = useState('Inter');
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [textColor, setTextColor] = useState('#111827');
+
+  useEffect(() => {
+    fetch('/api/tts/usage')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setTtsUsage(data); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -420,6 +428,39 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {ttsUsage && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mic className="w-4 h-4" />
+                Audio Narrations This Month
+              </CardTitle>
+              <CardDescription>
+                AI-generated voice narrations for your tour locations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">
+                  {ttsUsage.used} of {ttsUsage.limit === 999999 ? 'unlimited' : ttsUsage.limit} used
+                </span>
+                <span className="text-xs capitalize px-2 py-0.5 rounded-full bg-muted font-medium">
+                  {ttsUsage.tier} plan
+                </span>
+              </div>
+              {ttsUsage.limit !== 999999 && (
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div
+                    className="h-2 rounded-full bg-primary transition-all"
+                    style={{ width: `${Math.min(100, (ttsUsage.used / ttsUsage.limit) * 100)}%` }}
+                  />
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-2">Resets on the 1st of each month.</p>
+            </CardContent>
+          </Card>
+        )}
 
         <Button onClick={handleSave} disabled={saving} className="gap-2">
           {saving ? (
