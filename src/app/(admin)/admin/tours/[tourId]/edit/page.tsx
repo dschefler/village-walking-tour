@@ -433,7 +433,7 @@ export default function EditTourPage() {
                 accept="image/*"
                 bucket="tour-media"
                 path={`tours/${tourId}`}
-                organizationId={tour?.organization_id}
+                organizationId={tour?.organization_id ?? undefined}
               />
             </CardContent>
           </Card>
