@@ -21,7 +21,7 @@ import { StampCard } from '@/components/tour/StampCard';
 import { StampEarnedOverlay } from '@/components/tour/StampEarnedOverlay';
 import { TourCompleteOverlay } from '@/components/tour/TourCompleteOverlay';
 import { DidYouKnowPopup } from '@/components/tour/DidYouKnowPopup';
-import { useTenant } from '@/lib/context/tenant-context';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
 import { cn, formatDistance, calculateDistance } from '@/lib/utils';
@@ -36,13 +36,9 @@ export default function TenantTourPage() {
   const tourId = params.tourId as string;
   const orgSlug = params.orgSlug as string;
 
-  let orgName = '';
-  try {
-    const { organization } = useTenant();
-    orgName = organization.name;
-  } catch {
-    // Tenant context may not be available in all cases
-  }
+  const tenant = useTenantOptional();
+  const orgName = tenant?.organization.name ?? '';
+  const orgLogoUrl = tenant?.organization.icon_url || tenant?.organization.logo_url || '/logo.png';
 
   const [tour, setTour] = useState<TourWithSites | null>(null);
   const [loading, setLoading] = useState(true);
@@ -270,7 +266,7 @@ export default function TenantTourPage() {
           <div className="flex items-center gap-3">
             <Link href={`/t/${orgSlug}`} className="flex items-center gap-2">
               <Image
-                src="/logo.png"
+                src={orgLogoUrl}
                 alt={orgName || 'Walking Tour'}
                 width={40}
                 height={40}

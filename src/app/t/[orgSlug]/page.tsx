@@ -91,7 +91,7 @@ export default async function TenantHomePage({
               asChild
               className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
             >
-              <Link href="/create-your-tour">
+              <Link href={`/t/${params.orgSlug}/create-your-tour`}>
                 <Route className="w-5 h-5" />
                 Create Your Tour
               </Link>
