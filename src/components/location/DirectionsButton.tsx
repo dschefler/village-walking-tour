@@ -12,6 +12,7 @@ interface DirectionsButtonProps {
   latitude: number;
   longitude: number;
   name: string;
+  backHref?: string;
   className?: string;
 }
 
@@ -19,6 +20,7 @@ export function DirectionsButton({
   latitude,
   longitude,
   name,
+  backHref = '/historic-sites',
   className = '',
 }: DirectionsButtonProps) {
   const { userLocation } = useGeolocation();
@@ -91,7 +93,7 @@ export function DirectionsButton({
           className="w-full"
           size="lg"
         >
-          <Link href="/historic-sites">
+          <Link href={backHref}>
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Locations
           </Link>

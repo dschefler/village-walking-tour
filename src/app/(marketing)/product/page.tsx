@@ -8,25 +8,34 @@ import {
   Smartphone,
   ChevronRight,
   Check,
+  Volume2,
+  Lightbulb,
+  BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { WhoItsForGrid } from '@/components/marketing/WhoItsForGrid';
 
 const features = [
   {
     icon: MapPin,
     title: 'GPS Navigation',
-    description: 'Turn-by-turn walking directions to every tour stop.',
+    description: 'Turn-by-turn walking directions to every tour stop. Works outdoors where it matters.',
   },
   {
     icon: Stamp,
     title: 'Stamp Cards',
-    description: 'Visitors collect stamps as they visit each site. Gamification built in.',
+    description: 'Visitors collect stamps as they visit each site. Gamification keeps them engaged.',
+  },
+  {
+    icon: Volume2,
+    title: 'AI Audio Narration',
+    description: 'Generate professional narration from your descriptions with one click. No studio needed.',
   },
   {
     icon: WifiOff,
     title: 'Offline Support',
-    description: 'Tours work without internet. Perfect for areas with spotty service.',
+    description: 'Tours work without internet. Perfect for areas with spotty or no cell service.',
   },
   {
     icon: Palette,
@@ -36,12 +45,22 @@ const features = [
   {
     icon: Smartphone,
     title: 'Installable PWA',
-    description: 'Installs on any phone from a link. No app store needed.',
+    description: 'Installs on any phone from a share link. No app store submission required.',
+  },
+  {
+    icon: Lightbulb,
+    title: '"Did You Know?" Facts',
+    description: 'Surprise visitors with fun facts and audio tidbits as they explore each stop.',
   },
   {
     icon: Wifi,
-    title: 'Audio Narration',
-    description: 'Add audio guides visitors can listen to at each stop.',
+    title: 'Hours & Directions',
+    description: 'Show visiting hours, addresses, and one-tap navigation to each location.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Analytics Dashboard',
+    description: 'See which stops visitors engage with most and track tour completions.',
   },
 ];
 
@@ -68,6 +87,13 @@ const pricingTiers = [
     description: 'For large organizations',
     features: ['Unlimited tours', 'Unlimited sites', 'White-label mode', 'Team members', 'API access', 'Dedicated support'],
   },
+];
+
+const stats = [
+  { value: 'No-code', label: 'Setup required' },
+  { value: '14-day', label: 'Free trial' },
+  { value: 'Any device', label: 'iOS & Android' },
+  { value: 'Offline', label: 'Works without WiFi' },
 ];
 
 export default function MarketingLandingPage() {
@@ -97,14 +123,23 @@ export default function MarketingLandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 text-center">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+        </div>
+        <div className="container mx-auto px-4 text-center relative">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+            <Smartphone className="w-4 h-4" />
+            No app store. No coding. Just your tour.
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 max-w-3xl mx-auto">
-            Build Walking Tours for Your Community
+            Build a Walking Tour App for Your Community
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Create branded, GPS-guided walking tour apps with stamp cards, audio
-            narration, and offline support. No coding required.
+            Create branded, GPS-guided walking tour apps with stamp cards, AI audio
+            narration, and offline support — in minutes, not months.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]">
@@ -122,8 +157,21 @@ export default function MarketingLandingPage() {
           <p className="text-sm text-muted-foreground mt-4">
             No credit card required. Full Pro features during trial.
           </p>
+
+          {/* Stats bar */}
+          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
+
+      {/* Who It's For — animated grid */}
+      <WhoItsForGrid />
 
       {/* Features */}
       <section className="py-20">
@@ -131,7 +179,7 @@ export default function MarketingLandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Everything You Need</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              A complete toolkit for creating professional walking tour experiences.
+              A complete toolkit for creating professional walking tour experiences your visitors will love.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
@@ -160,7 +208,7 @@ export default function MarketingLandingPage() {
           <h2 className="text-3xl font-bold mb-4">See It In Action</h2>
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
             The Southampton Village Walking Tour was built with this platform.
-            Explore it live.
+            Explore it live — the same experience your visitors will have.
           </p>
           <Button asChild size="lg" variant="outline">
             <Link href="/t/southampton" className="gap-2">
@@ -229,8 +277,8 @@ export default function MarketingLandingPage() {
             Ready to Build Your Walking Tour?
           </h2>
           <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
-            Join towns, museums, and historical societies who use Walking Tour
-            Builder to share their stories.
+            Join towns, museums, parks, and historical societies who use Walking Tour
+            Builder to share their stories with the world.
           </p>
           <Button asChild size="lg" className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]">
             <Link href="/signup">

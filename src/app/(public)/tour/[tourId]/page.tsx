@@ -21,12 +21,11 @@ import { StampCard } from '@/components/tour/StampCard';
 import { StampEarnedOverlay } from '@/components/tour/StampEarnedOverlay';
 import { TourCompleteOverlay } from '@/components/tour/TourCompleteOverlay';
 import { DidYouKnowPopup } from '@/components/tour/DidYouKnowPopup';
-import { getFactsForSite } from '@/data/fun-facts';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
 import { cn, formatDistance, formatDuration, calculateDistance } from '@/lib/utils';
 import { useGeolocation } from '@/hooks/use-geolocation';
-import type { TourWithSites, Site, SiteWithMedia } from '@/types';
+import type { TourWithSites, Site, SiteWithMedia, FunFact } from '@/types';
 
 type ViewMode = 'map' | 'list';
 
@@ -48,7 +47,11 @@ export default function TourPage() {
 
   const [showDidYouKnow, setShowDidYouKnow] = useState(false);
   const [currentFact, setCurrentFact] = useState('');
+  const [currentFactAudioUrl, setCurrentFactAudioUrl] = useState<string | null>(null);
   const [shownFactIndices, setShownFactIndices] = useState<Record<string, number[]>>({});
+
+  // Fun facts from DB keyed by site_id
+  const [factsBySite, setFactsBySite] = useState<Record<string, { text: string; audioUrl: string | null }[]>>({});
 
   const {
     selectedSite,
@@ -64,20 +67,43 @@ export default function TourPage() {
 
   const { userLocation } = useGeolocation();
 
-  const showFactForSite = useCallback((siteName: string) => {
-    const facts = getFactsForSite(siteName);
+  // Load fun facts from DB (keyed by site_id)
+  useEffect(() => {
+    async function loadFacts() {
+      if (!tourId) return;
+      try {
+        const res = await fetch(`/api/fun-facts?tourId=${tourId}`);
+        if (res.ok) {
+          const facts: FunFact[] = await res.json();
+          const grouped: Record<string, { text: string; audioUrl: string | null }[]> = {};
+          for (const f of facts) {
+            if (!grouped[f.site_id]) grouped[f.site_id] = [];
+            grouped[f.site_id].push({ text: f.fact_text, audioUrl: f.audio_url || null });
+          }
+          setFactsBySite(grouped);
+        }
+      } catch {
+        // Fun facts are optional — fail silently
+      }
+    }
+    loadFacts();
+  }, [tourId]);
+
+  const showFactForSite = useCallback((siteId: string) => {
+    const facts = factsBySite[siteId] || [];
     if (facts.length === 0) return;
-    const shown = shownFactIndices[siteName] || [];
+    const shown = shownFactIndices[siteId] || [];
     const unseen = facts.map((_, i) => i).filter((i) => !shown.includes(i));
     if (unseen.length === 0) return;
     const pick = unseen[Math.floor(Math.random() * unseen.length)];
     setShownFactIndices((prev) => ({
       ...prev,
-      [siteName]: [...(prev[siteName] || []), pick],
+      [siteId]: [...(prev[siteId] || []), pick],
     }));
-    setCurrentFact(facts[pick]);
+    setCurrentFact(facts[pick].text);
+    setCurrentFactAudioUrl(facts[pick].audioUrl);
     setShowDidYouKnow(true);
-  }, [shownFactIndices]);
+  }, [factsBySite, shownFactIndices]);
 
   // Fetch tour data
   useEffect(() => {
@@ -160,7 +186,7 @@ export default function TourPage() {
       }
 
       // Show fact after stamp overlay dismisses (2.2s)
-      setTimeout(() => showFactForSite(site.name), 2400);
+      setTimeout(() => showFactForSite(site.id), 2400);
 
       // Clear stamp animation after it plays
       setTimeout(() => setJustStampedSiteId(null), 600);
@@ -177,7 +203,7 @@ export default function TourPage() {
         triggerStampCelebration(site.id);
       } else {
         // Already visited — show a fact
-        showFactForSite(site.name);
+        showFactForSite(site.id);
       }
     }
   };
@@ -200,7 +226,7 @@ export default function TourPage() {
             setTimeout(() => setShowTourComplete(true), 2400);
           }
           // Show fact after stamp overlay
-          setTimeout(() => showFactForSite(site.name), 2400);
+          setTimeout(() => showFactForSite(site.id), 2400);
           setTimeout(() => setJustStampedSiteId(null), 600);
         }
       }
@@ -461,6 +487,7 @@ export default function TourPage() {
       {showDidYouKnow && (
         <DidYouKnowPopup
           fact={currentFact}
+          audioUrl={currentFactAudioUrl}
           onDismiss={() => setShowDidYouKnow(false)}
         />
       )}

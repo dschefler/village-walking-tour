@@ -1,23 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Lightbulb } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Lightbulb, Volume2, Square } from 'lucide-react';
 
 interface DidYouKnowPopupProps {
   fact: string;
+  audioUrl?: string | null;
   onDismiss: () => void;
 }
 
-const AUTO_DISMISS_MS = 6000;
+const TEXT_ONLY_DISMISS_MS = 6000;
+const AUDIO_DISMISS_MS = 20000;
 
-export function DidYouKnowPopup({ fact, onDismiss }: DidYouKnowPopupProps) {
+export function DidYouKnowPopup({ fact, audioUrl, onDismiss }: DidYouKnowPopupProps) {
+  const dismissMs = audioUrl ? AUDIO_DISMISS_MS : TEXT_ONLY_DISMISS_MS;
   const [progress, setProgress] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Auto-play audio on mount
+  useEffect(() => {
+    if (!audioUrl) return;
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+    setIsPlaying(true);
+    audio.play().catch(() => setIsPlaying(false));
+    audio.onended = () => setIsPlaying(false);
+    audio.onerror = () => setIsPlaying(false);
+    return () => {
+      audio.pause();
+      audio.src = '';
+    };
+  }, [audioUrl]);
+
+  // Auto-dismiss timer
   useEffect(() => {
     const start = Date.now();
     const interval = setInterval(() => {
       const elapsed = Date.now() - start;
-      const pct = Math.min(elapsed / AUTO_DISMISS_MS, 1);
+      const pct = Math.min(elapsed / dismissMs, 1);
       setProgress(pct);
       if (pct >= 1) {
         clearInterval(interval);
@@ -25,7 +46,18 @@ export function DidYouKnowPopup({ fact, onDismiss }: DidYouKnowPopupProps) {
       }
     }, 50);
     return () => clearInterval(interval);
-  }, [onDismiss]);
+  }, [onDismiss, dismissMs]);
+
+  const handleToggleAudio = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -50,6 +82,20 @@ export function DidYouKnowPopup({ fact, onDismiss }: DidYouKnowPopupProps) {
 
           {/* Fact */}
           <p className="text-sm text-foreground leading-relaxed">{fact}</p>
+
+          {/* Audio button — stops propagation so tap doesn't dismiss */}
+          {audioUrl && (
+            <button
+              onClick={(e) => { e.stopPropagation(); handleToggleAudio(); }}
+              className="mt-3 flex items-center gap-1.5 mx-auto text-xs font-medium text-amber-600 hover:text-amber-700 transition-colors"
+            >
+              {isPlaying ? (
+                <><Square className="w-3 h-3 fill-current" /> Stop audio</>
+              ) : (
+                <><Volume2 className="w-3 h-3" /> Play audio</>
+              )}
+            </button>
+          )}
 
           {/* Tap hint */}
           <p className="mt-3 text-xs text-muted-foreground">Tap to dismiss</p>

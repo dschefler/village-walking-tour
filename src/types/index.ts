@@ -12,6 +12,17 @@ export interface Tour {
   updated_at: string;
 }
 
+export interface SiteHours {
+  monday?:    { open: string; close: string } | null;
+  tuesday?:   { open: string; close: string } | null;
+  wednesday?: { open: string; close: string } | null;
+  thursday?:  { open: string; close: string } | null;
+  friday?:    { open: string; close: string } | null;
+  saturday?:  { open: string; close: string } | null;
+  sunday?:    { open: string; close: string } | null;
+  notes?:     string | null;
+}
+
 export interface Site {
   id: string;
   tour_id: string;
@@ -26,6 +37,7 @@ export interface Site {
   address_formatted: string | null;
   is_published: boolean;
   slug: string | null;
+  hours?: SiteHours | null;
   created_at: string;
   updated_at: string;
 }
@@ -187,6 +199,7 @@ export interface Organization {
   contact_email: string | null;
   contact_phone: string | null;
   contact_address: string | null;
+  default_tts_voice: string | null;
   custom_domain: string | null;
   is_active: boolean;
   onboarding_completed: boolean;
@@ -211,6 +224,7 @@ export interface FunFact {
   id: string;
   site_id: string;
   fact_text: string;
+  audio_url: string | null;
   display_order: number;
   created_at: string;
 }

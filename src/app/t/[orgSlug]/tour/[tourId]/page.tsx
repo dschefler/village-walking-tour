@@ -53,10 +53,11 @@ export default function TenantTourPage() {
 
   const [showDidYouKnow, setShowDidYouKnow] = useState(false);
   const [currentFact, setCurrentFact] = useState('');
+  const [currentFactAudioUrl, setCurrentFactAudioUrl] = useState<string | null>(null);
   const [shownFactIndices, setShownFactIndices] = useState<Record<string, number[]>>({});
 
   // Fun facts from DB keyed by site_id
-  const [factsBySite, setFactsBySite] = useState<Record<string, string[]>>({});
+  const [factsBySite, setFactsBySite] = useState<Record<string, { text: string; audioUrl: string | null }[]>>({});
 
   const {
     selectedSite,
@@ -79,10 +80,10 @@ export default function TenantTourPage() {
         const res = await fetch(`/api/fun-facts?tourId=${tourId}`);
         if (res.ok) {
           const facts: FunFact[] = await res.json();
-          const grouped: Record<string, string[]> = {};
+          const grouped: Record<string, { text: string; audioUrl: string | null }[]> = {};
           for (const f of facts) {
             if (!grouped[f.site_id]) grouped[f.site_id] = [];
-            grouped[f.site_id].push(f.fact_text);
+            grouped[f.site_id].push({ text: f.fact_text, audioUrl: f.audio_url || null });
           }
           setFactsBySite(grouped);
         }
@@ -94,7 +95,7 @@ export default function TenantTourPage() {
   }, [tourId]);
 
   const getFactsForSite = useCallback(
-    (siteId: string): string[] => factsBySite[siteId] || [],
+    (siteId: string) => factsBySite[siteId] || [],
     [factsBySite]
   );
 
@@ -109,7 +110,8 @@ export default function TenantTourPage() {
       ...prev,
       [siteId]: [...(prev[siteId] || []), pick],
     }));
-    setCurrentFact(facts[pick]);
+    setCurrentFact(facts[pick].text);
+    setCurrentFactAudioUrl(facts[pick].audioUrl);
     setShowDidYouKnow(true);
   }, [getFactsForSite, shownFactIndices]);
 
@@ -471,6 +473,7 @@ export default function TenantTourPage() {
       {showDidYouKnow && (
         <DidYouKnowPopup
           fact={currentFact}
+          audioUrl={currentFactAudioUrl}
           onDismiss={() => setShowDidYouKnow(false)}
         />
       )}

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { site_id, fact_text, display_order } = body;
+  const { site_id, fact_text, display_order, audio_url } = body;
 
   if (!site_id || !fact_text) {
     return NextResponse.json({ error: 'site_id and fact_text required' }, { status: 400 });
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('fun_facts')
-    .insert({ site_id, fact_text, display_order: display_order || 0 })
+    .insert({ site_id, fact_text, display_order: display_order || 0, audio_url: audio_url || null })
     .select()
     .single();
 

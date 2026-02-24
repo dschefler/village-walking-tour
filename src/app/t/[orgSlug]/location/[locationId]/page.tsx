@@ -13,7 +13,8 @@ import { NearbyLocations } from '@/components/location/NearbyLocations';
 import { ImageGallery } from '@/components/gallery/ImageGallery';
 import { ListenToAudioButton } from '@/components/audio/ListenToAudioButton';
 import { LocationArrivalTracker } from '@/components/location/LocationArrivalTracker';
-import type { Media } from '@/types';
+import { SiteHoursCard } from '@/components/location/SiteHoursCard';
+import type { Media, SiteHours } from '@/types';
 
 interface LocationWithMedia {
   id: string;
@@ -28,6 +29,7 @@ interface LocationWithMedia {
   address_formatted: string | null;
   is_published: boolean;
   slug: string | null;
+  hours: SiteHours | null;
   created_at: string;
   updated_at: string;
   tour_name?: string;
@@ -200,6 +202,9 @@ export default async function TenantLocationPage({
               </Card>
             )}
 
+            {/* Hours */}
+            {location.hours && <SiteHoursCard hours={location.hours} />}
+
             <ListenToAudioButton
               audioUrl={location.audio_url}
               siteId={location.id}
@@ -210,6 +215,7 @@ export default async function TenantLocationPage({
               latitude={location.latitude}
               longitude={location.longitude}
               name={location.name}
+              backHref={`/t/${params.orgSlug}/historic-sites`}
             />
 
             {location.tour_slug && location.tour_name && (

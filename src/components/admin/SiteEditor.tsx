@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Map, { Marker, type MapRef, type MapMouseEvent } from 'react-map-gl';
-import { MapPin, Trash2, Eye, ExternalLink, Star, X } from 'lucide-react';
+import { MapPin, Trash2, Eye, ExternalLink, Star, X, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,36 @@ import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import { reverseGeocode, type GeocodingResult } from '@/lib/mapbox/geocoding';
-import type { Site } from '@/types';
+import type { Site, SiteHours } from '@/types';
+
+const HOUR_DAYS = [
+  { key: 'monday',    label: 'Mon' },
+  { key: 'tuesday',   label: 'Tue' },
+  { key: 'wednesday', label: 'Wed' },
+  { key: 'thursday',  label: 'Thu' },
+  { key: 'friday',    label: 'Fri' },
+  { key: 'saturday',  label: 'Sat' },
+  { key: 'sunday',    label: 'Sun' },
+] as const;
+
+type DayKey = typeof HOUR_DAYS[number]['key'];
+
+interface DayFormHours {
+  open: string;
+  close: string;
+  closed: boolean;
+}
+
+const DEFAULT_DAY: DayFormHours = { open: '09:00', close: '17:00', closed: false };
+const DEFAULT_HOURS: Record<DayKey, DayFormHours> = {
+  monday:    { ...DEFAULT_DAY },
+  tuesday:   { ...DEFAULT_DAY },
+  wednesday: { ...DEFAULT_DAY },
+  thursday:  { ...DEFAULT_DAY },
+  friday:    { ...DEFAULT_DAY },
+  saturday:  { open: '10:00', close: '16:00', closed: false },
+  sunday:    { open: '10:00', close: '16:00', closed: true },
+};
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteEditorProps {
@@ -34,6 +63,12 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [defaultVoiceId, setDefaultVoiceId] = useState<string | undefined>(undefined);
+
+  // Hours state
+  const [hoursEnabled, setHoursEnabled] = useState(false);
+  const [dayHours, setDayHours] = useState<Record<DayKey, DayFormHours>>({ ...DEFAULT_HOURS });
+  const [hoursNotes, setHoursNotes] = useState('');
 
   // Image management state
   const [siteImages, setSiteImages] = useState<
@@ -55,6 +90,20 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     slug: '',
   });
 
+  // Fetch org's default TTS voice
+  useEffect(() => {
+    if (organizationId) {
+      supabase
+        .from('organizations')
+        .select('default_tts_voice')
+        .eq('id', organizationId)
+        .single()
+        .then(({ data }) => {
+          if (data?.default_tts_voice) setDefaultVoiceId(data.default_tts_voice);
+        });
+    }
+  }, [organizationId]);
+
   useEffect(() => {
     if (site) {
       setFormData({
@@ -68,6 +117,26 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         is_published: site.is_published,
         slug: site.slug || '',
       });
+
+      // Load hours
+      if (site.hours) {
+        setHoursEnabled(true);
+        const h = site.hours as SiteHours;
+        setDayHours(
+          Object.fromEntries(
+            HOUR_DAYS.map(({ key }) => {
+              const saved = h[key];
+              return [
+                key,
+                saved
+                  ? { open: saved.open, close: saved.close, closed: false }
+                  : { open: '09:00', close: '17:00', closed: true },
+              ];
+            })
+          ) as Record<DayKey, DayFormHours>
+        );
+        setHoursNotes(h.notes || '');
+      }
 
       // Load existing images for this site
       const loadImages = async () => {
@@ -291,6 +360,18 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
 
     setSaving(true);
 
+    const hoursPayload: SiteHours | null = hoursEnabled
+      ? {
+          ...Object.fromEntries(
+            HOUR_DAYS.map(({ key }) => [
+              key,
+              dayHours[key].closed ? null : { open: dayHours[key].open, close: dayHours[key].close },
+            ])
+          ),
+          notes: hoursNotes.trim() || null,
+        }
+      : null;
+
     try {
       if (site) {
         // Update existing site
@@ -306,6 +387,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             address_formatted: formData.address_formatted || null,
             is_published: formData.is_published,
             slug: formData.slug || null,
+            hours: hoursPayload,
           })
           .eq('id', site.id);
 
@@ -331,6 +413,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             is_published: formData.is_published,
             slug: formData.slug || null,
             display_order: displayOrder,
+            hours: hoursPayload,
           })
           .select()
           .single();
@@ -542,6 +625,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
                 text={formData.description}
                 onGenerated={(url) => setFormData((prev) => ({ ...prev, audio_url: url }))}
                 orgId={organizationId}
+                defaultVoiceId={defaultVoiceId}
               />
             </div>
             <div className="relative flex items-center gap-2">
@@ -615,6 +699,84 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
           <p className="text-xs text-muted-foreground text-center py-2">
             Maximum of 7 photos reached (1 primary + 6 gallery).
           </p>
+        )}
+      </div>
+
+      {/* Hours of Operation */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4" />
+              Hours of Operation
+            </Label>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Optional — skip for outdoor spaces with no set hours.
+            </p>
+          </div>
+          <Switch
+            checked={hoursEnabled}
+            onCheckedChange={setHoursEnabled}
+          />
+        </div>
+
+        {hoursEnabled && (
+          <div className="rounded-lg border p-3 space-y-2">
+            {HOUR_DAYS.map(({ key, label }) => (
+              <div key={key} className="flex items-center gap-2 text-sm">
+                <span className="w-8 font-medium text-muted-foreground">{label}</span>
+                <label className="flex items-center gap-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="w-3.5 h-3.5"
+                    checked={dayHours[key].closed}
+                    onChange={(e) =>
+                      setDayHours((prev) => ({
+                        ...prev,
+                        [key]: { ...prev[key], closed: e.target.checked },
+                      }))
+                    }
+                  />
+                  <span className="text-xs text-muted-foreground">Closed</span>
+                </label>
+                {!dayHours[key].closed && (
+                  <>
+                    <input
+                      type="time"
+                      value={dayHours[key].open}
+                      onChange={(e) =>
+                        setDayHours((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], open: e.target.value },
+                        }))
+                      }
+                      className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-sm"
+                    />
+                    <span className="text-muted-foreground text-xs">–</span>
+                    <input
+                      type="time"
+                      value={dayHours[key].close}
+                      onChange={(e) =>
+                        setDayHours((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], close: e.target.value },
+                        }))
+                      }
+                      className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-sm"
+                    />
+                  </>
+                )}
+              </div>
+            ))}
+            <div className="pt-2">
+              <Input
+                placeholder="Notes, e.g. Closed on holidays, open seasonally May–Oct"
+                value={hoursNotes}
+                onChange={(e) => setHoursNotes(e.target.value)}
+                className="text-sm"
+              />
+            </div>
+          </div>
         )}
       </div>
 
