@@ -540,7 +540,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
       {/* Images */}
       <div className="space-y-2">
         <Label>Images</Label>
-        <p className="text-xs text-muted-foreground">Upload a hero image and gallery photos</p>
+        <p className="text-xs text-muted-foreground">
+          First image is the primary (hero) photo. Add up to 6 additional gallery photos.
+        </p>
 
         {allImages.length > 0 && (
           <div className="grid grid-cols-3 gap-2">
@@ -584,11 +586,19 @@ export function SiteEditor({ tourId, site, displayOrder, onClose }: SiteEditorPr
           </div>
         )}
 
-        <MediaUploader
-          onUpload={handleImageUpload}
-          accept="image/*"
-          path={`sites/${site?.id || 'new'}`}
-        />
+        {allImages.length < 7 && (
+          <MediaUploader
+            onUpload={handleImageUpload}
+            accept="image/*"
+            path={`sites/${site?.id || 'new'}`}
+            multiple
+          />
+        )}
+        {allImages.length >= 7 && (
+          <p className="text-xs text-muted-foreground text-center py-2">
+            Maximum of 7 photos reached (1 primary + 6 gallery).
+          </p>
+        )}
       </div>
 
       {/* Publish Toggle */}

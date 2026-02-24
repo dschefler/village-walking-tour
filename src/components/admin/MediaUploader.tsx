@@ -24,6 +24,7 @@ interface MediaUploaderProps {
   maxSize?: number; // in MB
   className?: string;
   organizationId?: string;
+  multiple?: boolean;
 }
 
 function getMediaUrl(storagePath: string): string {
@@ -41,6 +42,7 @@ export function MediaUploader({
   maxSize = 10,
   className,
   organizationId,
+  multiple = false,
 }: MediaUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,18 +145,17 @@ export function MediaUploader({
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const file = acceptedFiles[0];
-      if (!file) return;
-
-      // Check file size
-      if (file.size > maxSize * 1024 * 1024) {
-        setError(`File size must be less than ${maxSize}MB`);
-        return;
+      const files = multiple ? acceptedFiles : [acceptedFiles[0]];
+      for (const file of files) {
+        if (!file) continue;
+        if (file.size > maxSize * 1024 * 1024) {
+          setError(`File size must be less than ${maxSize}MB`);
+          continue;
+        }
+        uploadFile(file);
       }
-
-      uploadFile(file);
     },
-    [maxSize]
+    [maxSize, multiple]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -168,7 +169,8 @@ export function MediaUploader({
       }
       return acc;
     }, {} as Record<string, string[]>),
-    maxFiles: 1,
+    maxFiles: multiple ? 10 : 1,
+    multiple,
     disabled: uploading,
   });
 
@@ -260,7 +262,9 @@ export function MediaUploader({
             <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
               {isDragActive
-                ? 'Drop the file here'
+                ? 'Drop the files here'
+                : multiple
+                ? 'Drag & drop files, or click to select multiple'
                 : 'Drag & drop a file, or click to select'}
             </p>
             <p className="text-xs text-muted-foreground">Max size: {maxSize}MB</p>
