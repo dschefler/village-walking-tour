@@ -76,8 +76,9 @@ export function WalkingAnimation() {
             </circle>
           </g>
 
-          {/* Stick figure — walks along path */}
-          <g stroke="#222" strokeWidth="2.2" strokeLinecap="round" fill="none">
+          {/* Stick figure — hidden until motion starts (prevents flash at origin) */}
+          <g stroke="#222" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0">
+            <animate attributeName="opacity" from="1" to="1" begin="0.05s" dur="0.01s" fill="freeze" />
 
             {/* Head */}
             <circle cx="0" cy="-27" r="6" fill="#222" stroke="#222" />
@@ -133,11 +134,11 @@ export function WalkingAnimation() {
               />
             </line>
 
-            {/* Motion along the path — tilts with slope via rotate="auto" */}
+            {/* Motion along the path — rotate="0" keeps figure upright */}
             <animateMotion
               dur="3s"
               fill="freeze"
-              rotate="auto"
+              rotate="0"
               calcMode="spline"
               keyPoints="0;1"
               keyTimes="0;1"
