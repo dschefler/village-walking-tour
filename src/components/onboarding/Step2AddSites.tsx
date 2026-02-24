@@ -235,6 +235,13 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete, 
 
         // Create site_media records for featured + gallery images
         if (siteId) {
+          // Clear existing media before re-inserting to avoid duplicate key errors when re-saving
+          await fetch('/api/site-media', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ site_id: siteId }),
+          });
+
           const mediaRecords: { site_id: string; media_id: string; display_order: number; is_primary: boolean }[] = [];
 
           // Featured image first (primary)
