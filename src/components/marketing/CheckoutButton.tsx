@@ -20,33 +20,39 @@ export function CheckoutButton({
   size = 'default',
 }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleClick() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceKey }),
       });
-      const { url, error } = await res.json();
-      if (error) throw new Error(error);
-      if (url) window.location.href = url;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error('Checkout error:', err);
+      setError('Something went wrong. Please try again.');
       setLoading(false);
     }
   }
 
   return (
-    <Button
-      onClick={handleClick}
-      disabled={loading}
-      className={className}
-      variant={variant}
-      size={size}
-    >
-      {loading ? 'Redirecting...' : label}
-    </Button>
+    <div>
+      <Button
+        onClick={handleClick}
+        disabled={loading}
+        className={className}
+        variant={variant}
+        size={size}
+      >
+        {loading ? 'Redirecting...' : label}
+      </Button>
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
   );
 }
