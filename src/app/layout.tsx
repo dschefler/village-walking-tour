@@ -8,22 +8,39 @@ import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Village Walking Tour',
-  description: 'Explore the history and heritage of our village with this self-guided walking tour.',
+  title: {
+    default: 'Southampton Village Walking Tour',
+    template: '%s | Southampton Village Walking Tour',
+  },
+  description: "Discover Southampton Village's history on a free self-guided GPS walking tour. Audio stops, fun facts, stamp card, and offline support — no download required.",
+  keywords: [
+    'Southampton walking tour',
+    'Southampton Village historic district',
+    'self-guided walking tour Southampton NY',
+    'free walking tour app',
+    'Southampton NY history',
+    'historic district tour',
+    'Long Island walking tour',
+  ],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Village Tour',
+    title: 'Southampton Tour',
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: 'website',
-    siteName: 'Village Walking Tour',
-    title: 'Village Walking Tour',
-    description: 'Explore the history and heritage of our village with this self-guided walking tour.',
+    siteName: 'Southampton Village Walking Tour',
+    title: 'Southampton Village Walking Tour',
+    description: "Discover Southampton Village's history on a free self-guided GPS walking tour.",
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Southampton Village Walking Tour',
+    description: "Discover Southampton Village's history on a free self-guided GPS walking tour.",
   },
 };
 

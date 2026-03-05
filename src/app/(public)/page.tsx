@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Route, Smartphone } from 'lucide-react';
@@ -9,6 +10,39 @@ import { StartExploringButton } from '@/components/layout/StartExploringButton';
 import { HideWhenInstalled } from '@/components/pwa/HideWhenInstalled';
 import { Button } from '@/components/ui/button';
 import type { Tour } from '@/types';
+
+export const metadata: Metadata = {
+  title: 'Southampton Village Walking Tour | Free Self-Guided Historic District App',
+  description:
+    "Explore Southampton Village's historic district on a free self-guided GPS walking tour. Discover landmark buildings, hidden history, and local stories with audio narration, fun facts, and a digital stamp card.",
+  keywords: [
+    'Southampton walking tour',
+    'Southampton Village historic district',
+    'self-guided walking tour Southampton NY',
+    'free walking tour app Southampton',
+    'Southampton NY history',
+    'Southampton Village tour',
+    'historic district walking tour Long Island',
+    'Southampton landmarks',
+  ],
+  alternates: {
+    canonical: 'https://southamptonwalkingtour.com',
+  },
+  openGraph: {
+    title: 'Southampton Village Walking Tour | Free Self-Guided Historic District App',
+    description:
+      "Explore Southampton Village's historic district on a free self-guided GPS walking tour. Audio narration, fun facts, stamp card, and offline support — no download required.",
+    type: 'website',
+    url: 'https://southamptonwalkingtour.com',
+    siteName: 'Southampton Village Walking Tour',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Southampton Village Walking Tour',
+    description:
+      "Explore Southampton Village's historic district on a free self-guided GPS walking tour. No download required.",
+  },
+};
 
 async function getPublishedTour(): Promise<Tour | null> {
   const supabase = createClient();

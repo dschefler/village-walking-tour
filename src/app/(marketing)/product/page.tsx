@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   MapPin,
@@ -22,6 +23,41 @@ import { WalkingAnimation } from '@/components/marketing/WalkingAnimation';
 import { createServiceClient } from '@/lib/supabase/server';
 
 export const revalidate = 300; // re-fetch content every 5 min
+
+export const metadata: Metadata = {
+  title: 'Walking Tour Builder | Create GPS Walking Tour Apps for Your Community',
+  description:
+    'Build branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support. Perfect for towns, museums, parks, and historical societies. Start your free 7-day trial.',
+  keywords: [
+    'walking tour app builder',
+    'self-guided walking tour software',
+    'create walking tour app',
+    'historic district tour app',
+    'GPS walking tour',
+    'no-code tour builder',
+    'walking tour platform',
+    'community tour app',
+    'museum audio tour app',
+    'heritage trail app',
+  ],
+  alternates: {
+    canonical: 'https://walkingtourbuilder.com',
+  },
+  openGraph: {
+    title: 'Walking Tour Builder — Create GPS Walking Tour Apps for Your Community',
+    description:
+      'Build branded, GPS-guided walking tour apps in minutes. Stamp cards, AI audio narration, offline support. Start your free trial — no credit card required.',
+    type: 'website',
+    url: 'https://walkingtourbuilder.com',
+    siteName: 'Walking Tour Builder',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Walking Tour Builder',
+    description:
+      'Build branded GPS walking tour apps for your community. Stamp cards, audio narration, offline support. Free 7-day trial.',
+  },
+};
 
 const DEFAULTS = {
   hero_headline: 'Build a Walking Tour App for Your Community',
@@ -211,7 +247,7 @@ export default async function MarketingLandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-16 md:pt-24 pb-0 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
+      <section className="pt-16 md:pt-24 pb-0 bg-gradient-to-b from-primary/10 to-background relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
@@ -263,7 +299,7 @@ export default async function MarketingLandingPage() {
       <WhoItsForGrid />
 
       {/* Features */}
-      <section className="py-20">
+      <section className="py-20 bg-muted/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Everything You Need</h2>
@@ -292,7 +328,7 @@ export default async function MarketingLandingPage() {
       </section>
 
       {/* Case Study */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">See It In Action</h2>
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
@@ -363,7 +399,7 @@ export default async function MarketingLandingPage() {
       </section>
 
       {/* Done For You */}
-      <section id="done-for-you" className="py-20 bg-gradient-to-b from-amber-50/60 to-background border-y border-amber-100">
+      <section id="done-for-you" className="py-20 bg-gradient-to-b from-amber-50 to-background border-y border-amber-200">
         <div className="container mx-auto px-4">
           <div className="text-center mb-4">
             <span className="text-sm font-semibold uppercase tracking-widest text-amber-700 mb-3 block">
