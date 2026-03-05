@@ -10,6 +10,7 @@ import {
   Check,
   ChevronRight,
   Share2,
+  Navigation,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,7 +66,7 @@ export default function TourPage() {
     clearLastVisited,
   } = useTourStore();
 
-  const { userLocation } = useGeolocation();
+  const { userLocation, getCurrentPosition } = useGeolocation();
 
   // Load fun facts from DB (keyed by site_id)
   useEffect(() => {
@@ -157,6 +158,54 @@ export default function TourPage() {
       await navigator.clipboard.writeText(url);
       alert('Link copied to clipboard!');
     }
+  };
+
+  const handleStartWalking = async () => {
+    if (!tour) return;
+
+    // Try to get GPS — silently fall back to Stop 1 if denied/unavailable
+    let lat = userLocation?.latitude;
+    let lng = userLocation?.longitude;
+    if (!lat || !lng) {
+      try {
+        const pos = await getCurrentPosition();
+        lat = pos.latitude;
+        lng = pos.longitude;
+      } catch {
+        // Permission denied or unavailable — will navigate to Stop 1 below
+      }
+    }
+
+    const visited = tourProgress[tour.id]?.visitedSites || [];
+    const unvisited = tour.sites.filter((s) => !visited.includes(s.id));
+    const candidates = unvisited.length > 0 ? unvisited : tour.sites;
+
+    // Pick nearest unvisited stop if we have GPS, otherwise pick Stop 1
+    let target = candidates.sort((a, b) => a.display_order - b.display_order)[0];
+    if (lat && lng) {
+      target = candidates.reduce((nearest, site) => {
+        const d = calculateDistance(lat!, lng!, site.latitude, site.longitude);
+        const nd = calculateDistance(lat!, lng!, nearest.latitude, nearest.longitude);
+        return d < nd ? site : nearest;
+      });
+    }
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMac = /Macintosh/.test(navigator.userAgent);
+    const origin = lat && lng ? `${lat},${lng}` : '';
+
+    let url: string;
+    if (isIOS || isMac) {
+      url = origin
+        ? `maps://maps.apple.com/?saddr=${origin}&daddr=${target.latitude},${target.longitude}&dirflg=w`
+        : `maps://maps.apple.com/?daddr=${target.latitude},${target.longitude}&dirflg=w`;
+    } else {
+      url = origin
+        ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target.latitude},${target.longitude}&travelmode=walking`
+        : `https://www.google.com/maps/dir/?api=1&destination=${target.latitude},${target.longitude}&travelmode=walking`;
+    }
+
+    window.open(url, '_blank');
   };
 
   const triggerStampCelebration = useCallback(
@@ -293,6 +342,19 @@ export default function TourPage() {
           visitedSiteIds={progress?.visitedSites || []}
           justStampedSiteId={justStampedSiteId}
         />
+
+        {/* Start Walking bar */}
+        <div className="px-4 py-2 border-t bg-primary/5">
+          <Button
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+            onClick={handleStartWalking}
+          >
+            <Navigation className="w-4 h-4" />
+            {(tourProgress[tour.id]?.visitedSites.length || 0) > 0
+              ? 'Navigate to Next Stop'
+              : 'Start Walking Tour'}
+          </Button>
+        </div>
       </header>
 
       {/* Main Content */}
