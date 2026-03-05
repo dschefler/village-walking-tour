@@ -54,6 +54,7 @@ export default function TourPage() {
 
   // In-app navigation mode
   const [navigatingToSite, setNavigatingToSite] = useState<Site | null>(null);
+  const [showNextStopToast, setShowNextStopToast] = useState(false);
 
   // Fun facts from DB keyed by site_id
   const [factsBySite, setFactsBySite] = useState<Record<string, { text: string; audioUrl: string | null }[]>>({});
@@ -292,6 +293,13 @@ export default function TourPage() {
       }, 2600);
     }
   }, [userLocation, navigatingToSite, tour, tourProgress, triggerStampCelebration]);
+
+  // Auto-dismiss next-stop toast after 4 seconds
+  useEffect(() => {
+    if (!showNextStopToast) return;
+    const t = setTimeout(() => setShowNextStopToast(false), 4000);
+    return () => clearTimeout(t);
+  }, [showNextStopToast]);
 
   // Watch for GPS-triggered visits via lastVisitedSiteId
   useEffect(() => {
@@ -631,12 +639,49 @@ export default function TourPage() {
         />
       )}
 
+      {/* Next-stop toast — appears after fun fact dismisses */}
+      {showNextStopToast && navigatingToSite && (
+        <div
+          className="fixed bottom-16 md:bottom-8 inset-x-4 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-96 z-30 animate-slide-up cursor-pointer"
+          onClick={() => setShowNextStopToast(false)}
+        >
+          <div className="bg-primary text-primary-foreground rounded-xl shadow-lg px-4 py-3 flex items-center gap-3">
+            <Navigation className="w-4 h-4 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide opacity-75 leading-none mb-0.5">
+                Continue to
+              </p>
+              <p className="text-sm font-bold leading-tight truncate">
+                Stop {navigatingToSite.display_order}: {navigatingToSite.name}
+              </p>
+              {userLocation && (() => {
+                const dist = calculateDistance(
+                  userLocation.latitude,
+                  userLocation.longitude,
+                  navigatingToSite.latitude,
+                  navigatingToSite.longitude
+                );
+                return (
+                  <p className="text-xs opacity-75 mt-0.5">
+                    {formatDistance(dist)} · {formatWalkingTime(calculateWalkingTime(dist))}
+                  </p>
+                );
+              })()}
+            </div>
+            <ChevronRight className="w-5 h-5 flex-shrink-0 opacity-80" />
+          </div>
+        </div>
+      )}
+
       {/* "Did You Know?" fact popup */}
       {showDidYouKnow && (
         <DidYouKnowPopup
           fact={currentFact}
           audioUrl={currentFactAudioUrl}
-          onDismiss={() => setShowDidYouKnow(false)}
+          onDismiss={() => {
+            setShowDidYouKnow(false);
+            if (navigatingToSite) setShowNextStopToast(true);
+          }}
         />
       )}
 
