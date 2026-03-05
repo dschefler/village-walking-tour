@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Loader2, Save, X, Sun, Moon, Mic } from 'lucide-react';
+import { Loader2, Save, X, Sun, Moon, Mic, Heart, Plus, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { MediaUploader } from '@/components/admin/MediaUploader';
 import { useToast } from '@/hooks/use-toast';
 import type { Organization } from '@/types';
@@ -47,6 +48,11 @@ export default function SettingsPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [contactAddress, setContactAddress] = useState('');
 
+  // Donation fields
+  const [donationsEnabled, setDonationsEnabled] = useState(false);
+  const [donationAmounts, setDonationAmounts] = useState<number[]>([5, 10, 20, 50]);
+  const [newAmount, setNewAmount] = useState('');
+
   // Theme fields
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [fontFamily, setFontFamily] = useState('Inter');
@@ -78,6 +84,8 @@ export default function SettingsPage() {
             setContactEmail(o.contact_email || '');
             setContactPhone(o.contact_phone || '');
             setContactAddress(o.contact_address || '');
+            setDonationsEnabled(o.donations_enabled ?? false);
+            setDonationAmounts(o.donation_amounts ?? [5, 10, 20, 50]);
             setThemeMode(o.theme_mode || 'light');
             setFontFamily(o.font_family || 'Inter');
             setBackgroundColor(o.background_color || '#FFFFFF');
@@ -122,6 +130,8 @@ export default function SettingsPage() {
           contact_email: contactEmail || null,
           contact_phone: contactPhone || null,
           contact_address: contactAddress || null,
+          donations_enabled: donationsEnabled,
+          donation_amounts: donationAmounts.length > 0 ? donationAmounts : [5, 10, 20, 50],
           theme_mode: themeMode,
           font_family: fontFamily,
           background_color: backgroundColor,
@@ -426,6 +436,152 @@ export default function SettingsPage() {
                 onChange={(e) => setContactAddress(e.target.value)}
                 rows={2}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Donations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-red-500" />
+              Donations
+            </CardTitle>
+            <CardDescription>
+              Allow walkers to support your tour with a one-time donation on your Contact page.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {/* Enable toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Show donation section on Contact page</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Walkers can choose a preset amount or enter a custom amount and pay by card or PayPal.
+                </p>
+              </div>
+              <Switch
+                checked={donationsEnabled}
+                onCheckedChange={setDonationsEnabled}
+              />
+            </div>
+
+            {/* Preset amounts — only shown when enabled */}
+            {donationsEnabled && (
+              <div className="space-y-3 pt-1 border-t">
+                <div>
+                  <p className="text-sm font-medium mb-1">Preset donation amounts (dollars)</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Walkers can also enter any custom amount. You need at least one preset.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {[...donationAmounts].sort((a, b) => a - b).map((amt) => (
+                      <span
+                        key={amt}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted text-sm font-medium"
+                      >
+                        ${amt}
+                        {donationAmounts.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setDonationAmounts((prev) => prev.filter((a) => a !== amt))}
+                            className="ml-0.5 text-muted-foreground hover:text-destructive"
+                            aria-label={`Remove $${amt}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  {donationAmounts.length < 6 && (
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-32">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="500"
+                          placeholder="25"
+                          value={newAmount}
+                          onChange={(e) => setNewAmount(e.target.value)}
+                          className="pl-7"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const v = parseInt(newAmount, 10);
+                              if (v >= 1 && v <= 500 && !donationAmounts.includes(v)) {
+                                setDonationAmounts((prev) => [...prev, v]);
+                                setNewAmount('');
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => {
+                          const v = parseInt(newAmount, 10);
+                          if (v >= 1 && v <= 500 && !donationAmounts.includes(v)) {
+                            setDonationAmounts((prev) => [...prev, v]);
+                            setNewAmount('');
+                          }
+                        }}
+                      >
+                        <Plus className="w-3 h-3" />
+                        Add
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Payment gateway setup instructions */}
+            <div className="rounded-lg bg-muted/50 border p-4 space-y-3">
+              <p className="text-sm font-semibold">Payment gateway setup</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Donations are processed through <strong>Stripe</strong> (card payments) and <strong>PayPal</strong>.
+                To connect your own accounts so payments are deposited directly to you, the following
+                environment variables must be configured on your deployment:
+              </p>
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Stripe</p>
+                <code className="block text-xs bg-background rounded px-2 py-1 border">STRIPE_SECRET_KEY</code>
+                <code className="block text-xs bg-background rounded px-2 py-1 border">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code>
+                <code className="block text-xs bg-background rounded px-2 py-1 border">STRIPE_WEBHOOK_SECRET</code>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">PayPal</p>
+                <code className="block text-xs bg-background rounded px-2 py-1 border">NEXT_PUBLIC_PAYPAL_CLIENT_ID</code>
+                <code className="block text-xs bg-background rounded px-2 py-1 border">PAYPAL_CLIENT_SECRET</code>
+              </div>
+              <div className="flex gap-3 pt-1">
+                <a
+                  href="https://dashboard.stripe.com/register"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  Create Stripe account <ExternalLink className="w-3 h-3" />
+                </a>
+                <a
+                  href="https://developer.paypal.com/dashboard/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  PayPal Developer Dashboard <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                On Vercel, add these under <strong>Project → Settings → Environment Variables</strong>.
+                For Stripe webhooks, point your endpoint to{' '}
+                <code className="bg-background px-1 rounded border">/api/donations/webhook</code>.
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -8,19 +8,18 @@ import { StripePayment } from './StripePayment';
 import { PayPalButton } from './PayPalButton';
 import { cn } from '@/lib/utils';
 
-const DONATION_AMOUNTS = [
-  { value: 500, label: '$5' },
-  { value: 1000, label: '$10' },
-  { value: 2000, label: '$20' },
-  { value: 5000, label: '$50' },
-];
+const DEFAULT_DONATION_DOLLARS = [5, 10, 20, 50];
 
 interface DonationSectionProps {
   className?: string;
+  /** Preset donation amounts in dollars, e.g. [5, 10, 25, 50]. Defaults to [5, 10, 20, 50]. */
+  amounts?: number[];
 }
 
-export function DonationSection({ className }: DonationSectionProps) {
-  const [selectedAmount, setSelectedAmount] = useState<number>(1000);
+export function DonationSection({ className, amounts }: DonationSectionProps) {
+  const dollarAmounts = (amounts && amounts.length > 0) ? amounts : DEFAULT_DONATION_DOLLARS;
+  const donationAmounts = dollarAmounts.map((d) => ({ value: d * 100, label: `$${d}` }));
+  const [selectedAmount, setSelectedAmount] = useState<number>(donationAmounts[1]?.value ?? donationAmounts[0]?.value ?? 1000);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | null>(null);
 
@@ -57,7 +56,7 @@ export function DonationSection({ className }: DonationSectionProps) {
         <div className="space-y-3">
           <p className="text-sm font-medium">Select an amount</p>
           <div className="grid grid-cols-4 gap-2">
-            {DONATION_AMOUNTS.map(({ value, label }) => (
+            {donationAmounts.map(({ value, label }) => (
               <Button
                 key={value}
                 type="button"

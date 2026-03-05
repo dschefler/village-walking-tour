@@ -34,6 +34,7 @@ export async function PATCH(
     'contact_email', 'contact_phone', 'contact_address',
     'onboarding_step', 'onboarding_completed',
     'theme_mode', 'font_family', 'background_color', 'text_color',
+    'donations_enabled', 'donation_amounts',
   ];
 
   const updates: Record<string, unknown> = {};
