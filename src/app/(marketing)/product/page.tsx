@@ -291,15 +291,18 @@ export default async function MarketingLandingPage() {
           </div>
         </div>
 
-        {/* Walking animation — plays once then fades out */}
-        <WalkingAnimation />
       </section>
+
+      {/* Walking animation — sits at top of white section */}
+      <div className="bg-background flex justify-center pt-6 pb-0">
+        <WalkingAnimation />
+      </div>
 
       {/* Who It's For — animated grid */}
       <WhoItsForGrid />
 
       {/* Features */}
-      <section className="py-20 bg-muted/20">
+      <section className="py-20 bg-primary/10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Everything You Need</h2>
