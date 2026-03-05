@@ -1,18 +1,37 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-// Destination is server-side only — never exposed to the client
-const FEEDBACK_TO = 'dina@thorncreativemarketing.com';
+// Fallback destination for the public Southampton tour (server-side only)
+const FEEDBACK_TO_DEFAULT = 'dina@thorncreativemarketing.com';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { rating, message, name } = body;
+    const { rating, message, name, orgSlug } = body;
 
     if (!rating && !message?.trim()) {
       return NextResponse.json(
         { error: 'Please provide a rating or message' },
         { status: 400 }
       );
+    }
+
+    // Resolve destination email — org contact_email takes priority over default
+    let feedbackTo = FEEDBACK_TO_DEFAULT;
+    if (orgSlug) {
+      try {
+        const supabase = createClient();
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('contact_email, name')
+          .eq('slug', orgSlug)
+          .single();
+        if (org?.contact_email) {
+          feedbackTo = org.contact_email;
+        }
+      } catch {
+        // Fall back to default if lookup fails
+      }
     }
 
     const sendGridApiKey = process.env.SENDGRID_API_KEY;
@@ -25,13 +44,14 @@ export async function POST(request: Request) {
 
         const stars = rating ? '⭐'.repeat(Number(rating)) + ` (${rating}/5)` : 'Not rated';
         const displayName = name?.trim() || 'Anonymous';
+        const tourLabel = orgSlug ? `${orgSlug} Walking Tour` : 'Southampton Village Walking Tour';
 
         await sgMail.default.send({
-          to: FEEDBACK_TO,
+          to: feedbackTo,
           from: fromEmail,
           subject: `[Walking Tour Feedback] ${stars}`,
           text: [
-            'New feedback from the Southampton Village Walking Tour app:',
+            `New feedback from the ${tourLabel} app:`,
             '',
             `Rating: ${stars}`,
             `Name: ${displayName}`,
@@ -41,6 +61,7 @@ export async function POST(request: Request) {
           ].join('\n'),
           html: `
             <h2>New Walking Tour Feedback</h2>
+            <p><strong>Tour:</strong> ${tourLabel}</p>
             <p><strong>Rating:</strong> ${stars}</p>
             <p><strong>Name:</strong> ${displayName}</p>
             <h3>Message:</h3>
@@ -48,7 +69,6 @@ export async function POST(request: Request) {
           `.trim(),
         });
       } catch (emailError) {
-        // Log but don't fail — submission is still recorded
         console.error('Feedback email send error:', emailError);
       }
     }

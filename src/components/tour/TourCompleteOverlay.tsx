@@ -28,6 +28,7 @@ export function TourCompleteOverlay({
   const tenant = useTenantOptional();
   const primaryColor = tenant?.organization.primary_color ?? '#A40000';
   const secondaryColor = tenant?.organization.secondary_color ?? '#014487';
+  const orgName = tenant?.organization.name ?? 'our historic village';
 
   const confettiColors = [
     primaryColor, secondaryColor,
@@ -114,7 +115,7 @@ export function TourCompleteOverlay({
           /* Phase 2 — thank you message */
           <div className="px-6 pb-6 text-center">
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-              Thank you for walking with us through Southampton Village! We hope
+              Thank you for walking with us through {orgName}! We hope
               you discovered something wonderful today — you&apos;re always welcome
               back to explore more every season.
             </p>

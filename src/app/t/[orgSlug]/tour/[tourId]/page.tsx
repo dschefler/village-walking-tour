@@ -10,6 +10,9 @@ import {
   Check,
   ChevronRight,
   Share2,
+  Navigation,
+  X,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,10 +24,11 @@ import { StampCard } from '@/components/tour/StampCard';
 import { StampEarnedOverlay } from '@/components/tour/StampEarnedOverlay';
 import { TourCompleteOverlay } from '@/components/tour/TourCompleteOverlay';
 import { DidYouKnowPopup } from '@/components/tour/DidYouKnowPopup';
+import { FeedbackModal } from '@/components/tour/FeedbackModal';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
-import { cn, formatDistance, calculateDistance } from '@/lib/utils';
+import { cn, formatDistance, calculateDistance, calculateWalkingTime, formatWalkingTime } from '@/lib/utils';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { TourWithSites, Site, SiteWithMedia, FunFact } from '@/types';
 
@@ -50,11 +54,16 @@ export default function TenantTourPage() {
   const [showStampEarned, setShowStampEarned] = useState(false);
   const [stampedSiteOrder, setStampedSiteOrder] = useState(1);
   const [showTourComplete, setShowTourComplete] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const [showDidYouKnow, setShowDidYouKnow] = useState(false);
   const [currentFact, setCurrentFact] = useState('');
   const [currentFactAudioUrl, setCurrentFactAudioUrl] = useState<string | null>(null);
   const [shownFactIndices, setShownFactIndices] = useState<Record<string, number[]>>({});
+
+  // In-app navigation mode
+  const [navigatingToSite, setNavigatingToSite] = useState<Site | null>(null);
+  const [showNextStopToast, setShowNextStopToast] = useState(false);
 
   // Fun facts from DB keyed by site_id
   const [factsBySite, setFactsBySite] = useState<Record<string, { text: string; audioUrl: string | null }[]>>({});
@@ -71,7 +80,7 @@ export default function TenantTourPage() {
     clearLastVisited,
   } = useTourStore();
 
-  const { userLocation } = useGeolocation();
+  const { userLocation, getCurrentPosition } = useGeolocation();
 
   // Load fun facts from DB
   useEffect(() => {
@@ -94,13 +103,8 @@ export default function TenantTourPage() {
     loadFacts();
   }, [tourId]);
 
-  const getFactsForSite = useCallback(
-    (siteId: string) => factsBySite[siteId] || [],
-    [factsBySite]
-  );
-
   const showFactForSite = useCallback((siteId: string) => {
-    const facts = getFactsForSite(siteId);
+    const facts = factsBySite[siteId] || [];
     if (facts.length === 0) return;
     const shown = shownFactIndices[siteId] || [];
     const unseen = facts.map((_, i) => i).filter((i) => !shown.includes(i));
@@ -113,7 +117,7 @@ export default function TenantTourPage() {
     setCurrentFact(facts[pick].text);
     setCurrentFactAudioUrl(facts[pick].audioUrl);
     setShowDidYouKnow(true);
-  }, [getFactsForSite, shownFactIndices]);
+  }, [factsBySite, shownFactIndices]);
 
   // Fetch tour data
   useEffect(() => {
@@ -168,6 +172,51 @@ export default function TenantTourPage() {
     }
   };
 
+  const buildMapsUrl = (target: Site, lat?: number, lng?: number): string => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMac = /Macintosh/.test(navigator.userAgent);
+    const origin = lat && lng ? `${lat},${lng}` : '';
+    if (isIOS || isMac) {
+      return origin
+        ? `maps://maps.apple.com/?saddr=${origin}&daddr=${target.latitude},${target.longitude}&dirflg=w`
+        : `maps://maps.apple.com/?daddr=${target.latitude},${target.longitude}&dirflg=w`;
+    }
+    return origin
+      ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target.latitude},${target.longitude}&travelmode=walking`
+      : `https://www.google.com/maps/dir/?api=1&destination=${target.latitude},${target.longitude}&travelmode=walking`;
+  };
+
+  const handleStartWalking = async () => {
+    if (!tour) return;
+
+    let lat = userLocation?.latitude;
+    let lng = userLocation?.longitude;
+    if (!lat || !lng) {
+      try {
+        const pos = await getCurrentPosition();
+        lat = pos.latitude;
+        lng = pos.longitude;
+      } catch {
+        // Permission denied — fall back to Stop 1
+      }
+    }
+
+    const visited = tourProgress[tour.id]?.visitedSites || [];
+    const unvisited = tour.sites.filter((s) => !visited.includes(s.id));
+    const candidates = unvisited.length > 0 ? unvisited : tour.sites;
+
+    let target = [...candidates].sort((a, b) => a.display_order - b.display_order)[0];
+    if (lat && lng) {
+      target = candidates.reduce((nearest, site) => {
+        const d = calculateDistance(lat!, lng!, site.latitude, site.longitude);
+        const nd = calculateDistance(lat!, lng!, nearest.latitude, nearest.longitude);
+        return d < nd ? site : nearest;
+      });
+    }
+
+    setNavigatingToSite(target);
+  };
+
   const triggerStampCelebration = useCallback(
     (siteId: string) => {
       if (!tour) return;
@@ -207,6 +256,42 @@ export default function TenantTourPage() {
       }
     }
   };
+
+  // Auto-arrival detection: stamp + advance to next stop when within 50m
+  useEffect(() => {
+    if (!navigatingToSite || !userLocation || !tour) return;
+
+    const dist = calculateDistance(
+      userLocation.latitude,
+      userLocation.longitude,
+      navigatingToSite.latitude,
+      navigatingToSite.longitude
+    );
+
+    if (dist <= 50) {
+      triggerStampCelebration(navigatingToSite.id);
+
+      setTimeout(() => {
+        const visited = tourProgress[tour.id]?.visitedSites || [];
+        const nextVisited = [...visited, navigatingToSite.id];
+        const nextStop = tour.sites
+          .filter((s) => !nextVisited.includes(s.id))
+          .sort((a, b) => a.display_order - b.display_order)[0];
+        if (nextStop) {
+          setNavigatingToSite(nextStop);
+        } else {
+          setNavigatingToSite(null);
+        }
+      }, 2600);
+    }
+  }, [userLocation, navigatingToSite, tour, tourProgress, triggerStampCelebration]);
+
+  // Auto-dismiss next-stop toast after 4 seconds
+  useEffect(() => {
+    if (!showNextStopToast) return;
+    const t = setTimeout(() => setShowNextStopToast(false), 4000);
+    return () => clearTimeout(t);
+  }, [showNextStopToast]);
 
   // Watch for GPS-triggered visits
   useEffect(() => {
@@ -280,6 +365,14 @@ export default function TenantTourPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowFeedback(true)}
+              aria-label="Give feedback"
+            >
+              <MessageSquare className="w-5 h-5" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleShare}>
               <Share2 className="w-5 h-5" />
             </Button>
@@ -291,6 +384,69 @@ export default function TenantTourPage() {
           visitedSiteIds={progress?.visitedSites || []}
           justStampedSiteId={justStampedSiteId}
         />
+
+        {/* Navigation bar */}
+        {navigatingToSite ? (
+          <div className="border-t bg-primary text-primary-foreground px-4 py-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Navigation className="w-4 h-4 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold leading-tight truncate">
+                    Stop {navigatingToSite.display_order}: {navigatingToSite.name}
+                  </p>
+                  {userLocation && (() => {
+                    const dist = calculateDistance(
+                      userLocation.latitude,
+                      userLocation.longitude,
+                      navigatingToSite.latitude,
+                      navigatingToSite.longitude
+                    );
+                    const mins = calculateWalkingTime(dist);
+                    return (
+                      <p className="text-xs opacity-80">
+                        {formatDistance(dist)} · {formatWalkingTime(mins)}
+                      </p>
+                    );
+                  })()}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <a
+                  href={buildMapsUrl(
+                    navigatingToSite,
+                    userLocation?.latitude,
+                    userLocation?.longitude
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs underline opacity-80 hover:opacity-100 whitespace-nowrap"
+                >
+                  Open in Maps
+                </a>
+                <button
+                  onClick={() => setNavigatingToSite(null)}
+                  className="opacity-70 hover:opacity-100 p-0.5"
+                  aria-label="Cancel navigation"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="px-4 py-2 border-t bg-primary/5">
+            <Button
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+              onClick={handleStartWalking}
+            >
+              <Navigation className="w-4 h-4" />
+              {(tourProgress[tour.id]?.visitedSites.length || 0) > 0
+                ? 'Navigate to Next Stop'
+                : 'Start Walking Tour'}
+            </Button>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -461,6 +617,40 @@ export default function TenantTourPage() {
 
       <MiniAudioPlayer className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-64 z-20" />
 
+      {/* Next-stop toast — appears after fun fact dismisses */}
+      {showNextStopToast && navigatingToSite && (
+        <div
+          className="fixed bottom-16 md:bottom-8 inset-x-4 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-96 z-30 animate-slide-up cursor-pointer"
+          onClick={() => setShowNextStopToast(false)}
+        >
+          <div className="bg-primary text-primary-foreground rounded-xl shadow-lg px-4 py-3 flex items-center gap-3">
+            <Navigation className="w-4 h-4 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide opacity-75 leading-none mb-0.5">
+                Continue to
+              </p>
+              <p className="text-sm font-bold leading-tight truncate">
+                Stop {navigatingToSite.display_order}: {navigatingToSite.name}
+              </p>
+              {userLocation && (() => {
+                const dist = calculateDistance(
+                  userLocation.latitude,
+                  userLocation.longitude,
+                  navigatingToSite.latitude,
+                  navigatingToSite.longitude
+                );
+                return (
+                  <p className="text-xs opacity-75 mt-0.5">
+                    {formatDistance(dist)} · {formatWalkingTime(calculateWalkingTime(dist))}
+                  </p>
+                );
+              })()}
+            </div>
+            <ChevronRight className="w-5 h-5 flex-shrink-0 opacity-80" />
+          </div>
+        </div>
+      )}
+
       {showStampEarned && (
         <StampEarnedOverlay
           siteOrder={stampedSiteOrder}
@@ -474,7 +664,10 @@ export default function TenantTourPage() {
         <DidYouKnowPopup
           fact={currentFact}
           audioUrl={currentFactAudioUrl}
-          onDismiss={() => setShowDidYouKnow(false)}
+          onDismiss={() => {
+            setShowDidYouKnow(false);
+            if (navigatingToSite) setShowNextStopToast(true);
+          }}
         />
       )}
 
@@ -486,11 +679,18 @@ export default function TenantTourPage() {
             setShowTourComplete(false);
             setViewMode('list');
           }}
-          onDone={() => {
+          onDone={() => setShowTourComplete(false)}
+          onFeedback={() => {
             setShowTourComplete(false);
-            router.push(`/t/${orgSlug}`);
+            setShowFeedback(true);
           }}
-          onFeedback={() => setShowTourComplete(false)}
+        />
+      )}
+
+      {showFeedback && (
+        <FeedbackModal
+          orgSlug={orgSlug}
+          onClose={() => setShowFeedback(false)}
         />
       )}
     </div>

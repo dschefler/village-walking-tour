@@ -7,9 +7,10 @@ import { cn } from '@/lib/utils';
 
 interface FeedbackModalProps {
   onClose: () => void;
+  orgSlug?: string;
 }
 
-export function FeedbackModal({ onClose }: FeedbackModalProps) {
+export function FeedbackModal({ onClose, orgSlug }: FeedbackModalProps) {
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [message, setMessage] = useState('');
@@ -25,7 +26,7 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating, message: message.trim(), name: name.trim() }),
+        body: JSON.stringify({ rating, message: message.trim(), name: name.trim(), orgSlug }),
       });
       setStatus(res.ok ? 'success' : 'error');
     } catch {
