@@ -270,7 +270,7 @@ export default async function MarketingLandingPage() {
               className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]"
               showArrow
             />
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 bg-transparent border-white/40 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground">
+            <Button asChild size="lg" className="text-lg px-8 !bg-transparent border border-white/50 text-white hover:!bg-white/10 hover:text-white rounded-lg">
               <Link href="/t/southampton">
                 See Live Demo
               </Link>
