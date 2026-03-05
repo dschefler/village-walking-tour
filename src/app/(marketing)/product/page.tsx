@@ -247,20 +247,20 @@ export default async function MarketingLandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-16 md:pt-24 pb-0 bg-gradient-to-b from-primary/10 to-background relative overflow-hidden">
+      <section className="pt-16 md:pt-24 pb-10 bg-primary text-primary-foreground relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+          <div className="absolute top-10 left-1/4 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         </div>
         <div className="container mx-auto px-4 text-center relative">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 bg-white/15 text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <Smartphone className="w-4 h-4" />
             No app store. No coding. Just your tour.
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 max-w-3xl mx-auto">
             {content.hero_headline}
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
             {content.hero_subheadline}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -270,22 +270,22 @@ export default async function MarketingLandingPage() {
               className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]"
               showArrow
             />
-            <Button asChild variant="outline" size="lg" className="text-lg px-8">
+            <Button asChild variant="outline" size="lg" className="text-lg px-8 border-white/40 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground">
               <Link href="/t/southampton">
                 See Live Demo
               </Link>
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground mt-4">
+          <p className="text-sm text-primary-foreground/70 mt-4">
             No credit card required. Full Pro features during trial.
           </p>
 
           {/* Stats bar */}
-          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+          <div className="mt-10 pb-2 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-xl font-bold text-primary-foreground">{stat.value}</div>
+                <div className="text-sm text-primary-foreground/70">{stat.label}</div>
               </div>
             ))}
           </div>
