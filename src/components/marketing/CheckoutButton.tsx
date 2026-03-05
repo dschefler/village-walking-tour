@@ -33,10 +33,14 @@ export function CheckoutButton({
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
     } catch (err) {
       console.error('Checkout error:', err);
-      setError('Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       setLoading(false);
     }
   }
