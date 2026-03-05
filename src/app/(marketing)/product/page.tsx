@@ -17,9 +17,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// Note: Check, Card imports kept for features/DFY sections above
 import { WhoItsForGrid } from '@/components/marketing/WhoItsForGrid';
 import { TrialCTA } from '@/components/marketing/TrialCTA';
 import { WalkingAnimation } from '@/components/marketing/WalkingAnimation';
+import { PricingSection } from '@/components/marketing/PricingSection';
 import { createServiceClient } from '@/lib/supabase/server';
 
 export const revalidate = 300; // re-fetch content every 5 min
@@ -135,30 +137,6 @@ const features = [
   },
 ];
 
-const pricingTiers = [
-  {
-    name: 'Starter',
-    price: '$79',
-    period: '/mo',
-    description: 'Perfect for a single tour',
-    features: ['1 tour', '10 sites', '5 media per site', 'Stamp card', 'GPS navigation', 'Offline support'],
-  },
-  {
-    name: 'Pro',
-    price: '$149',
-    period: '/mo',
-    description: 'For organizations with multiple tours',
-    features: ['5 tours', '25 sites per tour', 'Unlimited media', 'Custom domain', 'Analytics dashboard', 'Priority support'],
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    price: '$299',
-    period: '/mo',
-    description: 'For large organizations',
-    features: ['Up to 15 tours', 'Up to 50 sites per tour', 'White-label mode', 'Team members', 'API access', 'Dedicated support'],
-  },
-];
 
 const buildPackages = [
   {
@@ -348,58 +326,7 @@ export default async function MarketingLandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Simple Pricing</h2>
-            <p className="text-muted-foreground">
-              {content.pricing_subheadline}
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-            {pricingTiers.map((tier) => (
-              <Card
-                key={tier.name}
-                className={tier.popular ? 'border-primary shadow-lg relative' : ''}
-              >
-                {tier.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
-                    Most Popular
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle>{tier.name}</CardTitle>
-                  <CardDescription>{tier.description}</CardDescription>
-                  <div className="pt-2">
-                    <span className="text-3xl font-bold">{tier.price}</span>
-                    <span className="text-muted-foreground">{tier.period}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <TrialCTA
-                    label="Start Free Trial"
-                    className="w-full mt-6"
-                    variant={tier.popular ? 'default' : 'outline'}
-                    plan={tier.name}
-                  />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <p className="text-center text-xs text-muted-foreground mt-6 max-w-2xl mx-auto">
-            Each subscription is licensed to a single organization for its own use only. Subscriptions may not be shared across multiple unrelated organizations or used to create and manage tours on behalf of third parties without a separate license for each. See our{' '}
-            <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link> for full details.
-          </p>
-        </div>
-      </section>
+      <PricingSection pricingSubheadline={content.pricing_subheadline} />
 
       {/* Done For You */}
       <section id="done-for-you" className="py-20 bg-gradient-to-b from-amber-50 to-background border-y border-amber-200">
