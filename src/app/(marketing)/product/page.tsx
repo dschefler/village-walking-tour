@@ -22,6 +22,7 @@ import { WhoItsForGrid } from '@/components/marketing/WhoItsForGrid';
 import { TrialCTA } from '@/components/marketing/TrialCTA';
 import { WalkingAnimation } from '@/components/marketing/WalkingAnimation';
 import { PricingSection } from '@/components/marketing/PricingSection';
+import { CheckoutButton } from '@/components/marketing/CheckoutButton';
 import { createServiceClient } from '@/lib/supabase/server';
 
 export const revalidate = 300; // re-fetch content every 5 min
@@ -146,6 +147,7 @@ const buildPackages = [
     pairsWith: 'Best with Starter plan',
     timeline: '7–10 business days',
     scope: '1 tour · up to 10 sites',
+    priceKey: 'essential_build' as const,
     features: [
       'Branding setup (logo, colors, fonts)',
       'Custom domain configuration',
@@ -162,6 +164,7 @@ const buildPackages = [
     pairsWith: 'Best with Pro plan',
     timeline: '10–15 business days',
     scope: 'Up to 3 tours · up to 25 sites each',
+    priceKey: 'professional_build' as const,
     features: [
       'Everything in Essential Build',
       'Multi-tour navigation & structure',
@@ -179,6 +182,7 @@ const buildPackages = [
     pairsWith: 'Best with Enterprise plan',
     timeline: '15–21 business days',
     scope: 'Up to 8 tours · up to 40 sites each',
+    priceKey: 'enterprise_build' as const,
     features: [
       'Everything in Professional Build',
       'Kick-off strategy session',
@@ -385,15 +389,12 @@ export default async function MarketingLandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    asChild
+                  <CheckoutButton
+                    priceKey={pkg.priceKey}
+                    label="Get Started"
                     className={`w-full ${pkg.popular ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}`}
                     variant={pkg.popular ? 'default' : 'outline'}
-                  >
-                    <Link href="mailto:hello@walkingtourbuilder.com?subject=Done-For-You Build Inquiry">
-                      Get Started
-                    </Link>
-                  </Button>
+                  />
                 </CardContent>
               </Card>
             ))}

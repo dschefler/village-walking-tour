@@ -3,11 +3,21 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Check, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrialCTA } from '@/components/marketing/TrialCTA';
+import { CheckoutButton } from '@/components/marketing/CheckoutButton';
+import type { PriceKey } from '@/lib/stripe';
 
-const tiers = [
+const tiers: {
+  name: string;
+  monthly: number;
+  annual: number;
+  annualTotal: number;
+  description: string;
+  features: string[];
+  popular?: boolean;
+  monthlyKey: PriceKey;
+  annualKey: PriceKey;
+}[] = [
   {
     name: 'Starter',
     monthly: 99,
@@ -15,6 +25,8 @@ const tiers = [
     annualTotal: 948,
     description: 'Perfect for a single tour',
     features: ['1 tour', '10 sites', '5 media per site', 'Stamp card', 'GPS navigation', 'Offline support'],
+    monthlyKey: 'starter_monthly',
+    annualKey: 'starter_annual',
   },
   {
     name: 'Pro',
@@ -24,6 +36,8 @@ const tiers = [
     description: 'For organizations with multiple tours',
     features: ['5 tours', '25 sites per tour', 'Unlimited media', 'Custom domain', 'Analytics dashboard', 'Priority support'],
     popular: true,
+    monthlyKey: 'pro_monthly',
+    annualKey: 'pro_annual',
   },
   {
     name: 'Enterprise',
@@ -32,6 +46,8 @@ const tiers = [
     annualTotal: 3588,
     description: 'For large organizations',
     features: ['Up to 15 tours', 'Up to 50 sites per tour', 'White-label mode', 'Team members', 'API access', 'Dedicated support'],
+    monthlyKey: 'enterprise_monthly',
+    annualKey: 'enterprise_annual',
   },
 ];
 
@@ -132,11 +148,11 @@ export function PricingSection({ pricingSubheadline }: PricingSectionProps) {
                       </li>
                     ))}
                   </ul>
-                  <TrialCTA
-                    label="Start Free Trial"
+                  <CheckoutButton
+                    priceKey={billing === 'monthly' ? tier.monthlyKey : tier.annualKey}
+                    label="Start Free 7-Day Trial"
                     className="w-full mt-6"
                     variant={tier.popular ? 'default' : 'outline'}
-                    plan={tier.name}
                   />
                 </CardContent>
               </Card>
@@ -173,11 +189,11 @@ export function PricingSection({ pricingSubheadline }: PricingSectionProps) {
                   <span className="text-3xl font-bold">${eventPlan.price}</span>
                   <p className="text-sm text-muted-foreground">flat · {eventPlan.duration} access</p>
                 </div>
-                <Button asChild className="w-full md:w-auto">
-                  <Link href="mailto:hello@walkingtourbuilder.com?subject=Event Access Inquiry">
-                    Get Event Access
-                  </Link>
-                </Button>
+                <CheckoutButton
+                  priceKey="event_access"
+                  label="Get Event Access"
+                  className="w-full md:w-auto"
+                />
               </div>
             </div>
           </div>
