@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Share2,
   Navigation,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +25,7 @@ import { TourCompleteOverlay } from '@/components/tour/TourCompleteOverlay';
 import { DidYouKnowPopup } from '@/components/tour/DidYouKnowPopup';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
-import { cn, formatDistance, formatDuration, calculateDistance } from '@/lib/utils';
+import { cn, formatDistance, formatDuration, calculateDistance, calculateWalkingTime, formatWalkingTime } from '@/lib/utils';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { TourWithSites, Site, SiteWithMedia, FunFact } from '@/types';
 
@@ -50,6 +51,9 @@ export default function TourPage() {
   const [currentFact, setCurrentFact] = useState('');
   const [currentFactAudioUrl, setCurrentFactAudioUrl] = useState<string | null>(null);
   const [shownFactIndices, setShownFactIndices] = useState<Record<string, number[]>>({});
+
+  // In-app navigation mode
+  const [navigatingToSite, setNavigatingToSite] = useState<Site | null>(null);
 
   // Fun facts from DB keyed by site_id
   const [factsBySite, setFactsBySite] = useState<Record<string, { text: string; audioUrl: string | null }[]>>({});
@@ -160,6 +164,20 @@ export default function TourPage() {
     }
   };
 
+  const buildMapsUrl = (target: Site, lat?: number, lng?: number): string => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMac = /Macintosh/.test(navigator.userAgent);
+    const origin = lat && lng ? `${lat},${lng}` : '';
+    if (isIOS || isMac) {
+      return origin
+        ? `maps://maps.apple.com/?saddr=${origin}&daddr=${target.latitude},${target.longitude}&dirflg=w`
+        : `maps://maps.apple.com/?daddr=${target.latitude},${target.longitude}&dirflg=w`;
+    }
+    return origin
+      ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target.latitude},${target.longitude}&travelmode=walking`
+      : `https://www.google.com/maps/dir/?api=1&destination=${target.latitude},${target.longitude}&travelmode=walking`;
+  };
+
   const handleStartWalking = async () => {
     if (!tour) return;
 
@@ -180,8 +198,8 @@ export default function TourPage() {
     const unvisited = tour.sites.filter((s) => !visited.includes(s.id));
     const candidates = unvisited.length > 0 ? unvisited : tour.sites;
 
-    // Pick nearest unvisited stop if we have GPS, otherwise pick Stop 1
-    let target = candidates.sort((a, b) => a.display_order - b.display_order)[0];
+    // Pick nearest unvisited stop if we have GPS, otherwise pick Stop 1 (by display_order)
+    let target = [...candidates].sort((a, b) => a.display_order - b.display_order)[0];
     if (lat && lng) {
       target = candidates.reduce((nearest, site) => {
         const d = calculateDistance(lat!, lng!, site.latitude, site.longitude);
@@ -190,22 +208,8 @@ export default function TourPage() {
       });
     }
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isMac = /Macintosh/.test(navigator.userAgent);
-    const origin = lat && lng ? `${lat},${lng}` : '';
-
-    let url: string;
-    if (isIOS || isMac) {
-      url = origin
-        ? `maps://maps.apple.com/?saddr=${origin}&daddr=${target.latitude},${target.longitude}&dirflg=w`
-        : `maps://maps.apple.com/?daddr=${target.latitude},${target.longitude}&dirflg=w`;
-    } else {
-      url = origin
-        ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target.latitude},${target.longitude}&travelmode=walking`
-        : `https://www.google.com/maps/dir/?api=1&destination=${target.latitude},${target.longitude}&travelmode=walking`;
-    }
-
-    window.open(url, '_blank');
+    // Activate in-app navigation mode
+    setNavigatingToSite(target);
   };
 
   const triggerStampCelebration = useCallback(
@@ -256,6 +260,38 @@ export default function TourPage() {
       }
     }
   };
+
+  // Auto-arrival detection: stamp + advance to next stop when within 50m
+  useEffect(() => {
+    if (!navigatingToSite || !userLocation || !tour) return;
+
+    const dist = calculateDistance(
+      userLocation.latitude,
+      userLocation.longitude,
+      navigatingToSite.latitude,
+      navigatingToSite.longitude
+    );
+
+    if (dist <= 50) {
+      // Arrived — trigger stamp celebration
+      triggerStampCelebration(navigatingToSite.id);
+
+      // Advance to next unvisited stop (after a brief pause for celebration)
+      setTimeout(() => {
+        const visited = tourProgress[tour.id]?.visitedSites || [];
+        const nextVisited = [...visited, navigatingToSite.id];
+        const nextStop = tour.sites
+          .filter((s) => !nextVisited.includes(s.id))
+          .sort((a, b) => a.display_order - b.display_order)[0];
+        if (nextStop) {
+          setNavigatingToSite(nextStop);
+        } else {
+          // All stops visited — end navigation mode
+          setNavigatingToSite(null);
+        }
+      }, 2600);
+    }
+  }, [userLocation, navigatingToSite, tour, tourProgress, triggerStampCelebration]);
 
   // Watch for GPS-triggered visits via lastVisitedSiteId
   useEffect(() => {
@@ -343,18 +379,68 @@ export default function TourPage() {
           justStampedSiteId={justStampedSiteId}
         />
 
-        {/* Start Walking bar */}
-        <div className="px-4 py-2 border-t bg-primary/5">
-          <Button
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
-            onClick={handleStartWalking}
-          >
-            <Navigation className="w-4 h-4" />
-            {(tourProgress[tour.id]?.visitedSites.length || 0) > 0
-              ? 'Navigate to Next Stop'
-              : 'Start Walking Tour'}
-          </Button>
-        </div>
+        {/* Navigation bar */}
+        {navigatingToSite ? (
+          <div className="border-t bg-primary text-primary-foreground px-4 py-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Navigation className="w-4 h-4 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold leading-tight truncate">
+                    Stop {navigatingToSite.display_order}: {navigatingToSite.name}
+                  </p>
+                  {userLocation && (() => {
+                    const dist = calculateDistance(
+                      userLocation.latitude,
+                      userLocation.longitude,
+                      navigatingToSite.latitude,
+                      navigatingToSite.longitude
+                    );
+                    const mins = calculateWalkingTime(dist);
+                    return (
+                      <p className="text-xs opacity-80">
+                        {formatDistance(dist)} · {formatWalkingTime(mins)}
+                      </p>
+                    );
+                  })()}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <a
+                  href={buildMapsUrl(
+                    navigatingToSite,
+                    userLocation?.latitude,
+                    userLocation?.longitude
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs underline opacity-80 hover:opacity-100 whitespace-nowrap"
+                >
+                  Open in Maps
+                </a>
+                <button
+                  onClick={() => setNavigatingToSite(null)}
+                  className="opacity-70 hover:opacity-100 p-0.5"
+                  aria-label="Cancel navigation"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="px-4 py-2 border-t bg-primary/5">
+            <Button
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+              onClick={handleStartWalking}
+            >
+              <Navigation className="w-4 h-4" />
+              {(tourProgress[tour.id]?.visitedSites.length || 0) > 0
+                ? 'Navigate to Next Stop'
+                : 'Start Walking Tour'}
+            </Button>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
