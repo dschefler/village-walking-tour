@@ -12,6 +12,7 @@ import {
   Share2,
   Navigation,
   X,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ import { StampCard } from '@/components/tour/StampCard';
 import { StampEarnedOverlay } from '@/components/tour/StampEarnedOverlay';
 import { TourCompleteOverlay } from '@/components/tour/TourCompleteOverlay';
 import { DidYouKnowPopup } from '@/components/tour/DidYouKnowPopup';
+import { FeedbackModal } from '@/components/tour/FeedbackModal';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
 import { cn, formatDistance, formatDuration, calculateDistance, calculateWalkingTime, formatWalkingTime } from '@/lib/utils';
@@ -46,6 +48,7 @@ export default function TourPage() {
   const [showStampEarned, setShowStampEarned] = useState(false);
   const [stampedSiteOrder, setStampedSiteOrder] = useState(1);
   const [showTourComplete, setShowTourComplete] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const [showDidYouKnow, setShowDidYouKnow] = useState(false);
   const [currentFact, setCurrentFact] = useState('');
@@ -375,6 +378,14 @@ export default function TourPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowFeedback(true)}
+              aria-label="Give feedback"
+            >
+              <MessageSquare className="w-5 h-5" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleShare}>
               <Share2 className="w-5 h-5" />
             </Button>
@@ -694,11 +705,16 @@ export default function TourPage() {
             setShowTourComplete(false);
             setViewMode('list');
           }}
-          onNewTour={() => {
+          onDone={() => setShowTourComplete(false)}
+          onFeedback={() => {
             setShowTourComplete(false);
-            router.push('/');
+            setShowFeedback(true);
           }}
         />
+      )}
+
+      {showFeedback && (
+        <FeedbackModal onClose={() => setShowFeedback(false)} />
       )}
     </div>
   );

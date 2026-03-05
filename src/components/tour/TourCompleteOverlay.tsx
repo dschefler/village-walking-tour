@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StampCard } from './StampCard';
@@ -10,7 +11,8 @@ interface TourCompleteOverlayProps {
   sites: Site[];
   visitedSiteIds: string[];
   onBrowseSites: () => void;
-  onNewTour: () => void;
+  onDone: () => void;
+  onFeedback: () => void;
 }
 
 const EXTRA_CONFETTI = ['#FFD700', '#22C55E', '#F97316', '#A855F7', '#EC4899', '#06B6D4'];
@@ -19,8 +21,10 @@ export function TourCompleteOverlay({
   sites,
   visitedSiteIds,
   onBrowseSites,
-  onNewTour,
+  onDone,
+  onFeedback,
 }: TourCompleteOverlayProps) {
+  const [phase, setPhase] = useState<'celebrate' | 'thankyou'>('celebrate');
   const tenant = useTenantOptional();
   const primaryColor = tenant?.organization.primary_color ?? '#A40000';
   const secondaryColor = tenant?.organization.secondary_color ?? '#014487';
@@ -89,22 +93,46 @@ export function TourCompleteOverlay({
           <div className="absolute inset-0 animate-shimmer pointer-events-none rounded-lg" />
         </div>
 
-        {/* CTA buttons */}
-        <div className="px-6 pb-6 flex gap-3">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={onBrowseSites}
-          >
-            Browse Sites
-          </Button>
-          <Button
-            className="flex-1"
-            onClick={onNewTour}
-          >
-            New Tour
-          </Button>
-        </div>
+        {phase === 'celebrate' ? (
+          /* Phase 1 — celebration CTAs */
+          <div className="px-6 pb-6 flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={onBrowseSites}
+            >
+              Keep Exploring
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={() => setPhase('thankyou')}
+            >
+              I&apos;m Done
+            </Button>
+          </div>
+        ) : (
+          /* Phase 2 — thank you message */
+          <div className="px-6 pb-6 text-center">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+              Thank you for walking with us through Southampton Village! We hope
+              you discovered something wonderful today — you&apos;re always welcome
+              back to explore more every season.
+            </p>
+            <Button
+              className="w-full mb-2"
+              onClick={onFeedback}
+            >
+              Share Your Thoughts
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-muted-foreground"
+              onClick={onDone}
+            >
+              Close
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

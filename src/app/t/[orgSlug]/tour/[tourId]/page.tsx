@@ -486,10 +486,11 @@ export default function TenantTourPage() {
             setShowTourComplete(false);
             setViewMode('list');
           }}
-          onNewTour={() => {
+          onDone={() => {
             setShowTourComplete(false);
             router.push(`/t/${orgSlug}`);
           }}
+          onFeedback={() => setShowTourComplete(false)}
         />
       )}
     </div>

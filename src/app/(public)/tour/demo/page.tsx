@@ -161,10 +161,11 @@ export default function DemoPage() {
           sites={DEMO_SITES}
           visitedSiteIds={visitedIds}
           onBrowseSites={() => setShowTourComplete(false)}
-          onNewTour={() => {
+          onDone={() => {
             setShowTourComplete(false);
             reset();
           }}
+          onFeedback={() => setShowTourComplete(false)}
         />
       )}
     </div>
