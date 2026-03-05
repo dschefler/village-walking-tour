@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, Loader2, Rocket, CheckCircle } from 'lucide-react';
+import { ExternalLink, Loader2, Rocket, CheckCircle, Navigation, Star, Lightbulb, MessageSquare, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Organization } from '@/types';
@@ -51,28 +51,91 @@ export function Step5Preview({ org, tourId, onPublish }: Step5Props) {
   };
 
   if (published) {
+    const features = [
+      {
+        icon: <Navigation className="w-4 h-4" />,
+        title: 'In-App Navigation',
+        desc: 'Start Walking button guides walkers to each stop with live distance and walk time. GPS auto-stamps arrival within 50m.',
+      },
+      {
+        icon: <Lightbulb className="w-4 h-4" />,
+        title: 'Did You Know? Facts',
+        desc: 'Fun facts pop up after each stamp — with optional audio narration. Add them anytime in the dashboard.',
+      },
+      {
+        icon: <Trophy className="w-4 h-4" />,
+        title: 'Stamp Card & Completion',
+        desc: 'Walkers collect stamps at each stop. A celebration overlay and thank-you screen appear when the tour is complete.',
+      },
+      {
+        icon: <MessageSquare className="w-4 h-4" />,
+        title: 'Feedback & Star Ratings',
+        desc: `Walkers can rate and leave suggestions anytime. Submissions are emailed to ${org.contact_email || 'your contact email (set in Settings → Contact)'}`,
+      },
+      {
+        icon: <Star className="w-4 h-4" />,
+        title: 'Fully Branded',
+        desc: 'Your colors, logo, and org name appear throughout. Update anytime in Dashboard → Settings.',
+      },
+    ];
+
     return (
-      <div className="space-y-6 text-center py-8">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="space-y-6 py-4">
+        <div className="text-center">
+          <div className="flex justify-center mb-3">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
           </div>
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Your Tour is Live!</h2>
-          <p className="text-muted-foreground">
-            Visitors can now access your walking tour at:
-          </p>
+          <h2 className="text-2xl font-bold mb-1">Your Tour is Live!</h2>
+          <p className="text-muted-foreground text-sm">Share this link with your visitors:</p>
           <Link
             href={tourUrl}
-            className="text-primary font-medium text-lg hover:underline mt-2 inline-block"
+            className="text-primary font-medium text-lg hover:underline mt-1 inline-block"
           >
             {tourUrl}
             <ExternalLink className="w-4 h-4 inline ml-1" />
           </Link>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 max-w-lg mx-auto">
+        {/* What's included */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">What your walkers get</CardTitle>
+            <CardDescription>Every tour includes these features out of the box</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {features.map((f, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <div className="mt-0.5 flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  {f.icon}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{f.title}</p>
+                  <p className="text-xs text-muted-foreground">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Next steps */}
+        {!org.contact_email && (
+          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+            <CardContent className="py-4 flex gap-3 items-start">
+              <MessageSquare className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-400">Set your contact email</p>
+                <p className="text-xs text-amber-700 dark:text-amber-500">
+                  Walker feedback won&apos;t be delivered until you add a contact email.{' '}
+                  <Link href="/dashboard/settings" className="underline font-medium">Go to Settings →</Link>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid gap-3 md:grid-cols-2">
           <Button asChild size="lg">
             <Link href={tourUrl}>View Your Tour</Link>
           </Button>

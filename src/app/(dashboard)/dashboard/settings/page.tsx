@@ -396,7 +396,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
-            <CardDescription>Displayed on your public Contact &amp; Support page so visitors can reach you</CardDescription>
+            <CardDescription>Displayed on your public Contact &amp; Support page. Contact email also receives all walker feedback and star ratings submitted through the app.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -407,6 +407,7 @@ export default function SettingsPage() {
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground mt-1">Required to receive walker feedback submissions.</p>
             </div>
             <div>
               <Label>Phone Number</Label>

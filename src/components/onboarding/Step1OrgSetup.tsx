@@ -25,6 +25,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
   const [name, setName] = useState(existingOrg?.name || '');
   const [slug, setSlug] = useState(existingOrg?.slug || '');
   const [description, setDescription] = useState(existingOrg?.app_description || '');
+  const [contactEmail, setContactEmail] = useState(existingOrg?.contact_email || '');
   const [primaryColor, setPrimaryColor] = useState(existingOrg?.primary_color || '#3B82F6');
   const [secondaryColor, setSecondaryColor] = useState(existingOrg?.secondary_color || '#1E40AF');
   const [coverImage, setCoverImage] = useState(existingCoverImageUrl || '');
@@ -68,6 +69,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
             name,
             app_name: name,
             app_description: description,
+            contact_email: contactEmail.trim() || null,
             primary_color: primaryColor,
             secondary_color: secondaryColor,
             ...(advanceStep ? { onboarding_step: 2 } : {}),
@@ -114,6 +116,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
             slug,
             app_name: name,
             app_description: description,
+            contact_email: contactEmail.trim() || null,
             primary_color: primaryColor,
             secondary_color: secondaryColor,
           }),
@@ -192,6 +195,20 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
           />
+        </div>
+
+        <div>
+          <Label htmlFor="contact-email">Contact Email *</Label>
+          <Input
+            id="contact-email"
+            type="email"
+            placeholder="info@yourtour.com"
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Walker feedback and star ratings from the app are sent here. Also shown on your public support page.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
