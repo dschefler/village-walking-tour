@@ -201,6 +201,9 @@ export interface Organization {
   contact_address: string | null;
   donations_enabled: boolean;
   donation_amounts: number[] | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  seo_keywords: string | null;
   default_tts_voice: string | null;
   custom_domain: string | null;
   is_active: boolean;

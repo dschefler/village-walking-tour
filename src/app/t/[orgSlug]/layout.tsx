@@ -21,9 +21,14 @@ export async function generateMetadata({ params }: { params: { orgSlug: string }
   const org = await getOrganization(params.orgSlug);
   if (!org) return {};
 
+  const title = org.seo_title || org.app_name || org.name;
+  const description = org.seo_description || org.app_description || `Explore ${org.name}`;
+  const ogImage = org.logo_url ? [{ url: org.logo_url, alt: org.name }] : undefined;
+
   return {
-    title: org.app_name || org.name,
-    description: org.app_description || `Explore ${org.name}`,
+    title,
+    description,
+    keywords: org.seo_keywords || undefined,
     manifest: `/api/manifest/${org.slug}`,
     appleWebApp: {
       capable: true,
@@ -33,8 +38,15 @@ export async function generateMetadata({ params }: { params: { orgSlug: string }
     openGraph: {
       type: 'website',
       siteName: org.app_name || org.name,
-      title: org.app_name || org.name,
-      description: org.app_description || `Explore ${org.name}`,
+      title,
+      description,
+      images: ogImage,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: org.logo_url ? [org.logo_url] : undefined,
     },
   };
 }

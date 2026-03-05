@@ -48,6 +48,11 @@ export default function SettingsPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [contactAddress, setContactAddress] = useState('');
 
+  // SEO fields
+  const [seoTitle, setSeoTitle] = useState('');
+  const [seoDescription, setSeoDescription] = useState('');
+  const [seoKeywords, setSeoKeywords] = useState('');
+
   // Donation fields
   const [donationsEnabled, setDonationsEnabled] = useState(false);
   const [donationAmounts, setDonationAmounts] = useState<number[]>([5, 10, 20, 50]);
@@ -84,6 +89,9 @@ export default function SettingsPage() {
             setContactEmail(o.contact_email || '');
             setContactPhone(o.contact_phone || '');
             setContactAddress(o.contact_address || '');
+            setSeoTitle(o.seo_title || '');
+            setSeoDescription(o.seo_description || '');
+            setSeoKeywords(o.seo_keywords || '');
             setDonationsEnabled(o.donations_enabled ?? false);
             setDonationAmounts(o.donation_amounts ?? [5, 10, 20, 50]);
             setThemeMode(o.theme_mode || 'light');
@@ -130,6 +138,9 @@ export default function SettingsPage() {
           contact_email: contactEmail || null,
           contact_phone: contactPhone || null,
           contact_address: contactAddress || null,
+          seo_title: seoTitle.trim() || null,
+          seo_description: seoDescription.trim() || null,
+          seo_keywords: seoKeywords.trim() || null,
           donations_enabled: donationsEnabled,
           donation_amounts: donationAmounts.length > 0 ? donationAmounts : [5, 10, 20, 50],
           theme_mode: themeMode,
@@ -437,6 +448,85 @@ export default function SettingsPage() {
                 rows={2}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* SEO */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Search Engine Optimization (SEO)</CardTitle>
+            <CardDescription>
+              Control how your tour appears in Google and other search engines.
+              Leave blank to use your app name and description as defaults.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {/* SEO Title */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Page Title</Label>
+                <span className={`text-xs ${seoTitle.length > 60 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                  {seoTitle.length} / 70
+                </span>
+              </div>
+              <Input
+                placeholder={name || 'e.g., Southampton Village Historic Walking Tour'}
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value.slice(0, 70))}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Shown as the clickable headline in Google results. 50–60 characters is ideal.
+              </p>
+            </div>
+
+            {/* SEO Description */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Meta Description</Label>
+                <span className={`text-xs ${seoDescription.length > 155 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                  {seoDescription.length} / 160
+                </span>
+              </div>
+              <Textarea
+                placeholder="e.g., Explore Southampton Village's rich history on a free self-guided walking tour. Stamp your card at 10 historic sites. No download required."
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value.slice(0, 160))}
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The snippet shown under your title in search results. 150–160 characters recommended.
+              </p>
+            </div>
+
+            {/* Keywords */}
+            <div>
+              <Label>Keywords</Label>
+              <Input
+                placeholder="walking tour, historic district, self-guided, Southampton, free app"
+                value={seoKeywords}
+                onChange={(e) => setSeoKeywords(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Comma-separated. Less important for Google but used by Bing, directories, and app listings.
+                Include your town name, "walking tour", and any notable landmarks.
+              </p>
+            </div>
+
+            {/* Google preview */}
+            {(seoTitle || seoDescription || name) && (
+              <div className="rounded-lg border p-4 bg-muted/30">
+                <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Google preview</p>
+                <p className="text-xs text-green-700 dark:text-green-500 mb-0.5">
+                  walkingtourbuilder.com/t/{org?.slug || 'your-slug'}
+                </p>
+                <p className="text-base text-blue-700 dark:text-blue-400 font-medium leading-snug mb-1 hover:underline cursor-default">
+                  {seoTitle || name || 'Your Tour Name'}
+                </p>
+                <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
+                  {seoDescription || description || `Explore ${name || 'your town'} on a free self-guided walking tour.`}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
