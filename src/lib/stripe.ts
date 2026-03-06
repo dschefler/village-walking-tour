@@ -16,16 +16,16 @@ export function getStripe(): Stripe {
 
 // All price IDs — swap these for live mode prices when activating Stripe
 export const PRICE_IDS = {
-  starter_monthly:      'price_1T7jyqGfgrM0r4g1YAAIZyqp',
-  starter_annual:       'price_1T7jyqGfgrM0r4g1KcfRsA79',
-  pro_monthly:          'price_1T7jyrGfgrM0r4g17HzHFsBV',
-  pro_annual:           'price_1T7jyqGfgrM0r4g1NZhghHPq',
-  enterprise_monthly:   'price_1T7jytGfgrM0r4g1SiflSxB1',
-  enterprise_annual:    'price_1T7jytGfgrM0r4g1HRSIRUNP',
-  essential_build:      'price_1T7jysGfgrM0r4g1RRTn9Cwx',
-  professional_build:   'price_1T7jysGfgrM0r4g1gl77VNZu',
-  enterprise_build:     'price_1T7jyqGfgrM0r4g1s8dyxccl',
-  event_access:         'price_1T7jytGfgrM0r4g1MN0evVyQ',
+  starter_monthly:      'price_1T7iP7K07doTLFq1bYtHcYTg',
+  starter_annual:       'price_1T7idpK07doTLFq1B7H7qVYy',
+  pro_monthly:          'price_1T7ifWK07doTLFq1Mnq8qZ9h',
+  pro_annual:           'price_1T7ijXK07doTLFq1HhHcDsnI',
+  enterprise_monthly:   'price_1T7ilaK07doTLFq1pK1B8eX9',
+  enterprise_annual:    'price_1T7imIK07doTLFq1U33pwtzG',
+  essential_build:      'price_1T7iq7K07doTLFq1VxF0wRC8',
+  professional_build:   'price_1T7iqeK07doTLFq1fDhFYure',
+  enterprise_build:     'price_1T7irHK07doTLFq1Rmjinu3v',
+  event_access:         'price_1T7irpK07doTLFq1lou5pNfE',
 } as const;
 
 export type PriceKey = keyof typeof PRICE_IDS;
