@@ -388,6 +388,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             is_published: formData.is_published,
             slug: formData.slug || null,
             hours: hoursPayload,
+            ...(organizationId ? { organization_id: organizationId } : {}),
           })
           .eq('id', site.id);
 
@@ -403,6 +404,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
           .from('sites')
           .insert({
             tour_id: tourId,
+            organization_id: organizationId ?? null,
             name: formData.name,
             description: formData.description || null,
             latitude: formData.latitude,
