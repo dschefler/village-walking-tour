@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { TenantProvider } from '@/lib/context/tenant-context';
 import { hexToHsl, getContrastColor } from '@/lib/color-utils';
+import { ContentVersionChecker } from '@/components/pwa/ContentVersionChecker';
 import type { Organization } from '@/types';
 
 async function getOrganization(slug: string): Promise<Organization | null> {
@@ -131,6 +132,7 @@ export default async function TenantLayout({
       <style
         dangerouslySetInnerHTML={{ __html: themeCSS }}
       />
+      <ContentVersionChecker orgSlug={params.orgSlug} />
       <div
         className={`tenant-theme ${isDark ? 'dark' : ''}`}
         style={{
