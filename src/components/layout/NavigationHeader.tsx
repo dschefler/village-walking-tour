@@ -3,10 +3,22 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, MapPin, HelpCircle, Mail, Route } from 'lucide-react';
+import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HistoricSitesDropdown } from './HistoricSitesDropdown';
 import { useTenantOptional } from '@/lib/context/tenant-context';
+
+async function refreshApp() {
+  if ('caches' in window) {
+    const names = await caches.keys();
+    await Promise.all(
+      names
+        .filter(n => !n.includes('mapbox') && !n.includes('audio'))
+        .map(n => caches.delete(n))
+    );
+  }
+  window.location.reload();
+}
 
 interface NavigationHeaderProps {
   transparent?: boolean;
@@ -70,6 +82,16 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
                 Contact
               </Link>
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`${hoverClass} ${textClass}`}
+              onClick={refreshApp}
+              title="Refresh app content"
+              aria-label="Refresh app content"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -119,6 +141,13 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               <Mail className="w-5 h-5" />
               <span>Contact</span>
             </Link>
+            <button
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg w-full text-left ${hoverClass} ${textClass}`}
+              onClick={() => { setMobileMenuOpen(false); refreshApp(); }}
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Refresh Content</span>
+            </button>
           </nav>
         )}
       </div>
