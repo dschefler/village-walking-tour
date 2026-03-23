@@ -59,6 +59,7 @@ export default function EditTourPage() {
     cover_image_url: '',
   });
 
+  const [org, setOrg] = useState<{ slug: string; custom_domain: string | null; primary_color: string } | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSiteEditor, setShowSiteEditor] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
@@ -83,6 +84,17 @@ export default function EditTourPage() {
     }
 
     setTour(tourData);
+
+    // Load org for QR URL construction
+    if (tourData.organization_id) {
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('slug, custom_domain, primary_color')
+        .eq('id', tourData.organization_id)
+        .single();
+      setOrg(orgData ?? null);
+    }
+
     setFormData({
       name: tourData.name,
       slug: tourData.slug,
@@ -504,8 +516,13 @@ export default function EditTourPage() {
             </DialogDescription>
           </DialogHeader>
           <QRCodeGenerator
-            url={`https://southamptonwalkingtour.com/t/southampton/tour/${formData.slug}`}
+            url={
+              org?.custom_domain
+                ? `https://${org.custom_domain}/t/${org.slug}/tour/${formData.slug}`
+                : `https://walkingtourbuilder.com/t/${org?.slug}/tour/${formData.slug}`
+            }
             tourName={formData.name}
+            color={org?.primary_color}
           />
         </DialogContent>
       </Dialog>
