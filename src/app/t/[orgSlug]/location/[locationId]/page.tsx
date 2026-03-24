@@ -148,9 +148,7 @@ export default async function TenantLocationPage({
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-sm max-w-none">
-                    {location.description.split('\n').map((paragraph, i) => (
-                      <p key={i}>{paragraph}</p>
-                    ))}
+                    <p className="whitespace-pre-wrap">{location.description}</p>
                   </div>
                 </CardContent>
               </Card>
