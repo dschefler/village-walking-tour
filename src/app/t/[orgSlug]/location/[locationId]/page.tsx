@@ -127,7 +127,7 @@ export default async function TenantLocationPage({
   }
 
   const primaryImage = location.media?.find((m) => m.is_primary) || location.media?.[0];
-  const images = location.media?.filter((m) => m.file_type === 'image' && m.id !== primaryImage?.id) || [];
+  const images = location.media?.filter((m) => m.file_type === 'image') || [];
   const funFacts = await getFunFacts(location.id);
 
   return (
