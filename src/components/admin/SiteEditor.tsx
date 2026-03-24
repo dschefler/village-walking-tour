@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Map, { Marker, type MapRef, type MapMouseEvent } from 'react-map-gl';
-import { MapPin, Trash2, Eye, ExternalLink, Star, X, Clock, Lightbulb, Plus } from 'lucide-react';
+import { MapPin, Trash2, Eye, ExternalLink, X, Clock, Lightbulb, Plus, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -280,54 +281,51 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
   const handleImageUpload = async (url: string, mediaId?: string) => {
     if (!mediaId) return;
 
-    const newImage = {
-      mediaId,
-      url,
-      storagePath: '',
-      isPrimary: allImages.length === 0,
-      displayOrder: allImages.length,
-    };
-
     if (site) {
-      // Existing site: link immediately
-      await fetch('/api/site-media', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          records: [{
-            site_id: site.id,
-            media_id: mediaId,
-            display_order: siteImages.length,
-            is_primary: siteImages.length === 0,
-          }],
-        }),
+      setSiteImages((prev) => {
+        const isPrimary = prev.length === 0;
+        const newImage = { mediaId, url, storagePath: '', isPrimary, displayOrder: prev.length };
+        fetch('/api/site-media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            records: [{ site_id: site.id, media_id: mediaId, display_order: prev.length, is_primary: isPrimary }],
+          }),
+        });
+        return [...prev, newImage];
       });
-      setSiteImages((prev) => [...prev, newImage]);
     } else {
-      // New site: store for later
-      setPendingUploads((prev) => [...prev, newImage]);
+      setPendingUploads((prev) => {
+        const isPrimary = prev.length === 0;
+        return [...prev, { mediaId, url, storagePath: '', isPrimary, displayOrder: prev.length }];
+      });
     }
   };
 
-  const handleSetPrimary = async (mediaId: string) => {
+  const handleReorder = async (result: DropResult) => {
+    if (!result.destination || result.destination.index === result.source.index) return;
+
+    const reorder = (list: typeof siteImages) => {
+      const items = Array.from(list);
+      const [moved] = items.splice(result.source.index, 1);
+      items.splice(result.destination!.index, 0, moved);
+      return items.map((img, i) => ({ ...img, displayOrder: i, isPrimary: i === 0 }));
+    };
+
     if (site) {
-      // Update all to non-primary, then set the chosen one
-      await supabase
-        .from('site_media')
-        .update({ is_primary: false })
-        .eq('site_id', site.id);
-      await supabase
-        .from('site_media')
-        .update({ is_primary: true })
-        .eq('site_id', site.id)
-        .eq('media_id', mediaId);
-      setSiteImages((prev) =>
-        prev.map((img) => ({ ...img, isPrimary: img.mediaId === mediaId }))
+      const reordered = reorder(siteImages);
+      setSiteImages(reordered);
+      await Promise.all(
+        reordered.map((img) =>
+          supabase
+            .from('site_media')
+            .update({ display_order: img.displayOrder, is_primary: img.isPrimary })
+            .eq('site_id', site.id)
+            .eq('media_id', img.mediaId)
+        )
       );
     } else {
-      setPendingUploads((prev) =>
-        prev.map((img) => ({ ...img, isPrimary: img.mediaId === mediaId }))
-      );
+      setPendingUploads((prev) => reorder(prev));
     }
   };
 
@@ -675,49 +673,63 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
       <div className="space-y-2">
         <Label>Images</Label>
         <p className="text-xs text-muted-foreground">
-          First image is the primary (hero) photo. Add up to 6 additional gallery photos.
+          Drag to reorder. First image is the <strong>Cover Photo</strong>. Add up to 6 additional gallery photos.
         </p>
 
         {allImages.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
-            {allImages.map((img) => (
-              <div
-                key={img.mediaId}
-                className="relative group aspect-square rounded-lg overflow-hidden border bg-muted"
-              >
-                <img
-                  src={img.url}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-                {img.isPrimary && (
-                  <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] font-medium px-1.5 py-0.5 rounded">
-                    Primary
-                  </span>
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                  {!img.isPrimary && (
-                    <button
-                      type="button"
-                      onClick={() => handleSetPrimary(img.mediaId)}
-                      className="p-1.5 bg-white rounded-full text-primary hover:bg-primary hover:text-white transition-colors"
-                      title="Set as primary"
-                    >
-                      <Star className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(img.mediaId)}
-                    className="p-1.5 bg-white rounded-full text-destructive hover:bg-destructive hover:text-white transition-colors"
-                    title="Remove image"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
+          <DragDropContext onDragEnd={handleReorder}>
+            <Droppable droppableId="site-images">
+              {(provided) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="space-y-2"
+                >
+                  {allImages.map((img, index) => (
+                    <Draggable key={img.mediaId} draggableId={img.mediaId} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`flex items-center gap-3 p-2 rounded-lg border bg-background ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+                        >
+                          <div {...provided.dragHandleProps} className="cursor-grab text-muted-foreground">
+                            <GripVertical className="w-4 h-4" />
+                          </div>
+                          <div className="w-14 h-14 rounded-md overflow-hidden shrink-0 bg-muted">
+                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            {index === 0 ? (
+                              <span className="inline-block text-[10px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                                Cover Photo
+                              </span>
+                            ) : (
+                              <span className="inline-block text-[10px] font-medium uppercase tracking-wide text-muted-foreground border px-1.5 py-0.5 rounded">
+                                Gallery
+                              </span>
+                            )}
+                            {index !== 0 && (
+                              <p className="text-xs text-muted-foreground mt-0.5">Drag to top to make cover</p>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(img.mediaId)}
+                            className="p-1.5 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                            title="Remove image"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
 
         {allImages.length < 7 && (
@@ -730,7 +742,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         )}
         {allImages.length >= 7 && (
           <p className="text-xs text-muted-foreground text-center py-2">
-            Maximum of 7 photos reached (1 primary + 6 gallery).
+            Maximum of 7 photos reached (1 cover + 6 gallery).
           </p>
         )}
       </div>
