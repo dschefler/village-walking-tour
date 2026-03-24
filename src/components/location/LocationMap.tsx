@@ -10,6 +10,13 @@ import { calculateDistance, formatDistance } from '@/lib/utils';
 import type { Media } from '@/types';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
+function getImageUrl(storagePath: string) {
+  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
+    return storagePath;
+  }
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
+}
+
 interface LocationMapProps {
   latitude: number;
   longitude: number;
@@ -93,7 +100,7 @@ export function LocationMap({
               {primaryImage && (
                 <div className="relative aspect-video w-full rounded-t overflow-hidden">
                   <Image
-                    src={primaryImage.storage_path}
+                    src={getImageUrl(primaryImage.storage_path)}
                     alt={primaryImage.alt_text || name}
                     fill
                     className="object-cover"

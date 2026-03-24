@@ -21,6 +21,13 @@ interface NearbyLocationsProps {
   limit?: number;
 }
 
+function getImageUrl(storagePath: string) {
+  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
+    return storagePath;
+  }
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
+}
+
 export function NearbyLocations({
   currentLocationId,
   currentLatitude,
@@ -111,7 +118,7 @@ export function NearbyLocations({
                 {primaryImage ? (
                   <div className="relative aspect-video">
                     <Image
-                      src={primaryImage.storage_path}
+                      src={getImageUrl(primaryImage.storage_path)}
                       alt={primaryImage.alt_text || location.name}
                       fill
                       className="object-cover"
