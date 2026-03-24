@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { MapPin, Route } from 'lucide-react';
+import { MapPin, Route, Lightbulb } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
@@ -91,6 +91,16 @@ async function getLocation(locationId: string, orgSlug: string): Promise<Locatio
   } as LocationWithMedia;
 }
 
+async function getFunFacts(siteId: string) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('fun_facts')
+    .select('id, fact_text, display_order')
+    .eq('site_id', siteId)
+    .order('display_order');
+  return data || [];
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -118,6 +128,7 @@ export default async function TenantLocationPage({
 
   const primaryImage = location.media?.find((m) => m.is_primary) || location.media?.[0];
   const images = location.media?.filter((m) => m.file_type === 'image' && m.id !== primaryImage?.id) || [];
+  const funFacts = await getFunFacts(location.id);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -150,6 +161,27 @@ export default async function TenantLocationPage({
                   <div className="prose prose-sm max-w-none">
                     <p className="whitespace-pre-wrap">{location.description}</p>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {funFacts.length > 0 && (
+              <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-900/10">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                    <Lightbulb className="w-5 h-5" />
+                    Did You Know?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {funFacts.map((fact, i) => (
+                    <p key={fact.id} className="text-sm leading-relaxed text-foreground">
+                      {funFacts.length > 1 && (
+                        <span className="font-semibold text-amber-600 dark:text-amber-400 mr-1">{i + 1}.</span>
+                      )}
+                      {fact.fact_text}
+                    </p>
+                  ))}
                 </CardContent>
               </Card>
             )}
