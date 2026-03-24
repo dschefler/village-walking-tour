@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Map, { Marker, type MapRef, type MapMouseEvent } from 'react-map-gl';
-import { MapPin, Trash2, Eye, ExternalLink, Star, X, Clock } from 'lucide-react';
+import { MapPin, Trash2, Eye, ExternalLink, Star, X, Clock, Lightbulb, Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,6 +64,10 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [defaultVoiceId, setDefaultVoiceId] = useState<string | undefined>(undefined);
+
+  // Fun facts state
+  const [funFacts, setFunFacts] = useState<{ id?: string; fact_text: string }[]>([]);
+  const [newFact, setNewFact] = useState('');
 
   // Hours state
   const [hoursEnabled, setHoursEnabled] = useState(false);
@@ -165,6 +169,16 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         }
       };
       loadImages();
+
+      // Load existing fun facts
+      supabase
+        .from('fun_facts')
+        .select('id, fact_text, display_order')
+        .eq('site_id', site.id)
+        .order('display_order')
+        .then(({ data }) => {
+          if (data) setFunFacts(data.map((f) => ({ id: f.id, fact_text: f.fact_text })));
+        });
     }
   }, [site]);
 
@@ -394,6 +408,15 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
 
         if (error) throw error;
 
+        // Sync fun facts: delete all then re-insert
+        await supabase.from('fun_facts').delete().eq('site_id', site.id);
+        const validFacts = funFacts.filter((f) => f.fact_text.trim());
+        if (validFacts.length > 0) {
+          await supabase.from('fun_facts').insert(
+            validFacts.map((f, i) => ({ site_id: site.id, fact_text: f.fact_text.trim(), display_order: i }))
+          );
+        }
+
         toast({
           title: 'Saved',
           description: 'Site updated successfully',
@@ -436,6 +459,14 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
               })),
             }),
           });
+        }
+
+        // Save fun facts for new site
+        const validFacts = funFacts.filter((f) => f.fact_text.trim());
+        if (validFacts.length > 0 && newSite) {
+          await supabase.from('fun_facts').insert(
+            validFacts.map((f, i) => ({ site_id: newSite.id, fact_text: f.fact_text.trim(), display_order: i }))
+          );
         }
 
         toast({
@@ -780,6 +811,61 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             </div>
           </div>
         )}
+      </div>
+
+      {/* Did You Know Facts */}
+      <div className="space-y-3 pt-4 border-t">
+        <div className="flex items-center gap-2">
+          <Lightbulb className="w-4 h-4 text-amber-500" />
+          <Label className="text-base font-medium">Did You Know? Facts</Label>
+        </div>
+        <p className="text-xs text-muted-foreground">Add interesting facts shown on the location page.</p>
+
+        {funFacts.map((fact, i) => (
+          <div key={i} className="flex gap-2 items-start">
+            <Textarea
+              value={fact.fact_text}
+              onChange={(e) =>
+                setFunFacts((prev) => prev.map((f, idx) => idx === i ? { ...f, fact_text: e.target.value } : f))
+              }
+              rows={2}
+              className="flex-1 text-sm"
+              placeholder="Enter a fun fact…"
+            />
+            <button
+              type="button"
+              onClick={() => setFunFacts((prev) => prev.filter((_, idx) => idx !== i))}
+              className="mt-1 text-muted-foreground hover:text-destructive"
+              aria-label="Remove fact"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+
+        <div className="flex gap-2 items-start">
+          <Textarea
+            value={newFact}
+            onChange={(e) => setNewFact(e.target.value)}
+            rows={2}
+            className="flex-1 text-sm"
+            placeholder="Type a new fact and click Add…"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-1 shrink-0"
+            onClick={() => {
+              if (newFact.trim()) {
+                setFunFacts((prev) => [...prev, { fact_text: newFact.trim() }]);
+                setNewFact('');
+              }
+            }}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Publish Toggle */}
