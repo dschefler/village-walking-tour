@@ -113,12 +113,19 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
             />
           </div>
 
-          {/* Caption */}
-          {selectedImage.caption && (
-            <div className="absolute bottom-6 left-0 right-0 text-center z-10">
-              <p className="text-white text-sm bg-black/50 inline-block px-4 py-1 rounded-full">
-                {selectedImage.caption}
-              </p>
+          {/* Caption + Photo Credit */}
+          {(selectedImage.caption || selectedImage.photo_credit) && (
+            <div className="absolute bottom-6 left-0 right-0 text-center z-10 space-y-1">
+              {selectedImage.caption && (
+                <p className="text-white text-sm bg-black/50 inline-block px-4 py-1 rounded-full">
+                  {selectedImage.caption}
+                </p>
+              )}
+              {selectedImage.photo_credit && (
+                <p className="text-white/70 text-xs">
+                  Photo: {selectedImage.photo_credit}
+                </p>
+              )}
             </div>
           )}
 

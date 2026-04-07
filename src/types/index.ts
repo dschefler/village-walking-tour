@@ -49,6 +49,7 @@ export interface Media {
   file_type: 'image' | 'audio';
   alt_text: string | null;
   caption: string | null;
+  photo_credit: string | null;
   width: number | null;
   height: number | null;
   file_size: number | null;

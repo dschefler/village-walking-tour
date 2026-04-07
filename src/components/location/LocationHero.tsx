@@ -31,6 +31,13 @@ export function LocationHero({ name, primaryImage, address }: LocationHeroProps)
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          {primaryImage.photo_credit && (
+            <div className="absolute bottom-2 right-3 z-10">
+              <span className="text-white/70 text-[10px]">
+                Photo: {primaryImage.photo_credit}
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="aspect-[21/9] md:aspect-[3/1] w-full bg-gradient-to-br from-primary to-primary/80" />

@@ -77,10 +77,10 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
 
   // Image management state
   const [siteImages, setSiteImages] = useState<
-    { mediaId: string; url: string; storagePath: string; isPrimary: boolean; displayOrder: number }[]
+    { mediaId: string; url: string; storagePath: string; isPrimary: boolean; displayOrder: number; photoCredit: string }[]
   >([]);
   const [pendingUploads, setPendingUploads] = useState<
-    { mediaId: string; url: string; storagePath: string; isPrimary: boolean; displayOrder: number }[]
+    { mediaId: string; url: string; storagePath: string; isPrimary: boolean; displayOrder: number; photoCredit: string }[]
   >([]);
 
   const [formData, setFormData] = useState({
@@ -147,7 +147,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
       const loadImages = async () => {
         const { data, error } = await supabase
           .from('site_media')
-          .select('media_id, display_order, is_primary, media:media_id(id, storage_path)')
+          .select('media_id, display_order, is_primary, media:media_id(id, storage_path, photo_credit)')
           .eq('site_id', site.id)
           .order('display_order');
 
@@ -164,6 +164,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
                 storagePath: row.media.storage_path,
                 isPrimary: row.is_primary,
                 displayOrder: row.display_order,
+                photoCredit: row.media.photo_credit || '',
               };
             })
           );
@@ -284,7 +285,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     if (site) {
       setSiteImages((prev) => {
         const isPrimary = prev.length === 0;
-        const newImage = { mediaId, url, storagePath: '', isPrimary, displayOrder: prev.length };
+        const newImage = { mediaId, url, storagePath: '', isPrimary, displayOrder: prev.length, photoCredit: '' };
         fetch('/api/site-media', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -297,7 +298,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     } else {
       setPendingUploads((prev) => {
         const isPrimary = prev.length === 0;
-        return [...prev, { mediaId, url, storagePath: '', isPrimary, displayOrder: prev.length }];
+        return [...prev, { mediaId, url, storagePath: '', isPrimary, displayOrder: prev.length, photoCredit: '' }];
       });
     }
   };
@@ -358,6 +359,19 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         return remaining;
       });
     }
+  };
+
+  const handleCreditChange = async (mediaId: string, credit: string) => {
+    const updateState = (prev: typeof siteImages) =>
+      prev.map((img) => img.mediaId === mediaId ? { ...img, photoCredit: credit } : img);
+
+    if (site) {
+      setSiteImages(updateState);
+    } else {
+      setPendingUploads(updateState as any);
+    }
+
+    await supabase.from('media').update({ photo_credit: credit || null }).eq('id', mediaId);
   };
 
   const handleSave = async () => {
@@ -709,9 +723,13 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
                                 Gallery
                               </span>
                             )}
-                            {index !== 0 && (
-                              <p className="text-xs text-muted-foreground mt-0.5">Drag to top to make cover</p>
-                            )}
+                            <input
+                              type="text"
+                              value={img.photoCredit}
+                              onChange={(e) => handleCreditChange(img.mediaId, e.target.value)}
+                              placeholder="Photo credit (optional)"
+                              className="mt-1.5 w-full text-xs border border-input rounded px-2 py-1 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
                           </div>
                           <button
                             type="button"
