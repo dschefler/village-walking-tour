@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Clock, MapPin, Footprints } from 'lucide-react';
+import { Clock, MapPin, Footprints, Car } from 'lucide-react';
 import { useGeolocation } from '@/hooks/use-geolocation';
-import { calculateDistance, calculateWalkingTime, formatWalkingTime, formatDistance } from '@/lib/utils';
+import { calculateDistance, calculateWalkingTime, formatWalkingTime, formatDistance, calculateSteps, formatSteps, calculateDrivingTime, formatDrivingTime } from '@/lib/utils';
 
 interface WalkingTimeEstimateProps {
   latitude: number;
@@ -52,17 +52,21 @@ export function WalkingTimeEstimate({
     longitude
   );
 
-  const walkingTime = calculateWalkingTime(distance);
-
   return (
-    <div className={`flex items-center gap-4 ${className}`}>
+    <div className={`flex flex-col gap-1.5 ${className}`}>
       <div className="flex items-center gap-2">
-        <MapPin className="w-4 h-4 text-primary" />
+        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
         <span className="text-sm font-medium">{formatDistance(distance)}</span>
       </div>
       <div className="flex items-center gap-2">
-        <Footprints className="w-4 h-4 text-primary" />
-        <span className="text-sm font-medium">{formatWalkingTime(walkingTime)}</span>
+        <Footprints className="w-4 h-4 text-primary flex-shrink-0" />
+        <span className="text-sm font-medium">
+          {formatWalkingTime(calculateWalkingTime(distance))} · {formatSteps(calculateSteps(distance))}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <Car className="w-4 h-4 text-primary flex-shrink-0" />
+        <span className="text-sm font-medium">{formatDrivingTime(calculateDrivingTime(distance))}</span>
       </div>
     </div>
   );
