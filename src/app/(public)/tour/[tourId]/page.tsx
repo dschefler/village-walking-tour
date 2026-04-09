@@ -214,6 +214,9 @@ export default function TourPage() {
 
     // Activate in-app navigation mode
     setNavigatingToSite(target);
+
+    // Launch external maps app with turn-by-turn walking directions
+    window.open(buildMapsUrl(target, lat, lng), '_blank');
   };
 
   const triggerStampCelebration = useCallback(
