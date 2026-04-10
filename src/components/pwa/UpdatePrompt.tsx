@@ -14,6 +14,17 @@ export async function clearPageCaches() {
   );
 }
 
+// Unregisters all service workers so the next load fetches fresh code from the server.
+// Preserves mapbox tile and audio caches.
+export async function unregisterAndReload() {
+  await clearPageCaches();
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+  }
+  window.location.reload();
+}
+
 // Handles code deployment updates via service worker controllerchange.
 // For data-content updates (new tour stops), use ContentVersionChecker.
 export function UpdatePrompt() {
@@ -21,17 +32,19 @@ export function UpdatePrompt() {
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
+
     const handleControllerChange = () => setShowPrompt(true);
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+    // Force-check for a SW update on every page load
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg) reg.update().catch(() => {});
+    });
+
     return () => {
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
   }, []);
-
-  async function handleRefresh() {
-    await clearPageCaches();
-    window.location.reload();
-  }
 
   if (!showPrompt) return null;
 
@@ -42,7 +55,7 @@ export function UpdatePrompt() {
         App updated — tap Refresh to load the latest version.
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <Button size="sm" variant="secondary" onClick={handleRefresh} className="h-7 text-xs font-semibold">
+        <Button size="sm" variant="secondary" onClick={unregisterAndReload} className="h-7 text-xs font-semibold">
           Refresh
         </Button>
         <button onClick={() => setShowPrompt(false)} aria-label="Dismiss" className="opacity-70 hover:opacity-100">

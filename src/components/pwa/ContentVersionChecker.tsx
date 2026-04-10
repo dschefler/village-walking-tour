@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { clearPageCaches } from './UpdatePrompt';
+import { unregisterAndReload } from './UpdatePrompt';
 
 // Checks Supabase content version on every app open.
 // Shows a banner when tour/site data has changed since last visit.
@@ -36,8 +36,7 @@ export function ContentVersionChecker({ orgSlug }: { orgSlug: string }) {
 
   async function handleRefresh() {
     if (latestVersion) localStorage.setItem(storageKey, latestVersion);
-    await clearPageCaches();
-    window.location.reload();
+    await unregisterAndReload();
   }
 
   if (!showPrompt) return null;
