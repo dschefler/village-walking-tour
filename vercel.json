@@ -1,8 +1,4 @@
 {
-  "alias": [
-    "southamptonwalkingtour.com",
-    "www.southamptonwalkingtour.com"
-  ],
   "crons": [
     {
       "path": "/api/keep-alive",

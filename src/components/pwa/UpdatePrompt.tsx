@@ -21,52 +21,10 @@ export function UpdatePrompt() {
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
-
-    // When the SW controller changes (new SW took over), show prompt
     const handleControllerChange = () => setShowPrompt(true);
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-
-    // Also watch for a new SW installing and becoming "installed" (waiting)
-    const watchRegistration = (reg: ServiceWorkerRegistration) => {
-      if (reg.waiting) {
-        // There's already a waiting SW — prompt immediately
-        setShowPrompt(true);
-        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        return;
-      }
-      reg.addEventListener('updatefound', () => {
-        const incoming = reg.installing;
-        if (!incoming) return;
-        incoming.addEventListener('statechange', () => {
-          if (incoming.state === 'installed' && navigator.serviceWorker.controller) {
-            // New SW installed and waiting — tell it to skip waiting
-            reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-            setShowPrompt(true);
-          }
-        });
-      });
-    };
-
-    // Check existing registration immediately
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg) watchRegistration(reg);
-    });
-
-    // Periodically check for updates (every 30 min)
-    const interval = setInterval(() => {
-      navigator.serviceWorker.getRegistration().then(reg => reg?.update());
-    }, 30 * 60 * 1000);
-
-    // Also check on tab focus (catches long-idle tabs)
-    const handleFocus = () => {
-      navigator.serviceWorker.getRegistration().then(reg => reg?.update());
-    };
-    window.addEventListener('focus', handleFocus);
-
     return () => {
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-      window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
     };
   }, []);
 
