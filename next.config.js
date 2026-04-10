@@ -3,7 +3,23 @@ const withPWA = require('next-pwa')({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  // Exclude JS/CSS chunks from precaching so code changes reach users immediately.
+  // These are handled below with NetworkFirst runtime caching instead.
+  buildExcludes: [/chunks\/.*$/, /static\/.*\.js$/, /static\/.*\.css$/],
   runtimeCaching: [
+    {
+      // Next.js JS/CSS chunks — NetworkFirst so code updates load without needing a SW refresh cycle
+      urlPattern: /^\/_next\/static\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'next-static',
+        networkTimeoutSeconds: 10,
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days fallback when offline
+        },
+      },
+    },
     {
       urlPattern: /^https:\/\/api\.mapbox\.com\/.*/i,
       handler: 'CacheFirst',
