@@ -340,7 +340,7 @@ export default function CreateYourTourPage() {
             Create Your Tour
           </h1>
           <p className="text-gray-300">
-            Select the historic sites you want to visit and we&apos;ll create an optimized walking route for you.
+            Select the historic sites you want to visit. Choose Walk for village stops or Drive for sites further afield — we&apos;ll build an optimized route either way.
           </p>
         </div>
       </header>

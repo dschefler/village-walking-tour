@@ -242,7 +242,7 @@ export default function TenantCreateYourTourPage() {
             Create Your Tour
           </h1>
           <p className="opacity-90">
-            Select the sites you want to visit and we&apos;ll create an optimized walking route for you.
+            Select the sites you want to visit. Choose Walk for nearby stops or Drive for sites further afield — we&apos;ll build an optimized route either way.
           </p>
         </div>
       </header>
