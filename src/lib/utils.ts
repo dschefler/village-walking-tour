@@ -5,11 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const FEET_PER_METER = 3.28084;
+const FEET_PER_MILE = 5280;
+
 export function formatDistance(meters: number): string {
-  if (meters < 1000) {
-    return `${Math.round(meters)}m`;
+  const feet = meters * FEET_PER_METER;
+  if (feet < 1000) {
+    return `${Math.round(feet)} ft`;
   }
-  return `${(meters / 1000).toFixed(1)}km`;
+  return `${(feet / FEET_PER_MILE).toFixed(1)} mi`;
 }
 
 export function formatDuration(minutes: number): string {
@@ -84,6 +88,37 @@ export function generateId(): string {
  */
 export function calculateWalkingTime(distanceMeters: number): number {
   return Math.ceil(distanceMeters / 83.3);
+}
+
+/**
+ * Calculate estimated step count from distance in meters
+ * Average stride: 2.5 feet
+ */
+export function calculateSteps(distanceMeters: number): number {
+  const feet = distanceMeters * FEET_PER_METER;
+  return Math.round(feet / 2.5);
+}
+
+export function formatSteps(steps: number): string {
+  if (steps < 1000) return `${steps} steps`;
+  return `${(steps / 1000).toFixed(1)}k steps`;
+}
+
+/**
+ * Calculate estimated driving time from distance in meters
+ * 25 mph average with 1.3x road routing factor
+ */
+export function calculateDrivingTime(distanceMeters: number): number {
+  return Math.ceil((distanceMeters * 1.3) / 670);
+}
+
+export function formatDrivingTime(minutes: number): string {
+  if (minutes < 1) return 'Less than 1 min drive';
+  if (minutes < 60) return `${minutes} min drive`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (mins === 0) return `${hours}h drive`;
+  return `${hours}h ${mins}m drive`;
 }
 
 /**
