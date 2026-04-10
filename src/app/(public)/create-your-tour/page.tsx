@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, ExternalLink, ArrowLeft } from 'lucide-react';
+import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, ExternalLink, ArrowLeft, Car, Footprints } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -123,15 +124,35 @@ function calculateTotalDistance(sites: SiteItem[]): number {
   return total;
 }
 
-// Estimate walking time (average 5 km/h = 83.33 m/min)
+const FEET_PER_METER = 3.28084;
+const FEET_PER_MILE = 5280;
+
+function formatDistanceImperial(meters: number): string {
+  const feet = meters * FEET_PER_METER;
+  if (feet < 1000) return `${Math.round(feet)} ft`;
+  return `${(feet / FEET_PER_MILE).toFixed(1)} mi`;
+}
+
 function estimateWalkingTime(distanceMeters: number): string {
   const minutes = Math.round(distanceMeters / 83.33);
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
+  if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return `${hours} hr ${remainingMinutes} min`;
+  return `${hours} hr ${minutes % 60} min`;
+}
+
+function estimateDrivingTime(distanceMeters: number): string {
+  const minutes = Math.ceil((distanceMeters * 1.3) / 670);
+  if (minutes < 1) return 'Less than 1 min';
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
+}
+
+function estimateSteps(distanceMeters: number): string {
+  const steps = Math.round((distanceMeters * FEET_PER_METER) / 2.5);
+  if (steps < 1000) return `${steps} steps`;
+  return `${(steps / 1000).toFixed(1)}k steps`;
 }
 
 export default function CreateYourTourPage() {
@@ -143,6 +164,7 @@ export default function CreateYourTourPage() {
   const [createdRoute, setCreatedRoute] = useState<SiteItem[]>([]);
   const [showWalkingGif, setShowWalkingGif] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [travelMode, setTravelMode] = useState<'walking' | 'driving'>('walking');
 
   // GPS and proximity notifications
   const { userLocation, getCurrentPosition, error: geoError } = useGeolocation();
@@ -263,7 +285,7 @@ export default function CreateYourTourPage() {
     if (createdRoute.length === 1) {
       // Single destination - start from user's location
       const dest = createdRoute[0];
-      const url = `https://www.google.com/maps/dir/?api=1${originStr}&destination=${dest.latitude},${dest.longitude}&travelmode=walking`;
+      const url = `https://www.google.com/maps/dir/?api=1${originStr}&destination=${dest.latitude},${dest.longitude}&travelmode=${travelMode === 'driving' ? 'driving' : 'walking'}`;
       window.open(url, '_blank');
       return;
     }
@@ -283,7 +305,7 @@ export default function CreateYourTourPage() {
       url += `&waypoints=${encodeURIComponent(waypointStr)}`;
     }
 
-    url += `&travelmode=walking`;
+    url += `&travelmode=${travelMode === 'driving' ? 'driving' : 'walking'}`;
 
     window.open(url, '_blank');
   };
@@ -473,19 +495,32 @@ export default function CreateYourTourPage() {
                       Edit Selection
                     </Button>
                   </div>
-                  <div className="flex items-center gap-6 text-sm">
+                  <div className="flex items-center gap-4 text-sm flex-wrap">
                     <div>
                       <span className="text-gray-500">Stops:</span>{' '}
                       <span className="font-semibold">{createdRoute.length}</span>
                     </div>
                     <div>
                       <span className="text-gray-500">Distance:</span>{' '}
-                      <span className="font-semibold">{(totalDistance / 1000).toFixed(2)} km</span>
+                      <span className="font-semibold">{formatDistanceImperial(totalDistance)}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500">Est. Walking:</span>{' '}
-                      <span className="font-semibold">{estimateWalkingTime(totalDistance)}</span>
-                    </div>
+                    {travelMode === 'walking' ? (
+                      <>
+                        <div>
+                          <span className="text-gray-500">Walk:</span>{' '}
+                          <span className="font-semibold">{estimateWalkingTime(totalDistance)}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Steps:</span>{' '}
+                          <span className="font-semibold">{estimateSteps(totalDistance)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <span className="text-gray-500">Drive:</span>{' '}
+                        <span className="font-semibold">{estimateDrivingTime(totalDistance)}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Route Order */}
@@ -528,13 +563,36 @@ export default function CreateYourTourPage() {
 
                   {/* Start Navigation Button */}
                   <div className="mt-4 pt-4 border-t space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Travel mode:</span>
+                      <div className="flex rounded-md border bg-gray-100 p-0.5 gap-0.5">
+                        <button
+                          onClick={() => setTravelMode('walking')}
+                          className={cn(
+                            'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                            travelMode === 'walking' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                          )}
+                        >
+                          <Footprints className="w-3 h-3" /> Walk
+                        </button>
+                        <button
+                          onClick={() => setTravelMode('driving')}
+                          className={cn(
+                            'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                            travelMode === 'driving' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                          )}
+                        >
+                          <Car className="w-3 h-3" /> Drive
+                        </button>
+                      </div>
+                    </div>
                     <Button
                       onClick={startNavigation}
                       className="w-full bg-[#A40000] hover:bg-[#8a0000] text-white gap-2"
                       size="lg"
                     >
-                      <Navigation className="w-5 h-5" />
-                      Start Walking Directions
+                      {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
+                      {travelMode === 'driving' ? 'Start Driving Directions' : 'Start Walking Directions'}
                       <ExternalLink className="w-4 h-4 ml-1" />
                     </Button>
                     <p className="text-xs text-gray-500 text-center">
