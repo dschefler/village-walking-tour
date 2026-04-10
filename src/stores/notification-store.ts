@@ -37,7 +37,7 @@ export const useNotificationStore = create<NotificationState>()(
   persist(
     (set, get) => ({
       // Settings
-      enabled: false,
+      enabled: true,
       radiusMeters: 100,
 
       // State

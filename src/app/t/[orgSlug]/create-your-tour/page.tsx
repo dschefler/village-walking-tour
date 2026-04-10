@@ -370,21 +370,21 @@ export default function TenantCreateYourTourPage() {
                     </Button>
                   </div>
                   <div className="flex items-center gap-4 text-sm flex-wrap">
-                    <div><span className="text-gray-500">Stops:</span> <span className="font-semibold">{createdRoute.length}</span></div>
-                    <div><span className="text-gray-500">Distance:</span> <span className="font-semibold">{formatDistanceImperial(totalDistance)}</span></div>
+                    <div><span className="text-blue-600 font-medium">Stops:</span> <span className="font-semibold">{createdRoute.length}</span></div>
+                    <div><span className="text-blue-600 font-medium">Distance:</span> <span className="font-semibold">{formatDistanceImperial(totalDistance)}</span></div>
                     {travelMode === 'walking' ? (
                       <>
-                        <div><span className="text-gray-500">Walk:</span> <span className="font-semibold">{estimateWalkingTime(totalDistance)}</span></div>
-                        <div><span className="text-gray-500">Steps:</span> <span className="font-semibold">{estimateSteps(totalDistance)}</span></div>
+                        <div><span className="text-blue-600 font-medium">Walk:</span> <span className="font-semibold">{estimateWalkingTime(totalDistance)}</span></div>
+                        <div><span className="text-blue-600 font-medium">Steps:</span> <span className="font-semibold">{estimateSteps(totalDistance)}</span></div>
                       </>
                     ) : (
-                      <div><span className="text-gray-500">Drive:</span> <span className="font-semibold">{estimateDrivingTime(totalDistance)}</span></div>
+                      <div><span className="text-blue-600 font-medium">Drive:</span> <span className="font-semibold">{estimateDrivingTime(totalDistance)}</span></div>
                     )}
                   </div>
 
                   {/* Route Order */}
                   <div className="mt-4 space-y-2">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">Route Order</p>
+                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Route Order</p>
                     <div className="flex flex-wrap gap-2">
                       {createdRoute.map((site, index) => (
                         <div key={site.id} className="inline-flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1 text-sm">
@@ -418,7 +418,7 @@ export default function TenantCreateYourTourPage() {
                   {/* Start Navigation */}
                   <div className="mt-4 pt-4 border-t space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Travel mode:</span>
+                      <span className="text-xs text-blue-600 font-medium">Travel mode:</span>
                       <div className="flex rounded-md border bg-gray-100 p-0.5 gap-0.5">
                         <button
                           onClick={() => setTravelMode('walking')}
