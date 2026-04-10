@@ -3,7 +3,7 @@ const withPWA = require('next-pwa')({
   register: true,
   skipWaiting: true,
   clientsClaim: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: true,
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/api\.mapbox\.com\/.*/i,
