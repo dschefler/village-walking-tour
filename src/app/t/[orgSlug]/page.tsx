@@ -1,12 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Smartphone, Route } from 'lucide-react';
+import { Smartphone, Route, HelpCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
-import { StartExploringButton } from '@/components/layout/StartExploringButton';
 import { HideWhenInstalled } from '@/components/pwa/HideWhenInstalled';
 import type { Tour } from '@/types';
 
@@ -85,7 +84,16 @@ export default async function TenantHomePage({
             {tour?.description || 'Discover the rich history and hidden stories through this self-guided walking tour.'}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <StartExploringButton orgSlug={params.orgSlug} />
+            <Button
+              size="lg"
+              asChild
+              className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+            >
+              <Link href={`/t/${params.orgSlug}/how-to-use`}>
+                <HelpCircle className="w-5 h-5" />
+                How to Use
+              </Link>
+            </Button>
             <Button
               size="lg"
               asChild

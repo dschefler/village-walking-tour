@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Route, Smartphone } from 'lucide-react';
+import { Route, Smartphone, HelpCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
-import { StartExploringButton } from '@/components/layout/StartExploringButton';
 import { HideWhenInstalled } from '@/components/pwa/HideWhenInstalled';
 import { Button } from '@/components/ui/button';
 import type { Tour } from '@/types';
@@ -123,7 +122,16 @@ export default async function HomePage() {
             and audio narration.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <StartExploringButton />
+            <Button
+              size="lg"
+              asChild
+              className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+            >
+              <Link href="/t/southampton/how-to-use">
+                <HelpCircle className="w-5 h-5" />
+                How to Use
+              </Link>
+            </Button>
             <Button
               size="lg"
               asChild
