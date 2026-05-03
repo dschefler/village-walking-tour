@@ -40,19 +40,24 @@ export default function TenantAboutPage({
           </p>
         </section>
 
-        {/* Full-width historic Main Street photo */}
-        <div className="relative w-full h-52 sm:h-72 md:h-96 overflow-hidden my-4">
-          <Image
-            src="/about/historic-main-street.webp"
-            alt="Historic Main Street, Southampton Village"
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3">
-            <p className="text-white text-sm text-center italic">Main Street, Southampton Village</p>
-          </div>
+        {/* Historic Main Street photo — full image, no crop */}
+        <div className="container mx-auto px-4 max-w-3xl my-4">
+          <figure className="space-y-2">
+            <div className="rounded-xl overflow-hidden shadow-md">
+              <Image
+                src="/about/historic-main-street.webp"
+                alt="Historic Main Street, Southampton Village"
+                width={1929}
+                height={1257}
+                className="w-full h-auto"
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+              />
+            </div>
+            <figcaption className="text-xs text-muted-foreground text-center italic">
+              Main Street, Southampton Village
+            </figcaption>
+          </figure>
         </div>
 
         {/* Body text + signs */}
