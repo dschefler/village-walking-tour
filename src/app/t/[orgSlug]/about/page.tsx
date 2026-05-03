@@ -72,38 +72,6 @@ export default function TenantAboutPage({
             local resources that helped sustain the growing community.
           </p>
 
-          {/* Street sign pair */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 my-2">
-            <figure className="space-y-1.5">
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-md">
-                <Image
-                  src="/about/towne-street-sign.jpg"
-                  alt="Ye Towne Street Opened 1648 — State Education Department marker"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 350px"
-                />
-              </div>
-              <figcaption className="text-xs text-muted-foreground text-center">
-                Ye Towne Street, opened 1648
-              </figcaption>
-            </figure>
-            <figure className="space-y-1.5">
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-md">
-                <Image
-                  src="/about/jobs-lane-sign.jpg"
-                  alt="Jobs Lane Opened 1664"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 350px"
-                />
-              </div>
-              <figcaption className="text-xs text-muted-foreground text-center">
-                Jobs Lane, opened 1664
-              </figcaption>
-            </figure>
-          </div>
-
           <p className="leading-relaxed">
             Over the centuries, Southampton evolved from a small colonial settlement into a thriving
             maritime and agricultural village. Farming, fishing, duck-raising, and eventually the
