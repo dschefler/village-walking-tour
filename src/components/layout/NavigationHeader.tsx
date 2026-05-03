@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw } from 'lucide-react';
+import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HistoricSitesDropdown } from './HistoricSitesDropdown';
 import { useTenantOptional } from '@/lib/context/tenant-context';
@@ -63,6 +63,12 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
 
           {/* Desktop Navigation */}
           <nav className={`hidden md:flex items-center gap-1 ${textClass}`}>
+            <Button variant="ghost" asChild className={hoverClass}>
+              <Link href={`${prefix}/about`} className={`flex items-center gap-2 ${textClass}`}>
+                <Info className="w-4 h-4" />
+                About
+              </Link>
+            </Button>
             <HistoricSitesDropdown transparent={transparent} orgSlug={orgSlug} />
             <Button variant="ghost" asChild className={hoverClass}>
               <Link href={`${prefix}/how-to-use`} className={`flex items-center gap-2 ${textClass}`}>
@@ -109,6 +115,14 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <nav className={`md:hidden py-4 space-y-2 ${transparent ? 'bg-black/80 rounded-lg px-2' : 'border-t'}`}>
+            <Link
+              href={`${prefix}/about`}
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Info className="w-5 h-5" />
+              <span>About</span>
+            </Link>
             <Link
               href={`${prefix}/historic-sites`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
