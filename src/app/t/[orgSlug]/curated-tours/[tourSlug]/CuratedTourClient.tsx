@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
-import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, ExternalLink, Car, Footprints, ArrowLeft } from 'lucide-react';
+import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, ArrowLeft, X } from 'lucide-react';
 import Link from 'next/link';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -137,6 +137,9 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
   const [showWalkingGif, setShowWalkingGif] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [travelMode, setTravelMode] = useState<'walking' | 'driving'>('walking');
+  const [mapboxRoute, setMapboxRoute] = useState<GeoJSON.Feature<GeoJSON.LineString> | null>(null);
+  const [navSteps, setNavSteps] = useState<{ maneuver: { instruction: string }; distance: number }[]>([]);
+  const [navLoading, setNavLoading] = useState(false);
 
   const { userLocation, getCurrentPosition } = useGeolocation();
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
@@ -206,27 +209,54 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
     }
   };
 
-  const startNavigation = async () => {
-    if (createdRoute.length === 0) return;
+  const openGoogleMaps = async () => {
     let originStr = '';
     try {
       const loc = await getCurrentPosition();
       if (loc) originStr = `&origin=${loc.latitude},${loc.longitude}`;
-    } catch { /* use device location */ }
-
+    } catch {}
     const googleMode = travelMode === 'driving' ? 'driving' : 'walking';
     if (createdRoute.length === 1) {
       const dest = createdRoute[0];
       window.open(`https://www.google.com/maps/dir/?api=1${originStr}&destination=${dest.latitude},${dest.longitude}&travelmode=${googleMode}`, '_blank');
       return;
     }
-
     const destination = createdRoute[createdRoute.length - 1];
     const waypoints = createdRoute.slice(0, -1).map((s) => `${s.latitude},${s.longitude}`).join('|');
     window.open(
       `https://www.google.com/maps/dir/?api=1${originStr}&destination=${destination.latitude},${destination.longitude}&waypoints=${encodeURIComponent(waypoints)}&travelmode=${googleMode}`,
       '_blank'
     );
+  };
+
+  const startNavigation = async () => {
+    if (createdRoute.length === 0) return;
+    setNavLoading(true);
+    try {
+      let coordParts: string[] = [];
+      try {
+        const loc = await getCurrentPosition();
+        coordParts.push(`${loc.longitude},${loc.latitude}`);
+      } catch {}
+      coordParts.push(...createdRoute.map((s) => `${s.longitude},${s.latitude}`));
+      const mode = travelMode === 'driving' ? 'driving' : 'walking';
+      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      const res = await fetch(
+        `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordParts.join(';')}?steps=true&geometries=geojson&overview=full&access_token=${token}`
+      );
+      const data = await res.json();
+      if (data.routes?.length) {
+        const route = data.routes[0];
+        setMapboxRoute({ type: 'Feature', geometry: route.geometry, properties: {} });
+        setNavSteps(route.legs.flatMap((leg: any) => leg.steps ?? []));
+      } else {
+        await openGoogleMaps();
+      }
+    } catch {
+      await openGoogleMaps();
+    } finally {
+      setNavLoading(false);
+    }
   };
 
   const getImageUrl = (storagePath: string) => {
@@ -379,7 +409,7 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
                       <Navigation className="w-5 h-5" style={{ color: primaryColor }} />
                       Your Optimized Route
                     </h3>
-                    <Button variant="outline" size="sm" onClick={() => { setTourCreated(false); setCreatedRoute([]); }}>
+                    <Button variant="outline" size="sm" onClick={() => { setTourCreated(false); setCreatedRoute([]); setMapboxRoute(null); setNavSteps([]); }}>
                       Edit Selection
                     </Button>
                   </div>
@@ -454,19 +484,32 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
                         </button>
                       </div>
                     </div>
-                    <Button
-                      onClick={startNavigation}
-                      className="w-full text-white gap-2"
-                      style={{ backgroundColor: primaryColor }}
-                      size="lg"
-                    >
-                      {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
-                      {travelMode === 'driving' ? 'Start Driving Directions' : 'Start Walking Directions'}
-                      <ExternalLink className="w-4 h-4 ml-1" />
-                    </Button>
-                    <p className="text-xs text-gray-500 text-center">
-                      Opens Google Maps with turn-by-turn directions
-                    </p>
+                    {!mapboxRoute ? (
+                      <Button
+                        onClick={startNavigation}
+                        className="w-full text-white gap-2"
+                        style={{ backgroundColor: primaryColor }}
+                        size="lg"
+                        disabled={navLoading}
+                      >
+                        {navLoading ? (
+                          <><Loader2 className="w-5 h-5 animate-spin" />Loading route…</>
+                        ) : (
+                          <>{travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
+                          {travelMode === 'driving' ? 'Get Driving Directions' : 'Get Walking Directions'}</>
+                        )}
+                      </Button>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium" style={{ color: primaryColor }}>Route loaded — follow the map</span>
+                        <button
+                          onClick={() => { setMapboxRoute(null); setNavSteps([]); }}
+                          className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                        >
+                          <X className="w-3 h-3" /> Clear
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -483,12 +526,45 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
                   </div>
                 )}
 
+                {/* Turn-by-turn steps */}
+                {navSteps.length > 0 && (
+                  <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div className="px-4 py-2 border-b flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">Turn-by-turn directions</span>
+                      <button
+                        onClick={() => openGoogleMaps()}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Open in Google Maps
+                      </button>
+                    </div>
+                    <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm">
+                      {navSteps.map((step, i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-2.5">
+                          <span className="w-5 h-5 flex-shrink-0 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-semibold mt-0.5">
+                            {i + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="leading-snug">{step.maneuver.instruction}</p>
+                            {step.distance > 0 && (
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {step.distance < 160 ? `${Math.round(step.distance * 3.281)} ft` : `${(step.distance / 1609.34).toFixed(1)} mi`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Map */}
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden h-[400px] lg:h-[calc(100vh-380px)]">
                   <TourRouteMap
                     key={createdRoute.map((s) => s.id).join('-')}
                     sites={createdRoute}
                     hoveredSiteId={hoveredSiteId}
+                    routeFeature={mapboxRoute}
                   />
                 </div>
               </>

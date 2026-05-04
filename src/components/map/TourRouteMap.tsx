@@ -26,12 +26,14 @@ interface SiteItem {
 interface TourRouteMapProps {
   sites: SiteItem[];
   hoveredSiteId: string | null;
+  routeFeature?: GeoJSON.Feature<GeoJSON.LineString> | null;
   className?: string;
 }
 
 export function TourRouteMap({
   sites,
   hoveredSiteId,
+  routeFeature,
   className,
 }: TourRouteMapProps) {
   const mapRef = useRef<MapRef>(null);
@@ -142,8 +144,8 @@ export function TourRouteMap({
     >
       <NavigationControl position="top-right" />
 
-      {/* Route Line */}
-      {sites.length > 1 && (
+      {/* Dashed preview line — hidden when actual Mapbox route is loaded */}
+      {sites.length > 1 && !routeFeature && (
         <Source id="route" type="geojson" data={routeGeoJSON}>
           <Layer
             id="route-line"
@@ -153,6 +155,24 @@ export function TourRouteMap({
               'line-width': 4,
               'line-dasharray': [2, 2],
             }}
+          />
+        </Source>
+      )}
+
+      {/* Actual Mapbox walking route */}
+      {routeFeature && (
+        <Source id="mapbox-route" type="geojson" data={routeFeature}>
+          <Layer
+            id="mapbox-route-casing"
+            type="line"
+            paint={{ 'line-color': '#ffffff', 'line-width': 7 }}
+            layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+          />
+          <Layer
+            id="mapbox-route-line"
+            type="line"
+            paint={{ 'line-color': '#2563eb', 'line-width': 4, 'line-opacity': 0.9 }}
+            layout={{ 'line-join': 'round', 'line-cap': 'round' }}
           />
         </Source>
       )}
