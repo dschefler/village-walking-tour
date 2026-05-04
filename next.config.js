@@ -11,7 +11,7 @@ const withPWA = require('next-pwa')({
     {
       // HTML navigation requests — NetworkFirst so new routes (e.g. curated tours) don't 404
       // and so the latest deployed HTML is always served to mobile users.
-      urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
+      urlPattern: ({ request }) => request.mode === 'navigate',
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages',
