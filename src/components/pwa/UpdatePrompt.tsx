@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export async function clearPageCaches() {
@@ -54,14 +54,9 @@ export function UpdatePrompt() {
         <RefreshCw className="w-4 h-4 shrink-0" />
         App updated — tap Refresh to load the latest version.
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <Button size="sm" variant="secondary" onClick={unregisterAndReload} className="h-7 text-xs font-semibold">
-          Refresh
-        </Button>
-        <button onClick={() => setShowPrompt(false)} aria-label="Dismiss" className="opacity-70 hover:opacity-100">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+      <Button size="sm" variant="secondary" onClick={unregisterAndReload} className="h-7 text-xs font-semibold shrink-0">
+        Refresh
+      </Button>
     </div>
   );
 }
