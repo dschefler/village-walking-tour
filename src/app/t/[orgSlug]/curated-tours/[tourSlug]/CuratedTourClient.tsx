@@ -131,7 +131,6 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
   const [sites, setSites] = useState<SiteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [preSelectionDone, setPreSelectionDone] = useState(false);
   const [hoveredSiteId, setHoveredSiteId] = useState<string | null>(null);
   const [tourCreated, setTourCreated] = useState(false);
   const [createdRoute, setCreatedRoute] = useState<SiteItem[]>([]);
@@ -166,18 +165,16 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
     fetchSites();
   }, [orgSlug]);
 
-  // Pre-select locations matching the curated tour — runs once after sites load
+  const curatedSites = useMemo(
+    () => sites.filter((site) => tour.locations.some((loc) => matchesLocation(site.name, loc))),
+    [sites, tour]
+  );
+
+  // Select all curated sites once they load
   useEffect(() => {
-    if (sites.length === 0 || preSelectionDone) return;
-    const preSelected = new Set<string>();
-    sites.forEach((site) => {
-      if (tour.locations.some((loc) => matchesLocation(site.name, loc))) {
-        preSelected.add(site.id);
-      }
-    });
-    setSelectedIds(preSelected);
-    setPreSelectionDone(true);
-  }, [sites]);
+    if (curatedSites.length === 0) return;
+    setSelectedIds(new Set(curatedSites.map((s) => s.id)));
+  }, [curatedSites]);
 
   const totalDistance = useMemo(() => calculateTotalDistance(createdRoute), [createdRoute]);
 
@@ -190,19 +187,8 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
     if (tourCreated) { setTourCreated(false); setCreatedRoute([]); }
   };
 
-  const selectAll = () => setSelectedIds(new Set(sites.map((s) => s.id)));
+  const selectAll = () => setSelectedIds(new Set(curatedSites.map((s) => s.id)));
   const clearAll = () => { setSelectedIds(new Set()); setTourCreated(false); setCreatedRoute([]); };
-  const resetToDefault = () => {
-    const preSelected = new Set<string>();
-    sites.forEach((site) => {
-      if (tour.locations.some((loc) => matchesLocation(site.name, loc))) {
-        preSelected.add(site.id);
-      }
-    });
-    setSelectedIds(preSelected);
-    setTourCreated(false);
-    setCreatedRoute([]);
-  };
 
   const createTour = async () => {
     setGettingLocation(true);
@@ -283,24 +269,18 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="text-xl font-semibold text-gray-900">
-                Customize Your Tour ({selectedIds.size} of {sites.length} selected)
+                Select Locations ({selectedIds.size} of {curatedSites.length} selected)
               </h2>
               <div className="flex gap-2 flex-wrap">
-                <Button variant="outline" size="sm" onClick={resetToDefault}>Reset</Button>
-                <Button variant="outline" size="sm" onClick={selectAll}>All</Button>
+                <Button variant="outline" size="sm" onClick={selectAll}>Select All</Button>
                 <Button variant="outline" size="sm" onClick={clearAll}>Clear</Button>
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground">
-              Suggested locations for this tour are pre-selected. Check or uncheck any site to customize.
-            </p>
-
             <div className="space-y-3">
-              {sites.map((site) => {
+              {curatedSites.map((site) => {
                 const primaryImage = site.media?.find((m) => m.is_primary) || site.media?.[0];
                 const isSelected = selectedIds.has(site.id);
-                const isSuggested = tour.locations.some((loc) => matchesLocation(site.name, loc));
                 return (
                   <div
                     key={site.id}
@@ -335,17 +315,7 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
                         )}
                       </div>
                       <div className="flex-1 p-3">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-gray-900 text-sm">{site.name}</h3>
-                          {isSuggested && (
-                            <span
-                              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-                              style={{ backgroundColor: `${primaryColor}18`, color: primaryColor }}
-                            >
-                              suggested
-                            </span>
-                          )}
-                        </div>
+                        <h3 className="font-semibold text-gray-900 text-sm">{site.name}</h3>
                         {site.address && (
                           <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                             <MapPin className="w-3 h-3" />
