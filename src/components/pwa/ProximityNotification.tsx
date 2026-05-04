@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { X, MapPin, Play, Pause, Square, Loader2, BookOpen } from 'lucide-react';
+import { X, MapPin, Play, Pause, Square, Loader2, BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
@@ -13,12 +13,20 @@ interface ProximityNotificationProps {
   alert: ProximityAlert;
   onDismiss?: () => void;
   autoHideMs?: number;
+  nextStop?: { name: string; distanceMeters: number };
+}
+
+function formatFt(meters: number): string {
+  const feet = meters * 3.28084;
+  if (feet < 1000) return `${Math.round(feet)} ft`;
+  return `${(feet / 5280).toFixed(1)} mi`;
 }
 
 export function ProximityNotification({
   alert,
   onDismiss,
   autoHideMs = 20000,
+  nextStop,
 }: ProximityNotificationProps) {
   const { dismissAlert } = useNotificationStore();
   const [visible, setVisible] = useState(true);
@@ -152,17 +160,36 @@ export function ProximityNotification({
           </div>
         )}
 
-        {/* Learn More */}
-        <div className="mt-3 pt-3 border-t flex gap-2">
-          <Button asChild variant="outline" size="sm" className="flex-1">
-            <Link href={`/location/${alert.siteId}`}>
-              <BookOpen className="w-4 h-4 mr-1.5" />
-              Learn More
-            </Link>
-          </Button>
-          <Button size="sm" className="flex-1" onClick={handleDismiss}>
-            Continue Tour
-          </Button>
+        {/* Footer actions */}
+        <div className="mt-3 pt-3 border-t space-y-2">
+          <div className="flex gap-2">
+            <Button asChild variant="outline" size="sm" className="flex-1">
+              <Link href={`/location/${alert.siteId}`}>
+                <BookOpen className="w-4 h-4 mr-1.5" />
+                Learn More
+              </Link>
+            </Button>
+            {!nextStop && (
+              <Button size="sm" className="flex-1" onClick={handleDismiss}>
+                Continue Tour
+              </Button>
+            )}
+          </div>
+
+          {/* Next stop card — shown when route context is available */}
+          {nextStop && (
+            <button
+              onClick={handleDismiss}
+              className="w-full flex items-center gap-3 bg-gray-900 hover:bg-black text-white rounded-xl px-4 py-3 text-left"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Next Stop</p>
+                <p className="font-semibold text-sm leading-snug mt-0.5 line-clamp-1">{nextStop.name}</p>
+                <p className="text-blue-400 text-xs mt-0.5">{formatFt(nextStop.distanceMeters)} away</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            </button>
+          )}
         </div>
       </div>
     </div>

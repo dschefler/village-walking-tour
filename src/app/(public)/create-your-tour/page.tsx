@@ -13,7 +13,8 @@ import { TourRouteMap } from '@/components/map/TourRouteMap';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { useProximityNotifications } from '@/hooks/use-proximity-notifications';
 import { useNotificationStore } from '@/stores/notification-store';
-import { ProximityNotificationContainer } from '@/components/pwa/ProximityNotification';
+import { ProximityNotification } from '@/components/pwa/ProximityNotification';
+import type { ProximityAlert } from '@/types';
 import { TourCompletePromptContainer } from '@/components/pwa/TourCompletePrompt';
 
 interface SiteItem {
@@ -163,6 +164,47 @@ function estimateSteps(distanceMeters: number): string {
   const steps = Math.round((distanceMeters * FEET_PER_METER) / 2.5);
   if (steps < 1000) return `${steps} steps`;
   return `${(steps / 1000).toFixed(1)}k steps`;
+}
+
+function TourNotificationContainer({
+  createdRoute,
+  userLocation,
+}: {
+  createdRoute: SiteItem[];
+  userLocation: { latitude: number; longitude: number } | null;
+}) {
+  const { recentAlerts, enabled, showTourCompletePrompt } = useNotificationStore();
+  const [currentAlert, setCurrentAlert] = useState<ProximityAlert | null>(null);
+
+  useEffect(() => {
+    if (enabled && recentAlerts.length > 0) {
+      setCurrentAlert(recentAlerts[0]);
+    }
+  }, [recentAlerts, enabled]);
+
+  useEffect(() => {
+    if (showTourCompletePrompt) setCurrentAlert(null);
+  }, [showTourCompletePrompt]);
+
+  if (!currentAlert || createdRoute.length === 0) return null;
+
+  const currentIdx = createdRoute.findIndex((s) => s.id === currentAlert.siteId);
+  const nextSite =
+    currentIdx >= 0 && currentIdx < createdRoute.length - 1
+      ? createdRoute[currentIdx + 1]
+      : null;
+  const nextDist =
+    nextSite && userLocation
+      ? calculateDistance(userLocation.latitude, userLocation.longitude, nextSite.latitude, nextSite.longitude)
+      : null;
+
+  return (
+    <ProximityNotification
+      alert={currentAlert}
+      onDismiss={() => setCurrentAlert(null)}
+      nextStop={nextSite ? { name: nextSite.name, distanceMeters: nextDist ?? 0 } : undefined}
+    />
+  );
 }
 
 export default function CreateYourTourPage() {
@@ -771,8 +813,8 @@ export default function CreateYourTourPage() {
 
       <Footer />
 
-      {/* Proximity notification popup */}
-      <ProximityNotificationContainer />
+      {/* Route-aware arrival notification */}
+      <TourNotificationContainer createdRoute={createdRoute} userLocation={userLocation} />
 
       {/* Tour complete prompt - shows after reaching final destination */}
       <TourCompletePromptContainer />

@@ -113,6 +113,15 @@ export const useNotificationStore = create<NotificationState>()(
     }),
     {
       name: 'notification-preferences',
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = persistedState as Record<string, unknown>;
+        if (version < 2) {
+          // Force tight arrival radius — old default was 100m which fired too early
+          state.radiusMeters = 10;
+        }
+        return state;
+      },
       partialize: (state) => ({
         enabled: state.enabled,
         radiusMeters: state.radiusMeters,
