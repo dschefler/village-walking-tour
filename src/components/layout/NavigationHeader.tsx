@@ -70,20 +70,20 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
                 About
               </Link>
             </Button>
-            <HistoricSitesDropdown transparent={transparent} orgSlug={orgSlug} />
-            <CuratedToursDropdown transparent={transparent} orgSlug={orgSlug} />
             <Button variant="ghost" asChild className={hoverClass}>
               <Link href={`${prefix}/how-to-use`} className={`flex items-center gap-2 ${textClass}`}>
                 <HelpCircle className="w-4 h-4" />
                 How to Use
               </Link>
             </Button>
+            <HistoricSitesDropdown transparent={transparent} orgSlug={orgSlug} />
             <Button variant="ghost" asChild className={hoverClass}>
               <Link href={`${prefix}/create-your-tour`} className={`flex items-center gap-2 ${textClass}`}>
                 <Route className="w-4 h-4" />
                 Create Your Tour
               </Link>
             </Button>
+            <CuratedToursDropdown transparent={transparent} orgSlug={orgSlug} />
             <Button variant="ghost" asChild className={hoverClass}>
               <Link href={`${prefix}/contact`} className={`flex items-center gap-2 ${textClass}`}>
                 <Mail className="w-4 h-4" />
@@ -126,22 +126,6 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               <span>About</span>
             </Link>
             <Link
-              href={`${prefix}/historic-sites`}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <MapPin className="w-5 h-5" />
-              <span>Historic Sites</span>
-            </Link>
-            <Link
-              href={`${prefix}/curated-tours`}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Bookmark className="w-5 h-5" />
-              <span>Curated Tours</span>
-            </Link>
-            <Link
               href={`${prefix}/how-to-use`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
@@ -150,12 +134,28 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               <span>How to Use</span>
             </Link>
             <Link
+              href={`${prefix}/historic-sites`}
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <MapPin className="w-5 h-5" />
+              <span>Historic Sites</span>
+            </Link>
+            <Link
               href={`${prefix}/create-your-tour`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               <Route className="w-5 h-5" />
               <span>Create Your Tour</span>
+            </Link>
+            <Link
+              href={`${prefix}/curated-tours`}
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Bookmark className="w-5 h-5" />
+              <span>Curated Tours</span>
             </Link>
             <Link
               href={`${prefix}/contact`}
