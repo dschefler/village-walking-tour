@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, ExternalLink, ArrowLeft, Car, Footprints } from 'lucide-react';
+import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -165,9 +165,13 @@ export default function CreateYourTourPage() {
   const [showWalkingGif, setShowWalkingGif] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [travelMode, setTravelMode] = useState<'walking' | 'driving'>('walking');
+  const [mapboxRoute, setMapboxRoute] = useState<GeoJSON.Feature<GeoJSON.LineString> | null>(null);
+  const [navSteps, setNavSteps] = useState<{ maneuver: { instruction: string }; distance: number }[]>([]);
+  const [navLoading, setNavLoading] = useState(false);
+  const [savedLocation, setSavedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // GPS and proximity notifications
-  const { userLocation, getCurrentPosition, error: geoError } = useGeolocation();
+  const { userLocation, getCurrentPosition } = useGeolocation({ maximumAge: 30000 });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
 
   // Get the final site ID for tour completion detection
@@ -231,83 +235,90 @@ export default function CreateYourTourPage() {
     setSelectedIds(new Set());
     setTourCreated(false);
     setCreatedRoute([]);
+    setMapboxRoute(null);
+    setNavSteps([]);
   };
+
+  // Clear loaded route when travel mode changes so user gets fresh directions
+  useEffect(() => {
+    setMapboxRoute(null);
+    setNavSteps([]);
+  }, [travelMode]);
 
   const createTour = async () => {
     setGettingLocation(true);
-
     try {
-      // Try to get user's current location for optimized routing
       const location = await getCurrentPosition();
-      const selected = sites.filter((site) => selectedIds.has(site.id));
-      const optimized = optimizeRoute(selected, location);
-      setCreatedRoute(optimized);
-
-      // Enable proximity notifications
+      setSavedLocation(location);
+      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), location));
       setNotificationsEnabled(true);
-    } catch (error) {
-      // If location fails, still create tour without user location
-      console.log('Could not get location, optimizing without user position');
-      const selected = sites.filter((site) => selectedIds.has(site.id));
-      const optimized = optimizeRoute(selected, null);
-      setCreatedRoute(optimized);
+    } catch {
+      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), savedLocation));
     } finally {
       setGettingLocation(false);
       setTourCreated(true);
       setShowWalkingGif(true);
-      setTimeout(() => {
-        setShowWalkingGif(false);
-      }, 3000);
+      setTimeout(() => setShowWalkingGif(false), 3000);
     }
   };
 
   const resetTour = () => {
     setTourCreated(false);
     setCreatedRoute([]);
+    setMapboxRoute(null);
+    setNavSteps([]);
   };
 
-  // Open Google Maps with walking directions for the entire route
-  const startNavigation = async () => {
-    if (createdRoute.length === 0) return;
-
-    // Get current user location for the starting point
+  const openGoogleMaps = async () => {
     let originStr = '';
     try {
-      const currentLocation = await getCurrentPosition();
-      if (currentLocation) {
-        originStr = `&origin=${currentLocation.latitude},${currentLocation.longitude}`;
-      }
-    } catch (error) {
-      // If we can't get location, let Google Maps use device's current location
-      console.log('Could not get current location, using device location');
-    }
-
+      const loc = await getCurrentPosition();
+      if (loc) originStr = `&origin=${loc.latitude},${loc.longitude}`;
+    } catch {}
+    const googleMode = travelMode === 'driving' ? 'driving' : 'walking';
     if (createdRoute.length === 1) {
-      // Single destination - start from user's location
       const dest = createdRoute[0];
-      const url = `https://www.google.com/maps/dir/?api=1${originStr}&destination=${dest.latitude},${dest.longitude}&travelmode=${travelMode === 'driving' ? 'driving' : 'walking'}`;
-      window.open(url, '_blank');
+      window.open(`https://www.google.com/maps/dir/?api=1${originStr}&destination=${dest.latitude},${dest.longitude}&travelmode=${googleMode}`, '_blank');
       return;
     }
-
-    // Multiple stops: user location is origin, all sites are waypoints except last which is destination
     const destination = createdRoute[createdRoute.length - 1];
-    const waypoints = createdRoute.slice(0, -1); // All sites except the last one
+    const waypoints = createdRoute.slice(0, -1).map((s) => `${s.latitude},${s.longitude}`).join('|');
+    window.open(
+      `https://www.google.com/maps/dir/?api=1${originStr}&destination=${destination.latitude},${destination.longitude}&waypoints=${encodeURIComponent(waypoints)}&travelmode=${googleMode}`,
+      '_blank'
+    );
+  };
 
-    let url = `https://www.google.com/maps/dir/?api=1`;
-    url += originStr;
-    url += `&destination=${destination.latitude},${destination.longitude}`;
-
-    if (waypoints.length > 0) {
-      const waypointStr = waypoints
-        .map(site => `${site.latitude},${site.longitude}`)
-        .join('|');
-      url += `&waypoints=${encodeURIComponent(waypointStr)}`;
+  const startNavigation = async () => {
+    if (createdRoute.length === 0) return;
+    setNavLoading(true);
+    try {
+      let coordParts: string[] = [];
+      try {
+        const loc = await getCurrentPosition();
+        coordParts.push(`${loc.longitude},${loc.latitude}`);
+      } catch {
+        if (savedLocation) coordParts.push(`${savedLocation.longitude},${savedLocation.latitude}`);
+      }
+      coordParts.push(...createdRoute.map((s) => `${s.longitude},${s.latitude}`));
+      const mode = travelMode === 'driving' ? 'driving' : 'walking';
+      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      const res = await fetch(
+        `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordParts.join(';')}?steps=true&geometries=geojson&overview=full&access_token=${token}`
+      );
+      const data = await res.json();
+      if (data.routes?.length) {
+        const route = data.routes[0];
+        setMapboxRoute({ type: 'Feature', geometry: route.geometry, properties: {} });
+        setNavSteps(route.legs.flatMap((leg: any) => leg.steps ?? []));
+      } else {
+        await openGoogleMaps();
+      }
+    } catch {
+      await openGoogleMaps();
+    } finally {
+      setNavLoading(false);
     }
-
-    url += `&travelmode=${travelMode === 'driving' ? 'driving' : 'walking'}`;
-
-    window.open(url, '_blank');
   };
 
   const getImageUrl = (storagePath: string) => {
@@ -586,18 +597,31 @@ export default function CreateYourTourPage() {
                         </button>
                       </div>
                     </div>
-                    <Button
-                      onClick={startNavigation}
-                      className="w-full bg-[#A40000] hover:bg-[#8a0000] text-white gap-2"
-                      size="lg"
-                    >
-                      {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
-                      {travelMode === 'driving' ? 'Start Driving Directions' : 'Start Walking Directions'}
-                      <ExternalLink className="w-4 h-4 ml-1" />
-                    </Button>
-                    <p className="text-xs text-gray-500 text-center">
-                      Opens Google Maps with turn-by-turn directions
-                    </p>
+                    {!mapboxRoute ? (
+                      <Button
+                        onClick={startNavigation}
+                        className="w-full bg-[#A40000] hover:bg-[#8a0000] text-white gap-2"
+                        size="lg"
+                        disabled={navLoading}
+                      >
+                        {navLoading ? (
+                          <><Loader2 className="w-5 h-5 animate-spin" />Loading route…</>
+                        ) : (
+                          <>{travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
+                          {travelMode === 'driving' ? 'Get Driving Directions' : 'Get Walking Directions'}</>
+                        )}
+                      </Button>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-[#A40000]">Route loaded — follow the map</span>
+                        <button
+                          onClick={() => { setMapboxRoute(null); setNavSteps([]); }}
+                          className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                        >
+                          <X className="w-3 h-3" /> Clear
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -614,12 +638,45 @@ export default function CreateYourTourPage() {
                   </div>
                 )}
 
+                {/* Turn-by-turn steps */}
+                {navSteps.length > 0 && (
+                  <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div className="px-4 py-2 border-b flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">Turn-by-turn directions</span>
+                      <button
+                        onClick={() => openGoogleMaps()}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Open in Google Maps
+                      </button>
+                    </div>
+                    <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm">
+                      {navSteps.map((step, i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-2.5">
+                          <span className="w-5 h-5 flex-shrink-0 rounded-full bg-[#A40000]/10 text-[#A40000] text-xs flex items-center justify-center font-semibold mt-0.5">
+                            {i + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="leading-snug">{step.maneuver.instruction}</p>
+                            {step.distance > 0 && (
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {step.distance < 160 ? `${Math.round(step.distance * 3.281)} ft` : `${(step.distance / 1609.34).toFixed(1)} mi`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Map */}
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden h-[400px] lg:h-[calc(100vh-380px)]">
                   <TourRouteMap
                     key={createdRoute.map(s => s.id).join('-')}
                     sites={createdRoute}
                     hoveredSiteId={hoveredSiteId}
+                    routeFeature={mapboxRoute}
                   />
                 </div>
               </>

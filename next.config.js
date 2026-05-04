@@ -8,6 +8,20 @@ const withPWA = require('next-pwa')({
   buildExcludes: [/chunks\/.*$/, /static\/.*\.js$/, /static\/.*\.css$/],
   runtimeCaching: [
     {
+      // HTML navigation requests — NetworkFirst so new routes (e.g. curated tours) don't 404
+      // and so the latest deployed HTML is always served to mobile users.
+      urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'pages',
+        networkTimeoutSeconds: 10,
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24, // 1 day fallback when offline
+        },
+      },
+    },
+    {
       // Next.js JS/CSS chunks — NetworkFirst so code updates load without needing a SW refresh cycle
       urlPattern: /^\/_next\/static\/.*/i,
       handler: 'NetworkFirst',
