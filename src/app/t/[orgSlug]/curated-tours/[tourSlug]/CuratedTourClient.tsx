@@ -140,8 +140,9 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
   const [mapboxRoute, setMapboxRoute] = useState<GeoJSON.Feature<GeoJSON.LineString> | null>(null);
   const [navSteps, setNavSteps] = useState<{ maneuver: { instruction: string }; distance: number }[]>([]);
   const [navLoading, setNavLoading] = useState(false);
+  const [savedLocation, setSavedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
-  const { userLocation, getCurrentPosition } = useGeolocation();
+  const { userLocation, getCurrentPosition } = useGeolocation({ maximumAge: 30000 });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
 
   const finalSiteId = createdRoute.length > 0 ? createdRoute[createdRoute.length - 1].id : undefined;
@@ -179,6 +180,12 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
     setSelectedIds(new Set(curatedSites.map((s) => s.id)));
   }, [curatedSites]);
 
+  // Clear the loaded route whenever travel mode changes
+  useEffect(() => {
+    setMapboxRoute(null);
+    setNavSteps([]);
+  }, [travelMode]);
+
   const totalDistance = useMemo(() => calculateTotalDistance(createdRoute), [createdRoute]);
 
   const toggleSite = (siteId: string) => {
@@ -197,10 +204,11 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
     setGettingLocation(true);
     try {
       const location = await getCurrentPosition();
+      setSavedLocation(location);
       setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), location));
       setNotificationsEnabled(true);
     } catch {
-      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), null));
+      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), savedLocation));
     } finally {
       setGettingLocation(false);
       setTourCreated(true);
@@ -237,7 +245,9 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
       try {
         const loc = await getCurrentPosition();
         coordParts.push(`${loc.longitude},${loc.latitude}`);
-      } catch {}
+      } catch {
+        if (savedLocation) coordParts.push(`${savedLocation.longitude},${savedLocation.latitude}`);
+      }
       coordParts.push(...createdRoute.map((s) => `${s.longitude},${s.latitude}`));
       const mode = travelMode === 'driving' ? 'driving' : 'walking';
       const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
