@@ -12,8 +12,10 @@ interface UseProximityNotificationsOptions {
   tourId?: string;
   onAlert?: (alert: ProximityAlert) => void;
   checkIntervalMs?: number;
-  finalSiteId?: string; // ID of the final destination site
+  finalSiteId?: string;
   onFinalDestinationReached?: (siteName: string) => void;
+  // Provide the page's own GPS location to avoid a second watchPosition call
+  externalUserLocation?: { latitude: number; longitude: number } | null;
 }
 
 export function useProximityNotifications({
@@ -23,8 +25,13 @@ export function useProximityNotifications({
   checkIntervalMs = 5000,
   finalSiteId,
   onFinalDestinationReached,
+  externalUserLocation,
 }: UseProximityNotificationsOptions) {
-  const { userLocation, isTracking, startTracking } = useGeolocation();
+  const { userLocation: internalLocation, isTracking, startTracking } = useGeolocation();
+
+  // Use the page's GPS if provided, otherwise fall back to internal tracking
+  const hasExternal = externalUserLocation !== undefined;
+  const userLocation = hasExternal ? externalUserLocation : internalLocation;
   const {
     enabled,
     radiusMeters,
@@ -102,12 +109,13 @@ export function useProximityNotifications({
     markSiteVisited,
   ]);
 
-  // Start tracking when enabled
+  // Only start internal tracking when no external location is provided
   useEffect(() => {
+    if (hasExternal) return;
     if (enabled && !isTracking) {
       startTracking();
     }
-  }, [enabled, isTracking, startTracking]);
+  }, [hasExternal, enabled, isTracking, startTracking]);
 
   // Check proximity when location updates
   useEffect(() => {

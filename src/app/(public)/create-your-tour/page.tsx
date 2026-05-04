@@ -3,8 +3,9 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X } from 'lucide-react';
+import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Map, List, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CURATED_TOURS, matchesLocation } from '@/lib/curated-tours';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -222,6 +223,7 @@ export default function CreateYourTourPage() {
   const [savedLocation, setSavedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [mapboxFailed, setMapboxFailed] = useState(false);
   const [followMode, setFollowMode] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   // GPS and proximity notifications
   const { startTracking, userLocation, heading } = useGeolocation({ maximumAge: 0, enableHighAccuracy: true });
@@ -230,9 +232,9 @@ export default function CreateYourTourPage() {
   // Get the final site ID for tour completion detection
   const finalSiteId = createdRoute.length > 0 ? createdRoute[createdRoute.length - 1].id : undefined;
 
-  // Enable proximity notifications for the created route
+  // Reuse the page's GPS — prevents a second watchPosition from running inside the hook
   useProximityNotifications({
-    sites: createdRoute as any[], // Cast to match Site type
+    sites: createdRoute as any[],
     onAlert: (alert) => {
       console.log('Arrived at:', alert.siteName);
     },
@@ -240,6 +242,7 @@ export default function CreateYourTourPage() {
     onFinalDestinationReached: (siteName) => {
       console.log('Tour complete! Arrived at final destination:', siteName);
     },
+    externalUserLocation: userLocation,
   });
 
   // Capture first GPS fix after tour creation as Mapbox route starting point
@@ -270,6 +273,16 @@ export default function CreateYourTourPage() {
   const totalDistance = useMemo(() => {
     return calculateTotalDistance(createdRoute);
   }, [createdRoute]);
+
+  // Sites filtered by selected curated tour category
+  const filteredSites = useMemo(() => {
+    if (!categoryFilter) return sites;
+    const tour = CURATED_TOURS.find((t) => t.slug === categoryFilter);
+    if (!tour) return sites;
+    return sites.filter((site) =>
+      tour.locations.some((loc) => matchesLocation(site.name, loc))
+    );
+  }, [sites, categoryFilter]);
 
   // Pre-computed synchronously — used in <a> tags so iOS never blocks it
   const googleMapsUrl = useMemo(() => {
@@ -326,7 +339,12 @@ export default function CreateYourTourPage() {
   };
 
   const selectAll = () => {
-    setSelectedIds(new Set(sites.map((s) => s.id)));
+    // Select all visible (filtered) sites
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      filteredSites.forEach((s) => next.add(s.id));
+      return next;
+    });
   };
 
   const clearAll = () => {
@@ -420,15 +438,34 @@ export default function CreateYourTourPage() {
       <NavigationHeader />
 
       {/* Hero */}
-      <header className="bg-black text-white py-8">
+      <header className="bg-black text-white py-6">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 flex items-center gap-3">
             <Route className="w-8 h-8" />
             Create Your Tour
           </h1>
-          <p className="text-gray-300">
-            Select the historic sites you want to visit. Choose Walk for village stops or Drive for sites further afield — we&apos;ll build an optimized route either way.
-          </p>
+
+          {/* View mode tabs */}
+          <div className="flex gap-2 flex-wrap">
+            <Link
+              href="/historic-sites"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors"
+            >
+              <Map className="w-4 h-4" />
+              View by Map
+            </Link>
+            <span className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white text-black border border-white">
+              <List className="w-4 h-4" />
+              View by Listing
+            </span>
+            <Link
+              href="/curated-tours"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors"
+            >
+              <Bookmark className="w-4 h-4" />
+              Curated Tours
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -437,9 +474,39 @@ export default function CreateYourTourPage() {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Site Selection */}
           <div className="space-y-4">
+            {/* Category filter */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setCategoryFilter(null)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
+                  categoryFilter === null
+                    ? 'bg-[#A40000] text-white border-[#A40000]'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-[#A40000]'
+                )}
+              >
+                All Sites
+              </button>
+              {CURATED_TOURS.map((tour) => (
+                <button
+                  key={tour.slug}
+                  onClick={() => setCategoryFilter(tour.slug)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
+                    categoryFilter === tour.slug
+                      ? 'bg-[#A40000] text-white border-[#A40000]'
+                      : 'bg-white text-gray-600 border-gray-300 hover:border-[#A40000]'
+                  )}
+                >
+                  {tour.name.replace('Southampton Village', '').replace(' in ', '').trim()}
+                </button>
+              ))}
+            </div>
+
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Select Sites ({selectedIds.size} of {sites.length} selected)
+              <h2 className="text-sm font-medium text-gray-600">
+                {filteredSites.length} site{filteredSites.length !== 1 ? 's' : ''}
+                {categoryFilter ? ' in this theme' : ''} — {selectedIds.size} selected
               </h2>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
@@ -452,7 +519,7 @@ export default function CreateYourTourPage() {
             </div>
 
             <div className="space-y-3">
-              {sites.map((site) => {
+              {filteredSites.map((site) => {
                 const primaryImage = site.media?.find((m) => m.is_primary) || site.media?.[0];
                 const isSelected = selectedIds.has(site.id);
 

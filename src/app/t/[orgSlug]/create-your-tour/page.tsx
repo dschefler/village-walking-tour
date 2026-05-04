@@ -202,6 +202,7 @@ export default function TenantCreateYourTourPage() {
     onAlert: (alert) => { console.log('Arrived at:', alert.siteName); },
     finalSiteId,
     onFinalDestinationReached: (siteName) => { console.log('Tour complete! Final destination:', siteName); },
+    externalUserLocation: userLocation,
   });
 
   // Capture first GPS fix after tour creation as Mapbox route starting point
