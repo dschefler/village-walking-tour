@@ -2,6 +2,7 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
+  clientsClaim: true,
   disable: process.env.NODE_ENV === 'development',
   // Exclude JS/CSS chunks from precaching so code changes reach users immediately.
   // These are handled below with NetworkFirst runtime caching instead.

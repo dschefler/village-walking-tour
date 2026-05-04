@@ -14,8 +14,6 @@ export async function clearPageCaches() {
   );
 }
 
-// Unregisters all service workers so the next load fetches fresh code from the server.
-// Preserves mapbox tile and audio caches.
 export async function unregisterAndReload() {
   await clearPageCaches();
   if ('serviceWorker' in navigator) {
@@ -25,21 +23,44 @@ export async function unregisterAndReload() {
   window.location.reload();
 }
 
-// Handles code deployment updates via service worker controllerchange.
-// For data-content updates (new tour stops), use ContentVersionChecker.
 export function UpdatePrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
+    // Show banner when a new SW takes control (handles mid-session activations)
     const handleControllerChange = () => setShowPrompt(true);
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
-    // Force-check for a SW update on every page load
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg) reg.update().catch(() => {});
-    });
+    async function checkForUpdates() {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) return;
+
+      // Already a waiting SW (skipWaiting didn't fire for some reason) — show now
+      if (reg.waiting) {
+        setShowPrompt(true);
+        return;
+      }
+
+      // Trigger an update check
+      reg.update().catch(() => {});
+
+      // Also catch the case where a new SW starts installing after this page loaded
+      reg.addEventListener('updatefound', () => {
+        const installing = reg.installing;
+        if (!installing) return;
+        installing.addEventListener('statechange', () => {
+          // 'installed' = new SW ready; with skipWaiting it immediately activates,
+          // but we show the banner here so it's visible as fast as possible
+          if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+            setShowPrompt(true);
+          }
+        });
+      });
+    }
+
+    checkForUpdates();
 
     return () => {
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
