@@ -28,6 +28,7 @@ interface TourRouteMapProps {
   hoveredSiteId: string | null;
   routeFeature?: GeoJSON.Feature<GeoJSON.LineString> | null;
   className?: string;
+  userLocation?: { latitude: number; longitude: number } | null;
 }
 
 export function TourRouteMap({
@@ -35,6 +36,7 @@ export function TourRouteMap({
   hoveredSiteId,
   routeFeature,
   className,
+  userLocation,
 }: TourRouteMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -219,6 +221,20 @@ export function TourRouteMap({
           </Marker>
         );
       })}
+
+      {/* Live user location dot */}
+      {userLocation && (
+        <Marker
+          longitude={userLocation.longitude}
+          latitude={userLocation.latitude}
+          anchor="center"
+        >
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-10 h-10 rounded-full bg-blue-500 opacity-20 animate-ping" />
+            <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-lg z-10" />
+          </div>
+        </Marker>
+      )}
 
       {/* Popup on hover */}
       {popupSite && (

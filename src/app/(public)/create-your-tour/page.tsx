@@ -170,9 +170,10 @@ export default function CreateYourTourPage() {
   const [navLoading, setNavLoading] = useState(false);
   const [savedLocation, setSavedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [mapboxFailed, setMapboxFailed] = useState(false);
+  const [locationAcquired, setLocationAcquired] = useState<boolean | null>(null);
 
   // GPS and proximity notifications
-  const { getCurrentPosition } = useGeolocation({ maximumAge: 30000 });
+  const { getCurrentPosition, startTracking, userLocation } = useGeolocation({ maximumAge: 30000 });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
 
   // Get the final site ID for tour completion detection
@@ -301,8 +302,11 @@ export default function CreateYourTourPage() {
       setSavedLocation(location);
       setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), location));
       setNotificationsEnabled(true);
+      setLocationAcquired(true);
+      startTracking();
     } catch {
-      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), savedLocation));
+      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), null));
+      setLocationAcquired(false);
     } finally {
       setGettingLocation(false);
       setTourCreated(true);
@@ -547,6 +551,20 @@ export default function CreateYourTourPage() {
                     </div>
                   </div>
 
+                  {/* Location status */}
+                  {locationAcquired === true && (
+                    <p className="mt-3 text-xs text-green-600 flex items-center gap-1">
+                      <MapPinned className="w-3 h-3" />
+                      Starting from your location
+                    </p>
+                  )}
+                  {locationAcquired === false && (
+                    <p className="mt-3 text-xs text-amber-600 flex items-center gap-1">
+                      <MapPinned className="w-3 h-3" />
+                      Location unavailable — route starts from nearest stop
+                    </p>
+                  )}
+
                   {/* Arrival Notifications Toggle */}
                   <div className="mt-4 pt-4 border-t">
                     <button
@@ -670,6 +688,7 @@ export default function CreateYourTourPage() {
                     sites={createdRoute}
                     hoveredSiteId={hoveredSiteId}
                     routeFeature={mapboxRoute}
+                    userLocation={userLocation}
                   />
                 </div>
               </>
