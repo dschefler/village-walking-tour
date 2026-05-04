@@ -184,7 +184,10 @@ function TourNotificationContainer({
   }, [recentAlerts, enabled]);
 
   useEffect(() => {
-    if (showTourCompletePrompt) setCurrentAlert(null);
+    if (!showTourCompletePrompt) return;
+    // Delay hiding arrival card so user can read site info before tour-complete prompt takes over
+    const t = setTimeout(() => setCurrentAlert(null), 8000);
+    return () => clearTimeout(t);
   }, [showTourCompletePrompt]);
 
   if (!currentAlert || createdRoute.length === 0) return null;

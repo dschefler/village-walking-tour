@@ -175,7 +175,8 @@ export interface ProximityAlert {
   distance: number;
   timestamp: string;
   audioUrl?: string | null;
-  transcript?: string | null; // Description/transcript for accessibility
+  transcript?: string | null;
+  imageUrl?: string | null;
 }
 
 // Organization / multi-tenant types

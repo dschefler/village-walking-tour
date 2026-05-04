@@ -38,7 +38,7 @@ export const useNotificationStore = create<NotificationState>()(
     (set, get) => ({
       // Settings
       enabled: true,
-      radiusMeters: 10,
+      radiusMeters: 30,
 
       // State
       recentAlerts: [],
@@ -113,12 +113,13 @@ export const useNotificationStore = create<NotificationState>()(
     }),
     {
       name: 'notification-preferences',
-      version: 2,
+      version: 3,
       migrate: (persistedState, version) => {
         const state = persistedState as Record<string, unknown>;
-        if (version < 2) {
-          // Force tight arrival radius — old default was 100m which fired too early
-          state.radiusMeters = 10;
+        if (version < 3) {
+          // 30m radius: tight enough to avoid early triggers, forgiving enough when
+          // walking past an entrance or losing GPS precision momentarily
+          state.radiusMeters = 30;
         }
         return state;
       },

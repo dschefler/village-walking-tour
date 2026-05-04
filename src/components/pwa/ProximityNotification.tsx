@@ -1,18 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { X, MapPin, Play, Pause, Square, Loader2, BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
-import { formatDistance } from '@/lib/utils';
 import type { ProximityAlert } from '@/types';
 
 interface ProximityNotificationProps {
   alert: ProximityAlert;
   onDismiss?: () => void;
-  autoHideMs?: number;
   nextStop?: { name: string; distanceMeters: number };
 }
 
@@ -25,28 +24,18 @@ function formatFt(meters: number): string {
 export function ProximityNotification({
   alert,
   onDismiss,
-  autoHideMs = 20000,
   nextStop,
 }: ProximityNotificationProps) {
   const { dismissAlert } = useNotificationStore();
   const [visible, setVisible] = useState(true);
 
-  const {
-    isPlaying,
-    currentSiteId,
-    progress,
-    duration,
-    isLoading,
-    progressPercent,
-    load,
-    toggle,
-    stop,
-  } = useAudioPlayer();
+  const { isPlaying, currentSiteId, progress, duration, isLoading, progressPercent, load, toggle, stop } =
+    useAudioPlayer();
 
   const hasAudio = !!alert.audioUrl;
   const isCurrentSite = currentSiteId === alert.siteId;
 
-  // Pre-load audio immediately on mount so play button is ready
+  // Pre-load audio on mount so tap-to-play is instant
   useEffect(() => {
     if (hasAudio && alert.audioUrl) {
       load(alert.audioUrl, alert.siteId);
@@ -54,141 +43,133 @@ export function ProximityNotification({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-hide only for sites without audio; never auto-hide while audio is loaded/playing
-  useEffect(() => {
-    if (hasAudio) return;
-    if (autoHideMs > 0) {
-      const timer = setTimeout(() => {
-        setVisible(false);
-        onDismiss?.();
-      }, autoHideMs);
-      return () => clearTimeout(timer);
-    }
-  }, [hasAudio, autoHideMs, onDismiss]);
-
   const handleDismiss = () => {
-    if (isCurrentSite && isPlaying) {
-      stop();
-    }
+    if (isCurrentSite && isPlaying) stop();
     dismissAlert(alert.siteId);
     setVisible(false);
     onDismiss?.();
   };
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   if (!visible) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
-      <div className="bg-card border rounded-lg shadow-lg p-4 max-w-md mx-auto">
-        {/* Header */}
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
-            <MapPin className="w-5 h-5 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm">You&apos;ve Arrived!</h4>
-            <p className="font-medium text-sm line-clamp-1">{alert.siteName}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {formatDistance(alert.distance)} away
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 h-8 w-8"
-            onClick={handleDismiss}
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md mx-auto border border-gray-100">
 
-        {/* Audio Player — shown immediately if audio is available */}
-        {hasAudio && (
-          <div className="mt-3 pt-3 border-t">
-            <div className="flex items-center gap-3">
-              {/* Big play/pause button */}
+        {/* Site photo */}
+        {alert.imageUrl && (
+          <div className="relative w-full h-40">
+            <Image
+              src={alert.imageUrl}
+              alt={alert.siteName}
+              fill
+              className="object-cover"
+              sizes="(max-width: 448px) 100vw, 448px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            {/* Close button over photo */}
+            <button
+              onClick={handleDismiss}
+              className="absolute top-2 right-2 bg-black/40 hover:bg-black/60 rounded-full p-1.5 text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            {/* Site name over photo */}
+            <div className="absolute bottom-0 left-0 right-0 px-4 pb-3">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <MapPin className="w-3.5 h-3.5 text-[#A40000]" />
+                <span className="text-xs text-white/80 font-medium uppercase tracking-wide">You&apos;ve Arrived</span>
+              </div>
+              <h4 className="font-bold text-white text-base leading-snug">{alert.siteName}</h4>
+            </div>
+          </div>
+        )}
+
+        {/* Header (no photo fallback) */}
+        {!alert.imageUrl && (
+          <div className="flex items-start gap-3 px-4 pt-4 pb-2">
+            <div className="flex-shrink-0 p-2 bg-[#A40000]/10 rounded-full">
+              <MapPin className="w-5 h-5 text-[#A40000]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#A40000] font-semibold uppercase tracking-wide">You&apos;ve Arrived</p>
+              <h4 className="font-bold text-base leading-snug">{alert.siteName}</h4>
+            </div>
+            <button onClick={handleDismiss} className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-600 rounded-full">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        <div className="px-4 pb-4 space-y-3 pt-3">
+          {/* Description */}
+          {alert.transcript && (
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+              {alert.transcript}
+            </p>
+          )}
+
+          {/* Audio player */}
+          {hasAudio && (
+            <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
               <button
                 onClick={toggle}
                 disabled={isLoading}
-                className="flex-shrink-0 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-md disabled:opacity-60"
+                className="flex-shrink-0 w-12 h-12 rounded-full bg-[#A40000] text-white flex items-center justify-center shadow disabled:opacity-60"
               >
-                {isLoading ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="w-6 h-6" />
-                ) : (
-                  <Play className="w-6 h-6 ml-1" />
-                )}
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> :
+                  isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
               </button>
-
-              {/* Progress bar + time */}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-muted-foreground mb-1">
-                  {isLoading ? 'Loading audio…' : isPlaying ? 'Playing audio tour' : 'Tap to hear the audio tour'}
+                <p className="text-xs font-medium text-gray-500 mb-1">
+                  {isLoading ? 'Loading…' : isPlaying ? 'Playing audio tour' : 'Tap to hear audio'}
                 </p>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${progressPercent}%` }}
-                  />
+                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#A40000] transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
                 {duration > 0 && (
-                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                  <div className="flex justify-between mt-0.5 text-xs text-gray-400">
                     <span>{formatTime(progress)}</span>
                     <span>{formatTime(duration)}</span>
                   </div>
                 )}
               </div>
-
-              {/* Stop button */}
               {(isPlaying || isCurrentSite) && (
-                <button
-                  onClick={() => stop()}
-                  className="flex-shrink-0 w-9 h-9 rounded-full bg-destructive/10 text-destructive flex items-center justify-center"
-                  title="Stop audio"
-                >
-                  <Square className="w-4 h-4" />
+                <button onClick={() => stop()} className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center">
+                  <Square className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Footer actions */}
-        <div className="mt-3 pt-3 border-t space-y-2">
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm" className="flex-1">
+          {/* Actions */}
+          <div className="flex gap-2 pt-1">
+            <Button asChild variant="outline" size="sm" className="flex-1 border-gray-200">
               <Link href={`/location/${alert.siteId}`}>
                 <BookOpen className="w-4 h-4 mr-1.5" />
-                Learn More
+                Full Details
               </Link>
             </Button>
-            {!nextStop && (
-              <Button size="sm" className="flex-1" onClick={handleDismiss}>
-                Continue Tour
+            {nextStop ? (
+              <button
+                onClick={handleDismiss}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900 hover:bg-black text-white rounded-lg px-3 py-2 text-sm font-semibold"
+              >
+                Next Stop
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <Button size="sm" className="flex-1 bg-[#A40000] hover:bg-[#8a0000] text-white" onClick={handleDismiss}>
+                Continue
               </Button>
             )}
           </div>
 
-          {/* Next stop card — shown when route context is available */}
+          {/* Next stop distance label */}
           {nextStop && (
-            <button
-              onClick={handleDismiss}
-              className="w-full flex items-center gap-3 bg-gray-900 hover:bg-black text-white rounded-xl px-4 py-3 text-left"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Next Stop</p>
-                <p className="font-semibold text-sm leading-snug mt-0.5 line-clamp-1">{nextStop.name}</p>
-                <p className="text-blue-400 text-xs mt-0.5">{formatFt(nextStop.distanceMeters)} away</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-            </button>
+            <p className="text-xs text-center text-gray-400">{nextStop.name} · {formatFt(nextStop.distanceMeters)} away</p>
           )}
         </div>
       </div>
@@ -206,11 +187,11 @@ export function ProximityNotificationContainer() {
     }
   }, [recentAlerts, enabled]);
 
-  // Hide arrival notification when tour complete prompt appears
+  // Hide arrival card when tour complete prompt fires (with delay so user sees site info first)
   useEffect(() => {
-    if (showTourCompletePrompt) {
-      setCurrentAlert(null);
-    }
+    if (!showTourCompletePrompt) return;
+    const timer = setTimeout(() => setCurrentAlert(null), 8000);
+    return () => clearTimeout(timer);
   }, [showTourCompletePrompt]);
 
   if (!currentAlert) return null;

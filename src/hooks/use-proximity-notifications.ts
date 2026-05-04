@@ -62,6 +62,15 @@ export function useProximityNotifications({
       );
 
       if (distance <= radiusMeters && canAlertForSite(site.id)) {
+        // Extract primary image URL from site media if present (SiteItem passes media[])
+        const siteWithMedia = site as Site & { media?: { storage_path: string; is_primary: boolean }[] };
+        const primaryMedia = siteWithMedia.media?.find(m => m.is_primary) ?? siteWithMedia.media?.[0];
+        const imageUrl = primaryMedia?.storage_path
+          ? primaryMedia.storage_path.startsWith('http') || primaryMedia.storage_path.startsWith('/')
+            ? primaryMedia.storage_path
+            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${primaryMedia.storage_path}`
+          : null;
+
         const alert: ProximityAlert = {
           siteId: site.id,
           siteName: site.name,
@@ -69,6 +78,7 @@ export function useProximityNotifications({
           timestamp: new Date().toISOString(),
           audioUrl: site.audio_url,
           transcript: site.description,
+          imageUrl,
         };
 
         recordAlertTime(site.id);
