@@ -181,12 +181,44 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
     setSelectedIds(new Set(curatedSites.map((s) => s.id)));
   }, [curatedSites]);
 
-  // Clear the loaded route whenever travel mode changes
+  // Auto-load Mapbox route whenever the tour is created or travel mode changes.
   useEffect(() => {
-    setMapboxRoute(null);
-    setNavSteps([]);
-    setMapboxFailed(false);
-  }, [travelMode]);
+    if (!tourCreated || createdRoute.length < 2) {
+      setMapboxRoute(null);
+      setNavSteps([]);
+      setMapboxFailed(false);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      setNavLoading(true);
+      setMapboxFailed(false);
+      try {
+        const parts: string[] = [];
+        if (savedLocation) parts.push(`${savedLocation.longitude},${savedLocation.latitude}`);
+        parts.push(...createdRoute.map(s => `${s.longitude},${s.latitude}`));
+        const mode = travelMode === 'driving' ? 'driving' : 'walking';
+        const res = await fetch(
+          `https://api.mapbox.com/directions/v5/mapbox/${mode}/${parts.join(';')}?steps=true&geometries=geojson&overview=full&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+        );
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.routes?.length) {
+          const r = data.routes[0];
+          setMapboxRoute({ type: 'Feature', geometry: r.geometry, properties: {} });
+          setNavSteps(r.legs.flatMap((leg: any) => leg.steps ?? []));
+        } else {
+          setMapboxFailed(true);
+        }
+      } catch {
+        if (!cancelled) setMapboxFailed(true);
+      } finally {
+        if (!cancelled) setNavLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [tourCreated, createdRoute, travelMode, savedLocation]);
 
   const totalDistance = useMemo(() => calculateTotalDistance(createdRoute), [createdRoute]);
 
@@ -231,38 +263,6 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
     }
   };
 
-  const startNavigation = async () => {
-    if (createdRoute.length === 0) return;
-    setNavLoading(true);
-    setMapboxFailed(false);
-    try {
-      let coordParts: string[] = [];
-      try {
-        const loc = await getCurrentPosition();
-        coordParts.push(`${loc.longitude},${loc.latitude}`);
-      } catch {
-        if (savedLocation) coordParts.push(`${savedLocation.longitude},${savedLocation.latitude}`);
-      }
-      coordParts.push(...createdRoute.map((s) => `${s.longitude},${s.latitude}`));
-      const mode = travelMode === 'driving' ? 'driving' : 'walking';
-      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-      const res = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordParts.join(';')}?steps=true&geometries=geojson&overview=full&access_token=${token}`
-      );
-      const data = await res.json();
-      if (data.routes?.length) {
-        const route = data.routes[0];
-        setMapboxRoute({ type: 'Feature', geometry: route.geometry, properties: {} });
-        setNavSteps(route.legs.flatMap((leg: any) => leg.steps ?? []));
-      } else {
-        setMapboxFailed(true);
-      }
-    } catch {
-      setMapboxFailed(true);
-    } finally {
-      setNavLoading(false);
-    }
-  };
 
   const getImageUrl = (storagePath: string) => {
     if (storagePath.startsWith('http') || storagePath.startsWith('/')) return storagePath;
@@ -489,43 +489,26 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
                         </button>
                       </div>
                     </div>
-                    {mapboxFailed ? (
-                      <a
-                        href={googleMapsUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-2 text-white rounded-md px-4 h-11 text-sm font-medium"
-                        style={{ backgroundColor: primaryColor }}
-                      >
-                        {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
-                        Open in Google Maps
-                      </a>
-                    ) : !mapboxRoute ? (
-                      <Button
-                        onClick={startNavigation}
-                        className="w-full text-white gap-2"
-                        style={{ backgroundColor: primaryColor }}
-                        size="lg"
-                        disabled={navLoading}
-                      >
-                        {navLoading ? (
-                          <><Loader2 className="w-5 h-5 animate-spin" />Loading route…</>
-                        ) : (
-                          <>{travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
-                          {travelMode === 'driving' ? 'Get Driving Directions' : 'Get Walking Directions'}</>
-                        )}
-                      </Button>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium" style={{ color: primaryColor }}>Route loaded — follow the map</span>
-                        <button
-                          onClick={() => { setMapboxRoute(null); setNavSteps([]); setMapboxFailed(false); }}
-                          className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
-                        >
-                          <X className="w-3 h-3" /> Clear
-                        </button>
+                    {navLoading && (
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Loading route on map…
                       </div>
                     )}
+                    {mapboxRoute && !navLoading && (
+                      <p className="text-xs font-medium" style={{ color: primaryColor }}>Route loaded — see map below</p>
+                    )}
+                    <a
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 text-white rounded-md px-4 h-11 text-sm font-medium"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
+                      {travelMode === 'driving' ? 'Open Driving Directions' : 'Open Walking Directions'}
+                    </a>
+                    <p className="text-xs text-gray-500 text-center">Opens Google Maps with turn-by-turn directions</p>
                   </div>
                 </div>
 

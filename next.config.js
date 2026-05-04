@@ -98,6 +98,8 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // Static tenant pages not duplicated in (public) routes
+      { source: '/about', destination: '/t/southampton/about', permanent: false },
       // Dynamic Southampton routes → tenant-scoped (need org data)
       {
         source: '/tour/:id',
