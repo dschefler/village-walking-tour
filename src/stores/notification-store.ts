@@ -38,7 +38,7 @@ export const useNotificationStore = create<NotificationState>()(
     (set, get) => ({
       // Settings
       enabled: true,
-      radiusMeters: 75,
+      radiusMeters: 50,
 
       // State
       recentAlerts: [],
@@ -113,11 +113,11 @@ export const useNotificationStore = create<NotificationState>()(
     }),
     {
       name: 'notification-preferences',
-      version: 4,
+      version: 5,
       migrate: (persistedState, version) => {
         const state = persistedState as Record<string, unknown>;
-        if (version < 4) {
-          state.radiusMeters = 75;
+        if (version < 5) {
+          state.radiusMeters = 50;
         }
         return state;
       },

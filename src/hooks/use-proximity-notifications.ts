@@ -5,6 +5,7 @@ import { useGeolocation } from './use-geolocation';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useTourStore } from '@/stores/tour-store';
 import { calculateDistance } from '@/lib/utils';
+import { speakSequence } from '@/lib/speech';
 import type { Site, ProximityAlert } from '@/types';
 
 interface UseProximityNotificationsOptions {
@@ -84,6 +85,14 @@ export function useProximityNotifications({
         recordAlertTime(site.id);
         addAlert(alert);
         onAlert?.(alert);
+
+        // Verbal arrival announcement sequence
+        const speechParts: string[] = [`You've arrived at ${site.name}.`];
+        if (alert.audioUrl) speechParts.push('Tap to hear the audio guide.');
+        if (alert.transcript) speechParts.push('Tap for details and fun facts about this location.');
+        const isLastStop = finalSiteId && site.id === finalSiteId;
+        if (!isLastStop) speechParts.push("Tap Next Stop when you're ready to continue.");
+        speakSequence(speechParts);
 
         // Auto-stamp the site as visited for the tour
         if (tourId) {

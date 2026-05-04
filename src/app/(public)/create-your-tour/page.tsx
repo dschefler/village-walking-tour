@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Map, List, Bookmark } from 'lucide-react';
+import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Map, List, Bookmark, Volume2, VolumeX } from 'lucide-react';
+import { warmUpSpeech, setSpeechMuted, isSpeechMuted, speak } from '@/lib/speech';
 import { cn } from '@/lib/utils';
 import { CURATED_TOURS, matchesLocation } from '@/lib/curated-tours';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
@@ -229,6 +230,11 @@ export default function CreateYourTourPage() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const routeSectionRef = useRef<HTMLDivElement>(null);
+  const prevStepRef = useRef(-1);
+  const [isMuted, setMutedState] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isSpeechMuted();
+  });
 
   // GPS and proximity notifications
   const { startTracking, userLocation, heading } = useGeolocation({ maximumAge: 0, enableHighAccuracy: true });
@@ -326,6 +332,16 @@ export default function CreateYourTourPage() {
     return closest;
   }, [userLocation, navSteps]);
 
+  // Speak turn-by-turn directions when active step changes
+  useEffect(() => {
+    if (!tourCreated || travelMode !== 'walking' || navSteps.length === 0 || !userLocation) return;
+    if (activeStepIndex === prevStepRef.current) return;
+    prevStepRef.current = activeStepIndex;
+    if (activeStepIndex === 0) return; // skip step 0 on initial load
+    if (typeof window !== 'undefined' && window.speechSynthesis?.speaking) return;
+    speak(navSteps[activeStepIndex].maneuver.instruction);
+  }, [activeStepIndex, tourCreated, travelMode, navSteps, userLocation]);
+
   const toggleSite = (siteId: string) => {
     setSelectedIds((prev) => {
       const newSet = new Set(prev);
@@ -404,6 +420,7 @@ export default function CreateYourTourPage() {
   }, [tourCreated, createdRoute, travelMode, savedLocation]);
 
   const createTour = () => {
+    warmUpSpeech(); // Unlock iOS audio session on user gesture before GPS starts
     // Create tour immediately — GPS tracking starts in the background
     setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), null));
     setNotificationsEnabled(true);
@@ -707,8 +724,8 @@ export default function CreateYourTourPage() {
                     </p>
                   )}
 
-                  {/* Arrival Notifications Toggle */}
-                  <div className="mt-4 pt-4 border-t">
+                  {/* Arrival Notifications & Voice Toggles */}
+                  <div className="mt-4 pt-4 border-t space-y-2">
                     <button
                       onClick={() => setNotificationsEnabled(!notificationsEnabled)}
                       className="flex items-center gap-2 text-sm w-full"
@@ -723,6 +740,26 @@ export default function CreateYourTourPage() {
                       </span>
                       <span className="text-xs text-gray-400 ml-auto">
                         {notificationsEnabled ? 'Notifies when you reach each site' : 'Tap to enable'}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        const next = !isMuted;
+                        setSpeechMuted(next);
+                        setMutedState(next);
+                      }}
+                      className="flex items-center gap-2 text-sm w-full"
+                    >
+                      {isMuted ? (
+                        <VolumeX className="w-4 h-4 text-gray-400" />
+                      ) : (
+                        <Volume2 className="w-4 h-4 text-[#A40000]" />
+                      )}
+                      <span className={isMuted ? 'text-gray-500' : 'text-[#A40000] font-medium'}>
+                        {isMuted ? 'Voice OFF' : 'Voice ON'}
+                      </span>
+                      <span className="text-xs text-gray-400 ml-auto">
+                        {isMuted ? 'Tap to enable voice' : 'Arrivals & directions spoken aloud'}
                       </span>
                     </button>
                   </div>
