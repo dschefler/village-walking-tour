@@ -39,7 +39,6 @@ export function useProximityNotifications({
     canAlertForSite,
     recordAlertTime,
     addAlert,
-    triggerTourComplete,
   } = useNotificationStore();
   const { markSiteVisited } = useTourStore();
 
@@ -87,11 +86,12 @@ export function useProximityNotifications({
         onAlert?.(alert);
 
         // Verbal arrival announcement sequence
+        const isLastStop = !!(finalSiteId && site.id === finalSiteId);
         const speechParts: string[] = [`You've arrived at ${site.name}.`];
         if (alert.audioUrl) speechParts.push('Tap to hear the audio guide.');
-        if (alert.transcript) speechParts.push('Tap for details and fun facts about this location.');
-        const isLastStop = finalSiteId && site.id === finalSiteId;
-        if (!isLastStop) speechParts.push("Tap Next Stop when you're ready to continue.");
+        if (alert.transcript) speechParts.push('Tap to read details and fun facts.');
+        if (isLastStop) speechParts.push("You've completed your tour. Well done!");
+        else speechParts.push("Tap Next Stop when you're ready to continue.");
         speakSequence(speechParts);
 
         // Auto-stamp the site as visited for the tour
@@ -102,13 +102,10 @@ export function useProximityNotifications({
         // Try to show native notification if supported
         showNativeNotification(alert);
 
-        // Check if this is the final destination
+        // Tour-complete prompt is triggered by TourNotificationContainer when user
+        // dismisses the arrival card for the final stop (not on a timer).
         if (finalSiteId && site.id === finalSiteId) {
-          // Trigger the tour complete prompt after a short delay
-          setTimeout(() => {
-            triggerTourComplete(site.name);
-            onFinalDestinationReached?.(site.name);
-          }, 2000);
+          onFinalDestinationReached?.(site.name);
         }
       }
     }
@@ -123,7 +120,6 @@ export function useProximityNotifications({
     checkIntervalMs,
     finalSiteId,
     onFinalDestinationReached,
-    triggerTourComplete,
     tourId,
     markSiteVisited,
   ]);

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { X, MapPin, Route, PartyPopper } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useNotificationStore } from '@/stores/notification-store';
 
 interface TourCompletePromptProps {
@@ -63,37 +62,28 @@ export function TourCompletePrompt({
               Would you like to explore more historical sites?
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 h-8 w-8 text-white hover:bg-white/20"
+          <button
+            className="flex-shrink-0 h-8 w-8 flex items-center justify-center text-white hover:bg-white/20 rounded-full"
             onClick={handleDismiss}
           >
             <X className="w-4 h-4" />
-          </Button>
+          </button>
         </div>
         <div className="mt-4 flex gap-2">
-          <Button
-            asChild
-            size="sm"
-            className="flex-1 bg-white text-primary hover:bg-white/90"
+          <Link
+            href="/historic-sites"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-white text-primary rounded-md px-3 py-2 text-sm font-semibold hover:bg-white/90"
           >
-            <Link href="/historic-sites">
-              <MapPin className="w-4 h-4 mr-2" />
-              Browse Sites
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="flex-1 border-white text-white hover:bg-white/20"
+            <MapPin className="w-4 h-4" />
+            Browse Sites
+          </Link>
+          <Link
+            href="/create-your-tour"
+            className="flex-1 flex items-center justify-center gap-1.5 border border-white text-white rounded-md px-3 py-2 text-sm font-semibold hover:bg-white/20"
           >
-            <Link href="/create-your-tour">
-              <Route className="w-4 h-4 mr-2" />
-              New Tour
-            </Link>
-          </Button>
+            <Route className="w-4 h-4" />
+            New Tour
+          </Link>
         </div>
         <button
           onClick={handleDismiss}

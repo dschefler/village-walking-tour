@@ -14,6 +14,7 @@ interface ProximityNotificationProps {
   alert: ProximityAlert;
   onDismiss?: () => void;
   nextStop?: { name: string; distanceMeters: number };
+  isFinalStop?: boolean;
 }
 
 function formatFt(meters: number): string {
@@ -26,6 +27,7 @@ export function ProximityNotification({
   alert,
   onDismiss,
   nextStop,
+  isFinalStop = false,
 }: ProximityNotificationProps) {
   const { dismissAlert } = useNotificationStore();
   const [visible, setVisible] = useState(true);
@@ -147,12 +149,13 @@ export function ProximityNotification({
 
           {/* Actions */}
           <div className="flex gap-2 pt-1">
-            <Button asChild variant="outline" size="sm" className="flex-1 border-gray-200">
-              <Link href={`/location/${alert.siteId}`}>
-                <BookOpen className="w-4 h-4 mr-1.5" />
-                Full Details
-              </Link>
-            </Button>
+            <Link
+              href={`/location/${alert.siteId}`}
+              className="flex-1 flex items-center justify-center gap-1.5 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <BookOpen className="w-4 h-4" />
+              Full Details
+            </Link>
             {nextStop ? (
               <button
                 onClick={() => {
@@ -164,10 +167,21 @@ export function ProximityNotification({
                 Next Stop
                 <ChevronRight className="w-4 h-4" />
               </button>
+            ) : isFinalStop ? (
+              <button
+                onClick={handleDismiss}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-lg px-3 py-2 text-sm font-semibold"
+              >
+                Tour Complete
+                <ChevronRight className="w-4 h-4" />
+              </button>
             ) : (
-              <Button size="sm" className="flex-1 bg-[#A40000] hover:bg-[#8a0000] text-white" onClick={handleDismiss}>
+              <button
+                onClick={handleDismiss}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-lg px-3 py-2 text-sm font-semibold"
+              >
                 Continue
-              </Button>
+              </button>
             )}
           </div>
 

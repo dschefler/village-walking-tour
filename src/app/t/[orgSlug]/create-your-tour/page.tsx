@@ -138,17 +138,16 @@ function TourNotificationContainer({
   createdRoute: SiteItem[];
   userLocation: { latitude: number; longitude: number } | null;
 }) {
-  const { recentAlerts, enabled, showTourCompletePrompt } = useNotificationStore();
+  const { recentAlerts, enabled, triggerTourComplete } = useNotificationStore();
   const [currentAlert, setCurrentAlert] = useState<ProximityAlert | null>(null);
+
+  const finalSiteId = createdRoute.length > 0 ? createdRoute[createdRoute.length - 1].id : undefined;
 
   useEffect(() => {
     if (enabled && recentAlerts.length > 0) {
       setCurrentAlert(recentAlerts[0]);
     }
   }, [recentAlerts, enabled]);
-
-  // ProximityNotification stays until user dismisses it. It renders at z-[60], above
-  // TourCompletePrompt (z-50). Dismissing the arrival card reveals the tour-complete prompt.
 
   if (!currentAlert || createdRoute.length === 0) return null;
 
@@ -161,12 +160,19 @@ function TourNotificationContainer({
     nextSite && userLocation
       ? calculateDistance(userLocation.latitude, userLocation.longitude, nextSite.latitude, nextSite.longitude)
       : null;
+  const isFinalStop = !!finalSiteId && currentAlert.siteId === finalSiteId;
+
+  const handleDismiss = () => {
+    setCurrentAlert(null);
+    if (isFinalStop) triggerTourComplete(currentAlert.siteName);
+  };
 
   return (
     <ProximityNotification
       alert={currentAlert}
-      onDismiss={() => setCurrentAlert(null)}
+      onDismiss={handleDismiss}
       nextStop={nextSite ? { name: nextSite.name, distanceMeters: nextDist ?? 0 } : undefined}
+      isFinalStop={isFinalStop}
     />
   );
 }
