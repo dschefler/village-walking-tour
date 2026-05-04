@@ -103,16 +103,28 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
             </Button>
           </nav>
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`md:hidden ${textClass} ${hoverClass}`}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          {/* Mobile: refresh + hamburger always visible */}
+          <div className="md:hidden flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`${textClass} ${hoverClass}`}
+              onClick={refreshApp}
+              title="Refresh app content"
+              aria-label="Refresh app content"
+            >
+              <RefreshCw className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`${textClass} ${hoverClass}`}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
