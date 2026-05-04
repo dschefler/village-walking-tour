@@ -22,25 +22,57 @@ export async function unregisterAndReload() {
   window.location.reload();
 }
 
-// Baked into the JS bundle at build time — changes on every Vercel deploy.
-const CURRENT_BUILD_ID = process.env.NEXT_PUBLIC_APP_BUILD_ID ?? 'dev';
 const BUILD_VERSION_KEY = 'app-build-version';
+
+// Returns the current build ID — two sources, either one changing triggers an update:
+// 1. API call: works even in old cached JS since it hits the server (detects new Vercel deploys)
+// 2. Baked-in env var: instant fallback for when the API is slow/unavailable
+const BAKED_BUILD_ID: string | null =
+  process.env.NEXT_PUBLIC_APP_BUILD_ID && process.env.NEXT_PUBLIC_APP_BUILD_ID !== 'dev'
+    ? process.env.NEXT_PUBLIC_APP_BUILD_ID
+    : null;
 
 export function UpdatePrompt() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const reloadScheduled = useRef(false);
+  const swRegRef = useRef<ServiceWorkerRegistration | null>(null);
 
-  function checkBuildVersion() {
-    if (CURRENT_BUILD_ID === 'dev') return;
+  function scheduleReload() {
+    if (reloadScheduled.current) return;
+    reloadScheduled.current = true;
+    setCountdown(5);
+  }
+
+  function checkBakedVersion() {
+    if (!BAKED_BUILD_ID) return;
     const stored = localStorage.getItem(BUILD_VERSION_KEY);
     if (!stored) {
-      localStorage.setItem(BUILD_VERSION_KEY, CURRENT_BUILD_ID);
+      localStorage.setItem(BUILD_VERSION_KEY, BAKED_BUILD_ID);
       return;
     }
-    if (stored !== CURRENT_BUILD_ID && !reloadScheduled.current) {
-      reloadScheduled.current = true;
-      localStorage.setItem(BUILD_VERSION_KEY, CURRENT_BUILD_ID);
-      setCountdown(5);
+    if (stored !== BAKED_BUILD_ID) {
+      localStorage.setItem(BUILD_VERSION_KEY, BAKED_BUILD_ID);
+      scheduleReload();
+    }
+  }
+
+  async function checkApiVersion() {
+    try {
+      const res = await fetch('/api/build-version', { cache: 'no-store' });
+      if (!res.ok) return;
+      const { id } = await res.json();
+      if (!id || id === 'dev') return;
+      const stored = localStorage.getItem(BUILD_VERSION_KEY);
+      if (!stored) {
+        localStorage.setItem(BUILD_VERSION_KEY, id);
+        return;
+      }
+      if (stored !== id) {
+        localStorage.setItem(BUILD_VERSION_KEY, id);
+        scheduleReload();
+      }
+    } catch {
+      // Offline — skip
     }
   }
 
@@ -56,42 +88,42 @@ export function UpdatePrompt() {
   }, [countdown]);
 
   useEffect(() => {
-    checkBuildVersion();
+    // Check baked version immediately (synchronous, instant)
+    checkBakedVersion();
+    // Check API version (detects new deploys even in old cached JS)
+    checkApiVersion();
 
-    // Re-check when user switches back to the app
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') checkBuildVersion();
+      if (document.visibilityState !== 'visible') return;
+      checkBakedVersion();
+      checkApiVersion();
+      // Force SW to check for updates whenever user returns to the app
+      swRegRef.current?.update().catch(() => {});
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
-    // Also poll every 30 seconds so stale sessions eventually self-update
-    const poll = setInterval(checkBuildVersion, 30_000);
+    // Poll every 30 seconds
+    const poll = setInterval(() => {
+      checkBakedVersion();
+      checkApiVersion();
+    }, 30_000);
 
-    // Service worker controller-change path (SW update takes over)
+    // Service worker paths
     if ('serviceWorker' in navigator) {
-      const handleControllerChange = () => {
-        if (!reloadScheduled.current) {
-          reloadScheduled.current = true;
-          setCountdown(5);
-        }
-      };
+      const handleControllerChange = () => scheduleReload();
       navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
       navigator.serviceWorker.getRegistration().then(reg => {
         if (!reg) return;
-        if (reg.waiting && !reloadScheduled.current) {
-          reloadScheduled.current = true;
-          setCountdown(5);
-          return;
-        }
+        swRegRef.current = reg;
+        if (reg.waiting) { scheduleReload(); return; }
         reg.update().catch(() => {});
         reg.addEventListener('updatefound', () => {
           const installing = reg.installing;
           if (!installing) return;
           installing.addEventListener('statechange', () => {
-            if (installing.state === 'installed' && navigator.serviceWorker.controller && !reloadScheduled.current) {
-              reloadScheduled.current = true;
-              setCountdown(5);
+            if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+              scheduleReload();
             }
           });
         });
