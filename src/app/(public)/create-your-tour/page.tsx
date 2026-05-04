@@ -478,32 +478,33 @@ export default function CreateYourTourPage() {
             Create Your Tour
           </h1>
 
-          {/* View mode tabs */}
-          <div className="flex gap-2 flex-wrap">
-            <Link
-              href="/historic-sites"
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors"
-            >
-              <Map className="w-4 h-4" />
-              View by Map
-            </Link>
-            <span className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white text-black border border-white">
-              <List className="w-4 h-4" />
-              View by Listing
-            </span>
-            <Link
-              href="/curated-tours"
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors"
-            >
-              <Bookmark className="w-4 h-4" />
-              Curated Tours
-            </Link>
-          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-8">
+        {/* Browse mode selector */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          <Link
+            href="/historic-sites"
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#A40000] transition-all text-center"
+          >
+            <Map className="w-6 h-6 text-[#A40000]" />
+            <span className="text-xs font-semibold text-gray-700">View by Map</span>
+          </Link>
+          <Link
+            href="/curated-tours"
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#A40000] transition-all text-center"
+          >
+            <Bookmark className="w-6 h-6 text-[#A40000]" />
+            <span className="text-xs font-semibold text-gray-700">Curated Tours</span>
+          </Link>
+          <div className="flex flex-col items-center gap-2 p-4 bg-[#A40000] rounded-xl border-2 border-[#A40000] shadow-sm text-center text-white">
+            <List className="w-6 h-6" />
+            <span className="text-xs font-semibold">Select Sites</span>
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Site Selection */}
           <div className="space-y-4">

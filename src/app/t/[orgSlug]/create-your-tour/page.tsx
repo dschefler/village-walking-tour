@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Volume2, VolumeX } from 'lucide-react';
+import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Map, List, Bookmark, Volume2, VolumeX } from 'lucide-react';
 import { warmUpSpeech, setSpeechMuted, isSpeechMuted, speak } from '@/lib/speech';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -403,6 +403,31 @@ export default function TenantCreateYourTourPage() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-8">
+        {/* Browse mode selector */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          <Link
+            href="/historic-sites"
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:shadow-md transition-all text-center"
+          >
+            <Map className="w-6 h-6" style={{ color: primaryColor }} />
+            <span className="text-xs font-semibold text-gray-700">View by Map</span>
+          </Link>
+          <Link
+            href="/curated-tours"
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:shadow-md transition-all text-center"
+          >
+            <Bookmark className="w-6 h-6" style={{ color: primaryColor }} />
+            <span className="text-xs font-semibold text-gray-700">Curated Tours</span>
+          </Link>
+          <div
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 shadow-sm text-center text-white"
+            style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
+          >
+            <List className="w-6 h-6" />
+            <span className="text-xs font-semibold">Select Sites</span>
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Site Selection */}
           <div className="space-y-4">

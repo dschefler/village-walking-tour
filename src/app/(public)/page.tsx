@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Route, Smartphone, HelpCircle, Bookmark } from 'lucide-react';
+import { Route, Smartphone, HelpCircle, Bookmark, MapPin } from 'lucide-react';
 import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
@@ -121,37 +121,35 @@ export default async function HomePage() {
             this self-guided walking tour. Explore at your own pace with GPS navigation
             and audio narration.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
-            <Button
-              size="lg"
-              asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+          <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto w-full">
+            <Link
+              href="/how-to-use"
+              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
             >
-              <Link href="/how-to-use">
-                <HelpCircle className="w-5 h-5" />
-                How to Use
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+              <HelpCircle className="w-8 h-8" />
+              <span className="text-sm font-semibold text-center leading-tight">How to Use</span>
+            </Link>
+            <Link
+              href="/historic-sites"
+              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
             >
-              <Link href="/curated-tours">
-                <Bookmark className="w-5 h-5" />
-                Curated Tours
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
+              <MapPin className="w-8 h-8" />
+              <span className="text-sm font-semibold text-center leading-tight">Start Exploring</span>
+            </Link>
+            <Link
+              href="/create-your-tour"
+              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
             >
-              <Link href="/create-your-tour">
-                <Route className="w-5 h-5" />
-                Create Your Tour
-              </Link>
-            </Button>
+              <Route className="w-8 h-8" />
+              <span className="text-sm font-semibold text-center leading-tight">Create Your Tour</span>
+            </Link>
+            <Link
+              href="/curated-tours"
+              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
+            >
+              <Bookmark className="w-8 h-8" />
+              <span className="text-sm font-semibold text-center leading-tight">Curated Theme Tours</span>
+            </Link>
           </div>
         </div>
       </header>
