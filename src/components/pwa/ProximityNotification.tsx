@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { X, MapPin, Navigation, Volume2, Play, Pause, Square, Loader2, BookOpen } from 'lucide-react';
+import { X, MapPin, Play, Pause, Square, Loader2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
@@ -18,11 +18,10 @@ interface ProximityNotificationProps {
 export function ProximityNotification({
   alert,
   onDismiss,
-  autoHideMs = 15000,
+  autoHideMs = 20000,
 }: ProximityNotificationProps) {
   const { dismissAlert } = useNotificationStore();
   const [visible, setVisible] = useState(true);
-  const [showAudioPlayer, setShowAudioPlayer] = useState(false);
 
   const {
     isPlaying,
@@ -32,7 +31,6 @@ export function ProximityNotification({
     isLoading,
     progressPercent,
     load,
-    play,
     toggle,
     stop,
   } = useAudioPlayer();
@@ -40,39 +38,33 @@ export function ProximityNotification({
   const hasAudio = !!alert.audioUrl;
   const isCurrentSite = currentSiteId === alert.siteId;
 
+  // Pre-load audio immediately on mount so play button is ready
   useEffect(() => {
-    // Don't auto-hide if audio is playing
-    if (autoHideMs > 0 && !showAudioPlayer) {
+    if (hasAudio && alert.audioUrl) {
+      load(alert.audioUrl, alert.siteId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-hide only for sites without audio; never auto-hide while audio is loaded/playing
+  useEffect(() => {
+    if (hasAudio) return;
+    if (autoHideMs > 0) {
       const timer = setTimeout(() => {
         setVisible(false);
         onDismiss?.();
       }, autoHideMs);
       return () => clearTimeout(timer);
     }
-  }, [autoHideMs, onDismiss, showAudioPlayer]);
+  }, [hasAudio, autoHideMs, onDismiss]);
 
   const handleDismiss = () => {
-    // Stop audio if playing when dismissing
     if (isCurrentSite && isPlaying) {
       stop();
     }
     dismissAlert(alert.siteId);
     setVisible(false);
     onDismiss?.();
-  };
-
-  const handleListenToAudio = () => {
-    if (alert.audioUrl) {
-      load(alert.audioUrl, alert.siteId);
-      setShowAudioPlayer(true);
-      // Start playing after a short delay to let it load
-      setTimeout(() => play(), 500);
-    }
-  };
-
-  const handleStopAudio = () => {
-    stop();
-    setShowAudioPlayer(false);
   };
 
   const formatTime = (seconds: number): string => {
@@ -86,27 +78,15 @@ export function ProximityNotification({
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
       <div className="bg-card border rounded-lg shadow-lg p-4 max-w-md mx-auto">
-        {/* Dancing stickman celebration GIF */}
-        <div className="flex justify-center mb-3">
-          <iframe
-            src="https://tenor.com/embed/27648124"
-            width="120"
-            height="170"
-            frameBorder="0"
-            allowFullScreen
-            className="rounded-lg"
-          />
-        </div>
+        {/* Header */}
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
             <MapPin className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-sm">You&apos;ve Arrived!</h4>
-            <p className="text-sm text-muted-foreground line-clamp-1">
-              {alert.siteName}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="font-medium text-sm line-clamp-1">{alert.siteName}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {formatDistance(alert.distance)} away
             </p>
           </div>
@@ -120,121 +100,68 @@ export function ProximityNotification({
           </Button>
         </div>
 
-        {/* Audio Section */}
+        {/* Audio Player — shown immediately if audio is available */}
         {hasAudio && (
-          <div className="mt-3 pt-3 border-t space-y-2">
-            {/* Listen to Audio Button */}
-            {!showAudioPlayer && (
-              <Button
-                onClick={handleListenToAudio}
-                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
-                size="sm"
-              >
-                <Volume2 className="w-4 h-4 mr-2" />
-                Listen to Audio Tour
-              </Button>
-            )}
-
-            {/* Audio Player */}
-            {showAudioPlayer && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10"
-                    onClick={toggle}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : isPlaying ? (
-                      <Pause className="w-5 h-5" />
-                    ) : (
-                      <Play className="w-5 h-5 ml-0.5" />
-                    )}
-                  </Button>
-
-                  {/* Progress bar */}
-                  <div className="flex-1">
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary transition-all"
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                      <span>{formatTime(progress)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
-                  </div>
-
-                  {/* Stop/Cancel button */}
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="h-10 w-10"
-                    onClick={handleStopAudio}
-                    title="Stop audio"
-                  >
-                    <Square className="w-4 h-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-center text-muted-foreground">
-                  Tap the red button to stop and close the audio player
-                </p>
-              </div>
-            )}
-
-            {/* Learn More - links to location page */}
-            {!showAudioPlayer && (
-              <Button
-                asChild
-                variant="outline"
-                className="w-full"
-                size="sm"
-              >
-                <Link href={`/location/${alert.siteId}`}>
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Learn More About This Site
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Learn More for sites without audio */}
-        {!hasAudio && (
           <div className="mt-3 pt-3 border-t">
-            <Button
-              asChild
-              variant="outline"
-              className="w-full"
-              size="sm"
-            >
-              <Link href={`/location/${alert.siteId}`}>
-                <BookOpen className="w-4 h-4 mr-2" />
-                Learn More About This Site
-              </Link>
-            </Button>
+            <div className="flex items-center gap-3">
+              {/* Big play/pause button */}
+              <button
+                onClick={toggle}
+                disabled={isLoading}
+                className="flex-shrink-0 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-md disabled:opacity-60"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="w-6 h-6" />
+                ) : (
+                  <Play className="w-6 h-6 ml-1" />
+                )}
+              </button>
+
+              {/* Progress bar + time */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  {isLoading ? 'Loading audio…' : isPlaying ? 'Playing audio tour' : 'Tap to hear the audio tour'}
+                </p>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                {duration > 0 && (
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>{formatTime(progress)}</span>
+                    <span>{formatTime(duration)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Stop button */}
+              {(isPlaying || isCurrentSite) && (
+                <button
+                  onClick={() => stop()}
+                  className="flex-shrink-0 w-9 h-9 rounded-full bg-destructive/10 text-destructive flex items-center justify-center"
+                  title="Stop audio"
+                >
+                  <Square className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
-        <div className="mt-3 flex gap-2">
-          <Button asChild size="sm" className="flex-1">
+        {/* Learn More */}
+        <div className="mt-3 pt-3 border-t flex gap-2">
+          <Button asChild variant="outline" size="sm" className="flex-1">
             <Link href={`/location/${alert.siteId}`}>
-              View Location
+              <BookOpen className="w-4 h-4 mr-1.5" />
+              Learn More
             </Link>
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const url = `https://www.google.com/maps/dir/?api=1&destination=${alert.siteName}&travelmode=walking`;
-              window.open(url, '_blank');
-            }}
-          >
-            <Navigation className="w-4 h-4" />
+          <Button size="sm" className="flex-1" onClick={handleDismiss}>
+            Continue Tour
           </Button>
         </div>
       </div>
