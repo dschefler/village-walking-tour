@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X } from 'lucide-react';
@@ -215,18 +215,16 @@ export default function CreateYourTourPage() {
   const [tourCreated, setTourCreated] = useState(false);
   const [createdRoute, setCreatedRoute] = useState<SiteItem[]>([]);
   const [showWalkingGif, setShowWalkingGif] = useState(false);
-  const [gettingLocation, setGettingLocation] = useState(false);
   const [travelMode, setTravelMode] = useState<'walking' | 'driving'>('walking');
   const [mapboxRoute, setMapboxRoute] = useState<GeoJSON.Feature<GeoJSON.LineString> | null>(null);
   const [navSteps, setNavSteps] = useState<NavStep[]>([]);
   const [navLoading, setNavLoading] = useState(false);
   const [savedLocation, setSavedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [mapboxFailed, setMapboxFailed] = useState(false);
-  const [locationAcquired, setLocationAcquired] = useState<boolean | null>(null);
   const [followMode, setFollowMode] = useState(false);
 
   // GPS and proximity notifications
-  const { getCurrentPosition, startTracking, userLocation, heading } = useGeolocation({ maximumAge: 0, enableHighAccuracy: true });
+  const { startTracking, userLocation, heading } = useGeolocation({ maximumAge: 0, enableHighAccuracy: true });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
 
   // Get the final site ID for tour completion detection
@@ -243,6 +241,14 @@ export default function CreateYourTourPage() {
       console.log('Tour complete! Arrived at final destination:', siteName);
     },
   });
+
+  // Capture first GPS fix after tour creation as Mapbox route starting point
+  const savedLocationRef = useRef(false);
+  useEffect(() => {
+    if (!tourCreated || !userLocation || savedLocationRef.current) return;
+    savedLocationRef.current = true;
+    setSavedLocation(userLocation);
+  }, [tourCreated, userLocation]);
 
   useEffect(() => {
     async function fetchSites() {
@@ -330,6 +336,8 @@ export default function CreateYourTourPage() {
     setMapboxRoute(null);
     setNavSteps([]);
     setMapboxFailed(false);
+    setSavedLocation(null);
+    savedLocationRef.current = false;
   };
 
   // Auto-load Mapbox route whenever the tour is created or travel mode changes.
@@ -372,25 +380,16 @@ export default function CreateYourTourPage() {
     return () => { cancelled = true; };
   }, [tourCreated, createdRoute, travelMode, savedLocation]);
 
-  const createTour = async () => {
-    setGettingLocation(true);
-    try {
-      const location = await getCurrentPosition();
-      setSavedLocation(location);
-      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), location));
-      setNotificationsEnabled(true);
-      setLocationAcquired(true);
-      setFollowMode(true);
-      startTracking();
-    } catch {
-      setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), null));
-      setLocationAcquired(false);
-    } finally {
-      setGettingLocation(false);
-      setTourCreated(true);
-      setShowWalkingGif(true);
-      setTimeout(() => setShowWalkingGif(false), 3000);
-    }
+  const createTour = () => {
+    // Create tour immediately — GPS tracking starts in the background
+    setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), null));
+    setNotificationsEnabled(true);
+    setFollowMode(true);
+    setTourCreated(true);
+    setShowWalkingGif(true);
+    setTimeout(() => setShowWalkingGif(false), 3000);
+    savedLocationRef.current = false; // allow first GPS fix to be captured
+    startTracking();
   };
 
   const resetTour = () => {
@@ -549,25 +548,15 @@ export default function CreateYourTourPage() {
                 </p>
                 <p className="text-xs text-[#014487] mb-6 flex items-center gap-1">
                   <MapPinned className="w-4 h-4" />
-                  Uses your GPS to find the best starting point
+                  GPS will track your position as you walk
                 </p>
                 <Button
                   size="lg"
                   onClick={createTour}
-                  disabled={gettingLocation}
                   className="bg-[#A40000] hover:bg-[#8a0000] text-white gap-2"
                 >
-                  {gettingLocation ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Getting your location...
-                    </>
-                  ) : (
-                    <>
-                      <Navigation className="w-5 h-5" />
-                      Create Tour
-                    </>
-                  )}
+                  <Navigation className="w-5 h-5" />
+                  Start Walking
                 </Button>
               </div>
             ) : (
@@ -629,17 +618,16 @@ export default function CreateYourTourPage() {
                     </div>
                   </div>
 
-                  {/* Location status */}
-                  {locationAcquired === true && (
+                  {/* GPS status */}
+                  {userLocation ? (
                     <p className="mt-3 text-xs text-green-600 flex items-center gap-1">
                       <MapPinned className="w-3 h-3" />
-                      Starting from your location
+                      GPS active — map is following you
                     </p>
-                  )}
-                  {locationAcquired === false && (
+                  ) : (
                     <p className="mt-3 text-xs text-amber-600 flex items-center gap-1">
-                      <MapPinned className="w-3 h-3" />
-                      Location unavailable — route starts from nearest stop
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Locating you…
                     </p>
                   )}
 
