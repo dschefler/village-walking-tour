@@ -10,6 +10,7 @@ import {
   Map,
   Download,
   ChevronRight,
+  Bookmark,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,18 @@ import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 
 const features = [
+  {
+    icon: Bookmark,
+    title: 'Curated Tours',
+    description:
+      'Explore Southampton through themed tours curated around specific chapters of local history — Black history, the Revolutionary era, and veterans of our armed forces.',
+    steps: [
+      'Tap "Curated Tours" in the navigation bar',
+      'Choose a theme that interests you',
+      'Suggested locations are pre-selected — uncheck any you want to skip or add others',
+      'Tap "Create Tour" to build your optimized route and start exploring',
+    ],
+  },
   {
     icon: MapPin,
     title: 'Browse Locations',

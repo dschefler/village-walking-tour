@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info } from 'lucide-react';
+import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HistoricSitesDropdown } from './HistoricSitesDropdown';
+import { CuratedToursDropdown } from './CuratedToursDropdown';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 
 async function refreshApp() {
@@ -70,6 +71,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               </Link>
             </Button>
             <HistoricSitesDropdown transparent={transparent} orgSlug={orgSlug} />
+            <CuratedToursDropdown transparent={transparent} orgSlug={orgSlug} />
             <Button variant="ghost" asChild className={hoverClass}>
               <Link href={`${prefix}/how-to-use`} className={`flex items-center gap-2 ${textClass}`}>
                 <HelpCircle className="w-4 h-4" />
@@ -130,6 +132,14 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
             >
               <MapPin className="w-5 h-5" />
               <span>Historic Sites</span>
+            </Link>
+            <Link
+              href={`${prefix}/curated-tours`}
+              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Bookmark className="w-5 h-5" />
+              <span>Curated Tours</span>
             </Link>
             <Link
               href={`${prefix}/how-to-use`}
