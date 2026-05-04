@@ -7,6 +7,7 @@ import { X, MapPin, Play, Pause, Square, Loader2, BookOpen, ChevronRight } from 
 import { Button } from '@/components/ui/button';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
+import { speak } from '@/lib/speech';
 import type { ProximityAlert } from '@/types';
 
 interface ProximityNotificationProps {
@@ -154,7 +155,10 @@ export function ProximityNotification({
             </Button>
             {nextStop ? (
               <button
-                onClick={handleDismiss}
+                onClick={() => {
+                  speak(`Now heading to ${nextStop.name}.`);
+                  handleDismiss();
+                }}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900 hover:bg-black text-white rounded-lg px-3 py-2 text-sm font-semibold"
               >
                 Next Stop
