@@ -169,9 +169,10 @@ export default function CreateYourTourPage() {
   const [navSteps, setNavSteps] = useState<{ maneuver: { instruction: string }; distance: number }[]>([]);
   const [navLoading, setNavLoading] = useState(false);
   const [savedLocation, setSavedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [mapboxFailed, setMapboxFailed] = useState(false);
 
   // GPS and proximity notifications
-  const { userLocation, getCurrentPosition } = useGeolocation({ maximumAge: 30000 });
+  const { getCurrentPosition } = useGeolocation({ maximumAge: 30000 });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
 
   // Get the final site ID for tour completion detection
@@ -210,6 +211,19 @@ export default function CreateYourTourPage() {
     return calculateTotalDistance(createdRoute);
   }, [createdRoute]);
 
+  // Pre-computed synchronously — used in <a> tags so iOS never blocks it
+  const googleMapsUrl = useMemo(() => {
+    if (createdRoute.length === 0) return '';
+    const mode = travelMode === 'driving' ? 'driving' : 'walking';
+    if (createdRoute.length === 1) {
+      const d = createdRoute[0];
+      return `https://www.google.com/maps/dir/?api=1&destination=${d.latitude},${d.longitude}&travelmode=${mode}`;
+    }
+    const dest = createdRoute[createdRoute.length - 1];
+    const wps = createdRoute.slice(0, -1).map(s => `${s.latitude},${s.longitude}`).join('|');
+    return `https://www.google.com/maps/dir/?api=1&destination=${dest.latitude},${dest.longitude}&waypoints=${encodeURIComponent(wps)}&travelmode=${mode}`;
+  }, [createdRoute, travelMode]);
+
   const toggleSite = (siteId: string) => {
     setSelectedIds((prev) => {
       const newSet = new Set(prev);
@@ -237,12 +251,14 @@ export default function CreateYourTourPage() {
     setCreatedRoute([]);
     setMapboxRoute(null);
     setNavSteps([]);
+    setMapboxFailed(false);
   };
 
   // Clear loaded route when travel mode changes so user gets fresh directions
   useEffect(() => {
     setMapboxRoute(null);
     setNavSteps([]);
+    setMapboxFailed(false);
   }, [travelMode]);
 
   const createTour = async () => {
@@ -267,31 +283,13 @@ export default function CreateYourTourPage() {
     setCreatedRoute([]);
     setMapboxRoute(null);
     setNavSteps([]);
-  };
-
-  const openGoogleMaps = async () => {
-    let originStr = '';
-    try {
-      const loc = await getCurrentPosition();
-      if (loc) originStr = `&origin=${loc.latitude},${loc.longitude}`;
-    } catch {}
-    const googleMode = travelMode === 'driving' ? 'driving' : 'walking';
-    if (createdRoute.length === 1) {
-      const dest = createdRoute[0];
-      window.open(`https://www.google.com/maps/dir/?api=1${originStr}&destination=${dest.latitude},${dest.longitude}&travelmode=${googleMode}`, '_blank');
-      return;
-    }
-    const destination = createdRoute[createdRoute.length - 1];
-    const waypoints = createdRoute.slice(0, -1).map((s) => `${s.latitude},${s.longitude}`).join('|');
-    window.open(
-      `https://www.google.com/maps/dir/?api=1${originStr}&destination=${destination.latitude},${destination.longitude}&waypoints=${encodeURIComponent(waypoints)}&travelmode=${googleMode}`,
-      '_blank'
-    );
+    setMapboxFailed(false);
   };
 
   const startNavigation = async () => {
     if (createdRoute.length === 0) return;
     setNavLoading(true);
+    setMapboxFailed(false);
     try {
       let coordParts: string[] = [];
       try {
@@ -312,10 +310,10 @@ export default function CreateYourTourPage() {
         setMapboxRoute({ type: 'Feature', geometry: route.geometry, properties: {} });
         setNavSteps(route.legs.flatMap((leg: any) => leg.steps ?? []));
       } else {
-        await openGoogleMaps();
+        setMapboxFailed(true);
       }
     } catch {
-      await openGoogleMaps();
+      setMapboxFailed(true);
     } finally {
       setNavLoading(false);
     }
@@ -597,7 +595,17 @@ export default function CreateYourTourPage() {
                         </button>
                       </div>
                     </div>
-                    {!mapboxRoute ? (
+                    {mapboxFailed ? (
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-2 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-md px-4 h-11 text-sm font-medium"
+                      >
+                        {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
+                        Open in Google Maps
+                      </a>
+                    ) : !mapboxRoute ? (
                       <Button
                         onClick={startNavigation}
                         className="w-full bg-[#A40000] hover:bg-[#8a0000] text-white gap-2"
@@ -615,7 +623,7 @@ export default function CreateYourTourPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-[#A40000]">Route loaded — follow the map</span>
                         <button
-                          onClick={() => { setMapboxRoute(null); setNavSteps([]); }}
+                          onClick={() => { setMapboxRoute(null); setNavSteps([]); setMapboxFailed(false); }}
                           className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
                         >
                           <X className="w-3 h-3" /> Clear
@@ -643,12 +651,14 @@ export default function CreateYourTourPage() {
                   <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div className="px-4 py-2 border-b flex items-center justify-between">
                       <span className="text-sm font-semibold text-gray-700">Turn-by-turn directions</span>
-                      <button
-                        onClick={() => openGoogleMaps()}
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
                         className="text-xs text-blue-600 hover:underline"
                       >
                         Open in Google Maps
-                      </button>
+                      </a>
                     </div>
                     <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm">
                       {navSteps.map((step, i) => (

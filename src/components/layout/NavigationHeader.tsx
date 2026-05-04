@@ -10,13 +10,14 @@ import { CuratedToursDropdown } from './CuratedToursDropdown';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 
 async function refreshApp() {
+  // Unregister SW first so the new version activates on reload
+  if ('serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map(r => r.unregister()));
+  }
   if ('caches' in window) {
     const names = await caches.keys();
-    await Promise.all(
-      names
-        .filter(n => !n.includes('mapbox') && !n.includes('audio'))
-        .map(n => caches.delete(n))
-    );
+    await Promise.all(names.map(n => caches.delete(n)));
   }
   window.location.reload();
 }
