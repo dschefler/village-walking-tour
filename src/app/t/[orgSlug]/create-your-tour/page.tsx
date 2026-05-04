@@ -147,11 +147,8 @@ function TourNotificationContainer({
     }
   }, [recentAlerts, enabled]);
 
-  useEffect(() => {
-    if (!showTourCompletePrompt) return;
-    const t = setTimeout(() => setCurrentAlert(null), 8000);
-    return () => clearTimeout(t);
-  }, [showTourCompletePrompt]);
+  // ProximityNotification stays until user dismisses it. It renders at z-[60], above
+  // TourCompletePrompt (z-50). Dismissing the arrival card reveals the tour-complete prompt.
 
   if (!currentAlert || createdRoute.length === 0) return null;
 
@@ -283,8 +280,11 @@ export default function TenantCreateYourTourPage() {
     if (activeStepIndex === prevStepRef.current) return;
     prevStepRef.current = activeStepIndex;
     if (activeStepIndex === 0) return;
+    const step = navSteps[activeStepIndex];
+    const type = step?.maneuver?.type;
+    if (type === 'arrive' || type === 'depart') return;
     if (typeof window !== 'undefined' && window.speechSynthesis?.speaking) return;
-    speak(navSteps[activeStepIndex].maneuver.instruction);
+    speak(step.maneuver.instruction);
   }, [activeStepIndex, tourCreated, travelMode, navSteps, userLocation]);
 
   const toggleSite = (siteId: string) => {

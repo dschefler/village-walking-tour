@@ -55,7 +55,7 @@ export function ProximityNotification({
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+    <div className="fixed bottom-4 left-4 right-4 z-[60] animate-in slide-in-from-bottom-5 fade-in duration-300">
       <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md mx-auto border border-gray-100">
 
         {/* Site photo */}

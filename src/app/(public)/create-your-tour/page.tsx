@@ -184,12 +184,9 @@ function TourNotificationContainer({
     }
   }, [recentAlerts, enabled]);
 
-  useEffect(() => {
-    if (!showTourCompletePrompt) return;
-    // Delay hiding arrival card so user can read site info before tour-complete prompt takes over
-    const t = setTimeout(() => setCurrentAlert(null), 8000);
-    return () => clearTimeout(t);
-  }, [showTourCompletePrompt]);
+  // When tour-complete fires, keep showing the arrival card — user dismisses it manually.
+  // ProximityNotification renders at z-[60] so it sits on top of TourCompletePrompt (z-50).
+  // Once user taps X / Continue, ProximityNotification closes and TourCompletePrompt is revealed.
 
   if (!currentAlert || createdRoute.length === 0) return null;
 
@@ -338,8 +335,12 @@ export default function CreateYourTourPage() {
     if (activeStepIndex === prevStepRef.current) return;
     prevStepRef.current = activeStepIndex;
     if (activeStepIndex === 0) return; // skip step 0 on initial load
+    const step = navSteps[activeStepIndex];
+    // Skip arrive/depart steps — arrival is already announced by the proximity system
+    const type = step?.maneuver?.type;
+    if (type === 'arrive' || type === 'depart') return;
     if (typeof window !== 'undefined' && window.speechSynthesis?.speaking) return;
-    speak(navSteps[activeStepIndex].maneuver.instruction);
+    speak(step.maneuver.instruction);
   }, [activeStepIndex, tourCreated, travelMode, navSteps, userLocation]);
 
   const toggleSite = (siteId: string) => {
