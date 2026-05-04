@@ -97,13 +97,36 @@ export default function TenantAboutPage({
             shaped generations of life in Southampton.
           </p>
 
-          <p className="leading-relaxed pb-4">
+          <p className="leading-relaxed">
             As our nation approaches its 250th Anniversary, the Village is proud to launch this
             Historical Walking Tour series as a way to celebrate and preserve the people, places and
             moments that continue to define Southampton Village&apos;s remarkable history.
           </p>
 
         </div>
+
+        {/* Historic photo grid */}
+        <div className="container mx-auto px-4 pb-12 max-w-3xl">
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { src: '/about/postcard-main-jobs.jpeg', alt: 'Main Street and Job\'s Lane, Southampton, L.I.' },
+              { src: '/about/postcard-jobs-main.jpg',  alt: 'Job\'s Lane and Main Street, Southampton, L.I.' },
+              { src: '/about/jobs-lane-sign.jpeg',     alt: 'Jobs Lane — Opened 1664' },
+              { src: '/about/towne-street-sign.jpg',   alt: 'Ye Towne Street — Opened 1648' },
+            ].map(({ src, alt }) => (
+              <div key={src} className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-md bg-muted">
+                <Image
+                  src={src}
+                  alt={alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 350px"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
       </main>
 
       <Footer />
