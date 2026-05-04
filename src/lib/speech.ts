@@ -74,12 +74,25 @@ export function isSpeechSupported() {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
-// Call once after a user gesture (e.g. "Start Walking") to warm up iOS speech
+// Call once after a user gesture (e.g. "Start Walking") to warm up iOS speech.
+// Also speaks an audible confirmation so the user knows voice is working.
 export function warmUpSpeech() {
   if (!('speechSynthesis' in window)) return;
   loadVoices();
-  // Speak a silent utterance to unlock iOS audio session
-  const u = new SpeechSynthesisUtterance('​');
-  u.volume = 0;
-  window.speechSynthesis.speak(u);
+  // iOS requires speech to start synchronously inside a user gesture.
+  // Speak a silent utterance first to unlock the audio session, then the real one.
+  const silent = new SpeechSynthesisUtterance('​');
+  silent.volume = 0;
+  silent.onend = () => {
+    // After iOS unlocks the audio session, speak the real announcement
+    const u = new SpeechSynthesisUtterance('Tour started. Walk toward your first stop.');
+    u.lang = 'en-US';
+    u.rate = 0.92;
+    u.pitch = 1;
+    u.volume = 1;
+    const voice = pickVoice();
+    if (voice) u.voice = voice;
+    window.speechSynthesis.speak(u);
+  };
+  window.speechSynthesis.speak(silent);
 }

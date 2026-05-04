@@ -576,6 +576,7 @@ export default function TenantCreateYourTourPage() {
                         const next = !isMuted;
                         setSpeechMuted(next);
                         setMutedState(next);
+                        if (!next) speak('Voice is on. You will hear announcements as you walk.');
                       }}
                       className="flex items-center gap-2 text-sm w-full"
                     >
