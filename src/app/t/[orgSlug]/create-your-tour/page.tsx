@@ -205,6 +205,8 @@ export default function TenantCreateYourTourPage() {
     externalUserLocation: userLocation,
   });
 
+  const routeSectionRef = useRef<HTMLDivElement>(null);
+
   // Capture first GPS fix after tour creation as Mapbox route starting point
   const savedLocationRef = useRef(false);
   useEffect(() => {
@@ -336,6 +338,9 @@ export default function TenantCreateYourTourPage() {
     setTimeout(() => setShowWalkingGif(false), 3000);
     savedLocationRef.current = false;
     startTracking();
+    setTimeout(() => {
+      routeSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
   };
 
 
@@ -446,7 +451,7 @@ export default function TenantCreateYourTourPage() {
           </div>
 
           {/* Map & Route */}
-          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)] space-y-4">
+          <div ref={routeSectionRef} className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)] space-y-4">
             {selectedIds.size === 0 ? (
               <div className="bg-white rounded-lg shadow-lg p-8 h-full min-h-[400px] flex flex-col items-center justify-center text-center">
                 <Route className="w-16 h-16 text-gray-300 mb-4" />
@@ -698,6 +703,19 @@ export default function TenantCreateYourTourPage() {
       </main>
 
       <Footer />
+
+      {/* Mobile FAB — visible only when sites selected but tour not yet started */}
+      {!tourCreated && selectedIds.size > 0 && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden">
+          <button
+            onClick={createTour}
+            className="w-full flex items-center justify-center gap-2 bg-[#A40000] text-white rounded-xl py-4 text-base font-semibold shadow-2xl"
+          >
+            <Navigation className="w-5 h-5" />
+            Start Walking · {selectedIds.size} site{selectedIds.size !== 1 ? 's' : ''}
+          </button>
+        </div>
+      )}
 
       <TourNotificationContainer createdRoute={createdRoute} userLocation={userLocation} />
       <TourCompletePromptContainer />
