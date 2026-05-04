@@ -22,33 +22,25 @@ export async function unregisterAndReload() {
   window.location.reload();
 }
 
+// Baked into the JS bundle at build time — changes on every Vercel deploy.
+const CURRENT_BUILD_ID = process.env.NEXT_PUBLIC_APP_BUILD_ID ?? 'dev';
 const BUILD_VERSION_KEY = 'app-build-version';
 
 export function UpdatePrompt() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const reloadScheduled = useRef(false);
 
-  async function checkBuildVersion() {
-    try {
-      const res = await fetch('/api/build-version', { cache: 'no-store' });
-      if (!res.ok) return;
-      const { id } = await res.json();
-      if (id === 'dev') return;
-      const stored = localStorage.getItem(BUILD_VERSION_KEY);
-      if (!stored) {
-        // First visit — store silently
-        localStorage.setItem(BUILD_VERSION_KEY, id);
-        return;
-      }
-      if (stored !== id && !reloadScheduled.current) {
-        reloadScheduled.current = true;
-        // Store the new version now so we don't loop after reload
-        localStorage.setItem(BUILD_VERSION_KEY, id);
-        // Show countdown then auto-reload
-        setCountdown(5);
-      }
-    } catch {
-      // Offline — skip
+  function checkBuildVersion() {
+    if (CURRENT_BUILD_ID === 'dev') return;
+    const stored = localStorage.getItem(BUILD_VERSION_KEY);
+    if (!stored) {
+      localStorage.setItem(BUILD_VERSION_KEY, CURRENT_BUILD_ID);
+      return;
+    }
+    if (stored !== CURRENT_BUILD_ID && !reloadScheduled.current) {
+      reloadScheduled.current = true;
+      localStorage.setItem(BUILD_VERSION_KEY, CURRENT_BUILD_ID);
+      setCountdown(5);
     }
   }
 
@@ -66,13 +58,16 @@ export function UpdatePrompt() {
   useEffect(() => {
     checkBuildVersion();
 
-    // Re-check every time the user switches back to the app tab/PWA
+    // Re-check when user switches back to the app
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') checkBuildVersion();
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
-    // Service worker update path
+    // Also poll every 30 seconds so stale sessions eventually self-update
+    const poll = setInterval(checkBuildVersion, 30_000);
+
+    // Service worker controller-change path (SW update takes over)
     if ('serviceWorker' in navigator) {
       const handleControllerChange = () => {
         if (!reloadScheduled.current) {
@@ -105,11 +100,13 @@ export function UpdatePrompt() {
       return () => {
         navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
         document.removeEventListener('visibilitychange', handleVisibility);
+        clearInterval(poll);
       };
     }
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(poll);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

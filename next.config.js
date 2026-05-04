@@ -1,3 +1,10 @@
+const crypto = require('crypto');
+// A single stable ID for this build — baked into all client JS chunks.
+const APP_BUILD_ID =
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  process.env.VERCEL_DEPLOYMENT_ID ||
+  crypto.randomBytes(8).toString('hex');
+
 const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
@@ -73,6 +80,9 @@ const withPWA = require('next-pwa')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_BUILD_ID: APP_BUILD_ID,
+  },
   images: {
     remotePatterns: [
       {
