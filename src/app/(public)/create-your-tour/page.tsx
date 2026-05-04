@@ -124,6 +124,16 @@ function calculateTotalDistance(sites: SiteItem[]): number {
   return total;
 }
 
+interface NavStep {
+  maneuver: {
+    instruction: string;
+    location?: [number, number]; // [lng, lat]
+    type?: string;
+    modifier?: string;
+  };
+  distance: number;
+}
+
 const FEET_PER_METER = 3.28084;
 const FEET_PER_MILE = 5280;
 
@@ -166,14 +176,15 @@ export default function CreateYourTourPage() {
   const [gettingLocation, setGettingLocation] = useState(false);
   const [travelMode, setTravelMode] = useState<'walking' | 'driving'>('walking');
   const [mapboxRoute, setMapboxRoute] = useState<GeoJSON.Feature<GeoJSON.LineString> | null>(null);
-  const [navSteps, setNavSteps] = useState<{ maneuver: { instruction: string }; distance: number }[]>([]);
+  const [navSteps, setNavSteps] = useState<NavStep[]>([]);
   const [navLoading, setNavLoading] = useState(false);
   const [savedLocation, setSavedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [mapboxFailed, setMapboxFailed] = useState(false);
   const [locationAcquired, setLocationAcquired] = useState<boolean | null>(null);
+  const [followMode, setFollowMode] = useState(false);
 
   // GPS and proximity notifications
-  const { getCurrentPosition, startTracking, userLocation } = useGeolocation({ maximumAge: 30000 });
+  const { getCurrentPosition, startTracking, userLocation, heading } = useGeolocation({ maximumAge: 30000 });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
 
   // Get the final site ID for tour completion detection
@@ -224,6 +235,19 @@ export default function CreateYourTourPage() {
     const wps = createdRoute.slice(0, -1).map(s => `${s.latitude},${s.longitude}`).join('|');
     return `https://www.google.com/maps/dir/?api=1&destination=${dest.latitude},${dest.longitude}&waypoints=${encodeURIComponent(wps)}&travelmode=${mode}`;
   }, [createdRoute, travelMode]);
+
+  const activeStepIndex = useMemo(() => {
+    if (!userLocation || navSteps.length === 0) return 0;
+    let closest = 0;
+    let minDist = Infinity;
+    navSteps.forEach((step, i) => {
+      const loc = step.maneuver.location;
+      if (!loc) return;
+      const dist = calculateDistance(userLocation.latitude, userLocation.longitude, loc[1], loc[0]);
+      if (dist < minDist) { minDist = dist; closest = i; }
+    });
+    return closest;
+  }, [userLocation, navSteps]);
 
   const toggleSite = (siteId: string) => {
     setSelectedIds((prev) => {
@@ -303,6 +327,7 @@ export default function CreateYourTourPage() {
       setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), location));
       setNotificationsEnabled(true);
       setLocationAcquired(true);
+      setFollowMode(true);
       startTracking();
     } catch {
       setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), null));
@@ -585,7 +610,7 @@ export default function CreateYourTourPage() {
                     </button>
                   </div>
 
-                  {/* Directions */}
+                  {/* Travel mode + directions */}
                   <div className="mt-4 pt-4 border-t space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-blue-600 font-medium">Travel mode:</span>
@@ -610,27 +635,44 @@ export default function CreateYourTourPage() {
                         </button>
                       </div>
                     </div>
-                    {/* Route status — auto-loads, no button needed */}
                     {navLoading && (
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        Loading route on map…
+                        Loading route…
                       </div>
                     )}
-                    {mapboxRoute && !navLoading && (
-                      <p className="text-xs font-medium text-[#A40000]">Route loaded — see map below</p>
+                    {travelMode === 'driving' ? (
+                      <>
+                        <a
+                          href={googleMapsUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="w-full inline-flex items-center justify-center gap-2 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-md px-4 h-11 text-sm font-medium"
+                        >
+                          <Car className="w-5 h-5" />
+                          Open Driving Directions
+                        </a>
+                        <p className="text-xs text-gray-500 text-center">Opens Google Maps with GPS navigation</p>
+                      </>
+                    ) : (
+                      <>
+                        {mapboxRoute && !navLoading && (
+                          <p className="text-xs text-green-600 flex items-center gap-1">
+                            <Navigation className="w-3 h-3" />
+                            {userLocation ? 'Following your GPS — see map below' : 'Route loaded — see map below'}
+                          </p>
+                        )}
+                        <a
+                          href={googleMapsUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          <Navigation className="w-3 h-3" />
+                          Prefer Google Maps navigation
+                        </a>
+                      </>
                     )}
-                    {/* Google Maps link — always a plain <a> so iOS never blocks it */}
-                    <a
-                      href={googleMapsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-md px-4 h-11 text-sm font-medium"
-                    >
-                      {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
-                      {travelMode === 'driving' ? 'Open Driving Directions' : 'Open Walking Directions'}
-                    </a>
-                    <p className="text-xs text-gray-500 text-center">Opens Google Maps with turn-by-turn directions</p>
                   </div>
                 </div>
 
@@ -647,23 +689,71 @@ export default function CreateYourTourPage() {
                   </div>
                 )}
 
-                {/* Turn-by-turn steps */}
-                {navSteps.length > 0 && (
-                  <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div className="px-4 py-2 border-b flex items-center justify-between">
-                      <span className="text-sm font-semibold text-gray-700">Turn-by-turn directions</span>
+                {/* Walking: current step indicator */}
+                {travelMode === 'walking' && navSteps.length > 0 && userLocation && (
+                  <div className="bg-gray-900 text-white rounded-xl p-3 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                      {activeStepIndex + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium leading-snug">
+                        {navSteps[activeStepIndex]?.maneuver.instruction}
+                      </p>
+                      {(navSteps[activeStepIndex]?.distance ?? 0) > 0 && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {navSteps[activeStepIndex].distance < 160
+                            ? `${Math.round(navSteps[activeStepIndex].distance * 3.281)} ft`
+                            : `${(navSteps[activeStepIndex].distance / 1609.34).toFixed(1)} mi`}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-500 flex-shrink-0">
+                      {activeStepIndex + 1}/{navSteps.length}
+                    </span>
+                  </div>
+                )}
+
+                {/* Map with GPS follow (walking) or overview (driving) */}
+                <div className="relative bg-white rounded-lg shadow-lg overflow-hidden h-[450px] lg:h-[calc(100vh-320px)]">
+                  <TourRouteMap
+                    key={createdRoute.map(s => s.id).join('-')}
+                    sites={createdRoute}
+                    hoveredSiteId={hoveredSiteId}
+                    routeFeature={mapboxRoute}
+                    userLocation={userLocation}
+                    heading={heading}
+                    followUser={travelMode === 'walking' && followMode}
+                    onMapInteract={() => setFollowMode(false)}
+                  />
+                  {travelMode === 'walking' && !followMode && userLocation && (
+                    <button
+                      onClick={() => setFollowMode(true)}
+                      className="absolute bottom-10 right-3 z-10 bg-white rounded-full shadow-lg p-2.5 border border-gray-200 hover:bg-gray-50"
+                      title="Center on my location"
+                    >
+                      <Navigation className="w-4 h-4 text-blue-600" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Walking: collapsible full directions list */}
+                {travelMode === 'walking' && navSteps.length > 0 && (
+                  <details className="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <summary className="px-4 py-3 flex items-center justify-between cursor-pointer select-none">
+                      <span className="text-sm font-semibold text-gray-700">All directions ({navSteps.length} steps)</span>
                       <a
                         href={googleMapsUrl}
                         target="_blank"
                         rel="noreferrer"
+                        onClick={e => e.stopPropagation()}
                         className="text-xs text-blue-600 hover:underline"
                       >
                         Open in Google Maps
                       </a>
-                    </div>
-                    <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm">
+                    </summary>
+                    <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm border-t">
                       {navSteps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-3 px-4 py-2.5">
+                        <div key={i} className={`flex items-start gap-3 px-4 py-2.5 ${i === activeStepIndex && userLocation ? 'bg-blue-50' : ''}`}>
                           <span className="w-5 h-5 flex-shrink-0 rounded-full bg-[#A40000]/10 text-[#A40000] text-xs flex items-center justify-center font-semibold mt-0.5">
                             {i + 1}
                           </span>
@@ -678,19 +768,8 @@ export default function CreateYourTourPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </details>
                 )}
-
-                {/* Map */}
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden h-[400px] lg:h-[calc(100vh-380px)]">
-                  <TourRouteMap
-                    key={createdRoute.map(s => s.id).join('-')}
-                    sites={createdRoute}
-                    hoveredSiteId={hoveredSiteId}
-                    routeFeature={mapboxRoute}
-                    userLocation={userLocation}
-                  />
-                </div>
               </>
             )}
           </div>

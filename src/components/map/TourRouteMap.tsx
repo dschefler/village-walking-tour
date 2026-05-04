@@ -29,6 +29,9 @@ interface TourRouteMapProps {
   routeFeature?: GeoJSON.Feature<GeoJSON.LineString> | null;
   className?: string;
   userLocation?: { latitude: number; longitude: number } | null;
+  heading?: number | null;
+  followUser?: boolean;
+  onMapInteract?: () => void;
 }
 
 export function TourRouteMap({
@@ -37,6 +40,9 @@ export function TourRouteMap({
   routeFeature,
   className,
   userLocation,
+  heading,
+  followUser,
+  onMapInteract,
 }: TourRouteMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -84,6 +90,17 @@ export function TourRouteMap({
       );
     }
   }, [mapLoaded, sites, getBounds]);
+
+  // Auto-follow user GPS when followUser is true
+  useEffect(() => {
+    if (!mapLoaded || !mapRef.current || !userLocation || !followUser) return;
+    mapRef.current.flyTo({
+      center: [userLocation.longitude, userLocation.latitude],
+      zoom: 17,
+      ...(heading != null ? { bearing: heading } : {}),
+      duration: 800,
+    });
+  }, [userLocation, followUser, heading, mapLoaded]);
 
   // Fly to hovered site and show popup
   useEffect(() => {
@@ -142,6 +159,7 @@ export function TourRouteMap({
       style={{ width: '100%', height: '100%' }}
       mapStyle={MAPBOX_CONFIG.style}
       onLoad={() => setMapLoaded(true)}
+      onDragStart={() => onMapInteract?.()}
       reuseMaps
     >
       <NavigationControl position="top-right" />
