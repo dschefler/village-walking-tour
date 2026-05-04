@@ -51,8 +51,8 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
     <header className={headerClass}>
       <div className="container mx-auto px-4">
         <div className="flex h-14 items-center justify-between">
-          {/* Logo / Site Name */}
-          <Link href={isTenant ? `${prefix}` : '/'} className={`flex items-center gap-2 font-semibold ${textClass}`}>
+          {/* Logo / Site Name — orgs with a custom domain land on `/` (their public homepage) */}
+          <Link href={isTenant && !org?.custom_domain ? `${prefix}` : '/'} className={`flex items-center gap-2 font-semibold ${textClass}`}>
             <Image
               src={logoSrc}
               alt={siteName || 'Walking Tour'}

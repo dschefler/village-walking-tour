@@ -127,7 +127,7 @@ export default async function HomePage() {
               asChild
               className="bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
             >
-              <Link href="/t/southampton/how-to-use">
+              <Link href="/how-to-use">
                 <HelpCircle className="w-5 h-5" />
                 How to Use
               </Link>
