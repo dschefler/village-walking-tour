@@ -39,7 +39,7 @@ export function DirectionsButton({
   className = '',
 }: DirectionsButtonProps) {
   const mapRef = useRef<MapRef>(null);
-  const { userLocation } = useGeolocation();
+  const { userLocation, getCurrentPosition } = useGeolocation();
   const { setEnabled } = useNotificationStore();
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
@@ -67,22 +67,28 @@ export function DirectionsButton({
 
   const handleGetDirections = async () => {
     setEnabled(true);
-
-    if (!userLocation) {
-      // No location permission — open external maps as fallback
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const url = isIOS
-        ? `maps://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=w`
-        : `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=walking`;
-      window.open(url, '_blank');
-      return;
-    }
-
     setStatus('loading');
+
+    // Use cached location or request it fresh
+    let location = userLocation;
+    if (!location) {
+      try {
+        location = await getCurrentPosition();
+      } catch {
+        // Permission denied or unavailable — open external maps as fallback
+        setStatus('idle');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const url = isIOS
+          ? `maps://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=w`
+          : `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=walking`;
+        window.open(url, '_blank');
+        return;
+      }
+    }
 
     try {
       const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-      const origin = `${userLocation.longitude},${userLocation.latitude}`;
+      const origin = `${location.longitude},${location.latitude}`;
       const dest = `${longitude},${latitude}`;
       const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${origin};${dest}?steps=true&geometries=geojson&overview=full&access_token=${token}`;
       const res = await fetch(url);
