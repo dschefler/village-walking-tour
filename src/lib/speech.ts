@@ -1,7 +1,7 @@
 'use client';
 
 let _voices: SpeechSynthesisVoice[] = [];
-let _muted = false;
+let _muted = true; // Voice off by default — user opts in via the Voice toggle
 
 function loadVoices() {
   if (!('speechSynthesis' in window)) return;
@@ -79,12 +79,13 @@ export function isSpeechSupported() {
 export function warmUpSpeech() {
   if (!('speechSynthesis' in window)) return;
   loadVoices();
+  if (_muted) return; // Don't unlock audio session when voice is off
   // iOS requires speech to start synchronously inside a user gesture.
   // Speak a silent utterance first to unlock the audio session, then the real one.
   const silent = new SpeechSynthesisUtterance('​');
   silent.volume = 0;
   silent.onend = () => {
-    // After iOS unlocks the audio session, speak the real announcement
+    if (_muted) return;
     const u = new SpeechSynthesisUtterance('Tour started. Walk toward your first stop.');
     u.lang = 'en-US';
     u.rate = 0.92;
