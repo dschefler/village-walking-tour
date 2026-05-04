@@ -75,9 +75,9 @@ export function TourRouteMap({
     };
   }, [sites]);
 
-  // Fit map to sites on load or when sites change
+  // Fit map to sites on load or when sites change — skip when following user GPS
   useEffect(() => {
-    if (!mapLoaded || !mapRef.current || sites.length === 0) return;
+    if (!mapLoaded || !mapRef.current || sites.length === 0 || followUser) return;
 
     const bounds = getBounds();
     if (bounds) {
@@ -89,7 +89,7 @@ export function TourRouteMap({
         { padding: 60, duration: 1000 }
       );
     }
-  }, [mapLoaded, sites, getBounds]);
+  }, [mapLoaded, sites, getBounds, followUser]);
 
   // Auto-follow user GPS when followUser is true
   useEffect(() => {
@@ -97,7 +97,7 @@ export function TourRouteMap({
     mapRef.current.flyTo({
       center: [userLocation.longitude, userLocation.latitude],
       zoom: 17,
-      ...(heading != null ? { bearing: heading } : {}),
+      ...(heading != null && !isNaN(heading) ? { bearing: heading } : {}),
       duration: 800,
     });
   }, [userLocation, followUser, heading, mapLoaded]);

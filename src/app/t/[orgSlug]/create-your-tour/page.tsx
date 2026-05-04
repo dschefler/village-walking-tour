@@ -152,7 +152,7 @@ export default function TenantCreateYourTourPage() {
   const [locationAcquired, setLocationAcquired] = useState<boolean | null>(null);
   const [followMode, setFollowMode] = useState(false);
 
-  const { getCurrentPosition, startTracking, userLocation, heading } = useGeolocation({ maximumAge: 30000 });
+  const { getCurrentPosition, startTracking, userLocation, heading } = useGeolocation({ maximumAge: 0, enableHighAccuracy: true });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
 
   const finalSiteId = createdRoute.length > 0 ? createdRoute[createdRoute.length - 1].id : undefined;
@@ -192,6 +192,17 @@ export default function TenantCreateYourTourPage() {
     const wps = createdRoute.slice(0, -1).map(s => `${s.latitude},${s.longitude}`).join('|');
     return `https://www.google.com/maps/dir/?api=1&destination=${dest.latitude},${dest.longitude}&waypoints=${encodeURIComponent(wps)}&travelmode=${mode}`;
   }, [createdRoute, travelMode]);
+
+  const nextStop = useMemo(() => {
+    if (!userLocation || createdRoute.length === 0) return null;
+    let nearest = createdRoute[0];
+    let minDist = Infinity;
+    createdRoute.forEach(site => {
+      const d = calculateDistance(userLocation.latitude, userLocation.longitude, site.latitude, site.longitude);
+      if (d < minDist) { minDist = d; nearest = site; }
+    });
+    return { site: nearest, distanceMeters: minDist, index: createdRoute.indexOf(nearest) };
+  }, [userLocation, createdRoute]);
 
   const activeStepIndex = useMemo(() => {
     if (!userLocation || navSteps.length === 0) return 0;
@@ -543,18 +554,9 @@ export default function TenantCreateYourTourPage() {
                         {mapboxRoute && !navLoading && (
                           <p className="text-xs text-green-600 flex items-center gap-1">
                             <Navigation className="w-3 h-3" />
-                            {userLocation ? 'Following your GPS — see map below' : 'Route loaded — see map below'}
+                            {userLocation ? 'GPS active — map is following you' : 'Route loaded — see map below'}
                           </p>
                         )}
-                        <a
-                          href={googleMapsUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                        >
-                          <Navigation className="w-3 h-3" />
-                          Prefer Google Maps navigation
-                        </a>
                       </>
                     )}
                   </div>
@@ -573,27 +575,18 @@ export default function TenantCreateYourTourPage() {
                   </div>
                 )}
 
-                {/* Walking: current step indicator */}
-                {travelMode === 'walking' && navSteps.length > 0 && userLocation && (
-                  <div className="bg-gray-900 text-white rounded-xl p-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                      {activeStepIndex + 1}
+                {/* Walking: nearest stop indicator */}
+                {travelMode === 'walking' && nextStop && (
+                  <div className="bg-gray-900 text-white rounded-xl p-4 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ backgroundColor: primaryColor }}>
+                      {nextStop.index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium leading-snug">
-                        {navSteps[activeStepIndex]?.maneuver.instruction}
-                      </p>
-                      {(navSteps[activeStepIndex]?.distance ?? 0) > 0 && (
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {navSteps[activeStepIndex].distance < 160
-                            ? `${Math.round(navSteps[activeStepIndex].distance * 3.281)} ft`
-                            : `${(navSteps[activeStepIndex].distance / 1609.34).toFixed(1)} mi`}
-                        </p>
-                      )}
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">Nearest stop</p>
+                      <p className="font-semibold text-sm leading-snug mt-0.5">{nextStop.site.name}</p>
+                      <p className="text-blue-400 text-sm mt-0.5">{formatDistanceImperial(nextStop.distanceMeters)} away</p>
                     </div>
-                    <span className="text-xs text-gray-500 flex-shrink-0">
-                      {activeStepIndex + 1}/{navSteps.length}
-                    </span>
+                    <span className="text-xs text-gray-500 flex-shrink-0">{nextStop.index + 1}/{createdRoute.length}</span>
                   </div>
                 )}
 
