@@ -59,7 +59,7 @@ export function UpdatePrompt() {
   // Countdown timer → reload when it hits 0
   useEffect(() => {
     if (countdown === null) return;
-    if (countdown === 0) { unregisterAndReload(); return; }
+    if (countdown === 0) { window.location.reload(); return; }
     const t = setTimeout(() => setCountdown(c => (c ?? 1) - 1), 1000);
     return () => clearTimeout(t);
   }, [countdown]);
@@ -79,7 +79,14 @@ export function UpdatePrompt() {
     const poll = setInterval(checkVersion, 30_000);
 
     if ('serviceWorker' in navigator) {
-      const handleControllerChange = () => scheduleReload();
+      const handleControllerChange = () => {
+        // Pre-store the new version so checkVersion() doesn't loop after this reload
+        fetch('/api/build-version', { cache: 'no-store' })
+          .then(r => r.json())
+          .then(({ id }) => { if (id && id !== 'dev') localStorage.setItem(BUILD_VERSION_KEY, id); })
+          .catch(() => {})
+          .finally(() => scheduleReload());
+      };
       navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
       navigator.serviceWorker.getRegistration().then(reg => {
@@ -119,7 +126,7 @@ export function UpdatePrompt() {
         App updated — reloading in {countdown}s
       </div>
       <button
-        onClick={() => unregisterAndReload()}
+        onClick={() => window.location.reload()}
         className="text-xs font-semibold bg-white/20 hover:bg-white/30 px-3 py-1 rounded shrink-0"
       >
         Reload Now
