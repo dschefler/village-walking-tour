@@ -11,6 +11,7 @@ import {
   Download,
   ChevronRight,
   Bookmark,
+  Route,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,45 +20,63 @@ import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 
 export const metadata = {
-  title: 'How to Use | Village Walking Tours',
-  description: 'Learn how to use the Village Walking Tours app to explore locations, navigate, listen to audio guides, and use offline mode.',
+  title: 'How to Use | Southampton Village Walking Tour',
+  description: 'Learn how to explore historic sites, build a custom tour, use audio guides, and get the most from the Southampton Village Walking Tour app.',
 };
 
 const features = [
   {
-    icon: Bookmark,
-    title: 'Curated Tours',
+    icon: MapPin,
+    title: 'Start Exploring',
     description:
-      'Explore Southampton through themed tours curated around specific chapters of local history — Black history, the Revolutionary era, and veterans of our armed forces.',
+      'Browse all historic locations from the Historic Sites page. View them on an interactive map or scroll the full list — each location shows a photo, address, and description.',
     steps: [
-      'Tap "Curated Tours" in the navigation bar',
-      'Choose a theme that interests you',
-      'Suggested locations are pre-selected — uncheck any you want to skip or add others',
-      'Tap "Create Tour" to build your optimized route and start exploring',
+      'Tap "Historic Sites" in the navigation menu',
+      'Scroll the list on the right or explore the map on the left',
+      'Tap any map marker to see a popup with the site\'s photo and details',
+      'Tap "Details" in the popup to visit the full location page',
+      'Tap "Add to Tour" to include a site in your custom tour',
     ],
   },
   {
-    icon: MapPin,
-    title: 'Browse Locations',
+    icon: Route,
+    title: 'Create Your Tour',
     description:
-      'Explore all available locations from the home page or use the Locations dropdown in the navigation. Each location has photos, descriptions, and audio guides.',
+      'Build a custom walking route using three different starting points — browse the site list, pick stops from the map, or choose a curated theme.',
     steps: [
-      'Click on "Locations" in the navigation bar',
-      'Select a location from the dropdown menu',
-      'Or browse tours from the home page and explore individual stops',
+      'Tap "Create Your Tour" in the navigation menu',
+      'Choose your method: Select Sites, View by Map, or Curated Tours',
+      'Select Sites: check off the locations you want to visit from the list',
+      'View by Map: tap markers on the map to add or remove stops',
+      'Curated Tours: pick a theme — matching sites are auto-selected, and you can customize from there',
+      'Tap "Create Tour" to generate your optimized walking route',
+    ],
+  },
+  {
+    icon: Bookmark,
+    title: 'Curated Theme Tours',
+    description:
+      'Explore Southampton through themed tours built around specific chapters of local history — Black history, the Revolutionary era, and veterans of our armed forces.',
+    steps: [
+      'Tap "Curated Tours" in the navigation menu',
+      'Read about each theme and see the sites it includes',
+      'Tap "Start This Tour" to load the tour with sites pre-selected',
+      'Uncheck any sites you want to skip, or add more from the list',
+      'Tap "Create Tour" to build your optimized walking route',
     ],
   },
   {
     icon: Map,
     title: 'Using the Map',
     description:
-      'The interactive map shows all tour locations with markers. Tap markers to see details and distances from your current position.',
+      'The interactive map on the Historic Sites page shows all tour locations. Tap any marker to see a summary card with photo, address, and quick actions.',
     steps: [
-      'Allow location access when prompted for best experience',
-      'Blue markers show unvisited locations',
-      'Green markers show visited locations',
-      'Red marker indicates your currently selected location',
-      'Distance badges show how far each location is from you',
+      'Allow location access when prompted for the best experience',
+      'Tap any marker to open a popup card with photo and description',
+      'Tap "Add to Tour" in the popup to include that site in your tour',
+      'Tap "Details" to go to the full location page',
+      'Markers with a checkmark are already added to your tour',
+      'Hover over a list item to highlight its marker on the map',
     ],
   },
   {
@@ -66,49 +85,46 @@ const features = [
     description:
       'Get turn-by-turn walking directions to any location using your preferred maps app.',
     steps: [
-      'Open any location page',
-      'Click "Get Directions" button',
+      'Open any location\'s detail page',
+      'Tap the "Get Directions" button',
       'Your maps app (Apple Maps or Google Maps) will open',
-      'Follow the walking directions to reach the location',
+      'Follow the walking directions to reach the site',
     ],
   },
   {
     icon: Volume2,
-    title: 'Audio Playback',
+    title: 'Audio Guides',
     description:
-      'Listen to narrated audio guides at each location to learn about its history and significance.',
+      'Many locations include a narrated audio guide. Listen while you walk to learn the history and significance of each site.',
     steps: [
-      'Navigate to a location with an audio guide',
-      'Find the Audio Guide section on the page',
-      'Press play to start listening',
-      'Use skip buttons to jump forward or backward',
-      'Audio will continue playing as you browse other content',
+      'Open any location page — look for the Audio Guide section',
+      'Tap the play button to start listening',
+      'Use the skip buttons to jump forward or backward',
+      'Audio keeps playing as you scroll the page',
     ],
   },
   {
     icon: WifiOff,
-    title: 'Offline Mode',
+    title: 'Offline Access',
     description:
-      'Download tour content to your device and access it even without an internet connection. Perfect for areas with poor signal.',
+      'Pages are cached automatically as you browse. Revisit them anytime without an internet connection — perfect for areas with poor signal.',
     steps: [
-      'While connected to internet, open a tour page',
-      'Click the "Download for Offline" button',
-      'Wait for all content to download',
-      'You can now access the tour without internet',
-      'Cached content is stored for 7 days',
+      'Browse your planned tour stops while connected to Wi-Fi or data',
+      'Content is saved to your device automatically as you visit pages',
+      'Return to any previously visited page without internet',
+      'For best results, browse all your stops before heading out',
     ],
   },
   {
     icon: Bell,
     title: 'Proximity Notifications',
     description:
-      'Receive notifications when you approach a point of interest on your walking tour.',
+      'Receive an alert as you approach each point of interest on your walking tour.',
     steps: [
-      'Enable notifications when prompted',
-      'Set your preferred notification radius (default 100m)',
+      'Allow notifications and location access when prompted',
       'Keep the app open while walking',
-      'Receive alerts as you approach locations',
-      'Tap notifications to view location details',
+      'You\'ll receive an alert as you get close to each location',
+      'Tap the notification to view the location\'s details',
     ],
   },
 ];
@@ -118,19 +134,19 @@ const tips = [
     icon: Smartphone,
     title: 'Add to Home Screen',
     description:
-      'For the best experience, add this app to your home screen. On iOS, tap Share then "Add to Home Screen". On Android, tap the menu and "Add to Home Screen".',
+      'Install the app for the best experience. iPhone (Safari): tap the Share button (box with arrow) then "Add to Home Screen." iPhone (Chrome): tap Share then "Add to Home Screen." Android: tap the three-dot menu (⋮) and "Add to Home screen" or "Install app."',
   },
   {
     icon: Download,
-    title: 'Download Before You Go',
+    title: 'Browse Before You Go',
     description:
-      'If you\'re visiting an area with poor mobile signal, download the tour content while you have Wi-Fi connection.',
+      'Visit your planned tour stops at home while on Wi-Fi. Pages load automatically in the background, so you can access them later without a data connection.',
   },
   {
     icon: Wifi,
-    title: 'Save Data',
+    title: 'Save Mobile Data',
     description:
-      'Once content is cached, you can use offline mode to avoid using mobile data during your walk.',
+      'Once pages are cached, you won\'t need a data connection to revisit them — great for exploring without burning through your mobile data.',
   },
 ];
 
@@ -145,8 +161,8 @@ export default function HowToUsePage() {
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">How to Use</h1>
           <p className="text-lg opacity-90 max-w-2xl">
-            Learn how to get the most out of Village Walking Tours. From browsing
-            locations to using offline mode, we&apos;ve got you covered.
+            Everything you need to know to explore Southampton Village — from browsing
+            historic sites to building your own custom walking tour.
           </p>
         </div>
       </header>
@@ -204,8 +220,8 @@ export default function HowToUsePage() {
           <h2 className="text-xl font-semibold mb-4">Ready to Explore?</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg">
-              <Link href="/">
-                Browse Tours
+              <Link href="/historic-sites">
+                Start Exploring
                 <ChevronRight className="w-5 h-5 ml-1" />
               </Link>
             </Button>
