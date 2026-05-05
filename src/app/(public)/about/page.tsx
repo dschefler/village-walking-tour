@@ -103,6 +103,21 @@ export default function AboutPage() {
 
         </div>
 
+        {/* More info link */}
+        <div className="container mx-auto px-4 pb-8 max-w-3xl">
+          <p className="leading-relaxed">
+            For more information on Southampton&apos;s history visit{' '}
+            <a
+              href="https://www.southamptonhistory.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline hover:text-primary/80"
+            >
+              Southampton History Museum
+            </a>
+          </p>
+        </div>
+
         {/* Historic photo grid */}
         <div className="container mx-auto px-4 pb-12 max-w-3xl">
           <div className="grid grid-cols-2 gap-3">
