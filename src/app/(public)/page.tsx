@@ -113,7 +113,7 @@ export default async function HomePage() {
         {/* Content */}
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Welcome to the Southampton Village Walking Tour
+            Welcome to the <span className="font-old-english">Southampton Village Walking Tour</span>
           </h1>
           <p className="text-lg md:text-xl opacity-90 mb-8 max-w-2xl mx-auto">
             Discover the rich history and hidden stories of our village through

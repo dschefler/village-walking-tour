@@ -12,7 +12,7 @@ export default function AboutPage() {
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-12">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">About</h1>
-          <p className="text-lg opacity-90">Southampton Village Historical Walking Tours</p>
+          <p className="text-lg opacity-90 font-old-english">Southampton Village Historical Walking Tours</p>
         </div>
       </header>
 
