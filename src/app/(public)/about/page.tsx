@@ -1,11 +1,13 @@
 import Image from 'next/image';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
+import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <NavigationHeader />
+      <Breadcrumb items={[{ label: 'About' }]} />
 
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-12">
         <div className="container mx-auto px-4 text-center">

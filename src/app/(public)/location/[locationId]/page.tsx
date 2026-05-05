@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
+import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { LocationHero } from '@/components/location/LocationHero';
 import { LocationMap } from '@/components/location/LocationMap';
@@ -114,6 +115,7 @@ export default async function LocationPage({ params }: { params: { locationId: s
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <NavigationHeader />
+      <Breadcrumb items={[{ label: 'Historic Sites', href: '/historic-sites' }, { label: location.name }]} />
 
       {/* Hero Section */}
       <LocationHero

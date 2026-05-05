@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { MapPin, Volume2, ChevronRight, Loader2, Plus, Check, Route, X } from 'lucide-react';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
+import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { HistoricSitesMap } from '@/components/map/HistoricSitesMap';
 import { useTourBuilderStore } from '@/stores/tour-builder-store';
@@ -77,6 +78,7 @@ export default function HistoricSitesPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <NavigationHeader />
+      <Breadcrumb items={[{ label: 'Historic Sites' }]} />
 
       {/* Hero */}
       <header className="bg-black text-white py-8">

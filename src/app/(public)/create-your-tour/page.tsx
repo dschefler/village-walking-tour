@@ -8,6 +8,7 @@ import { warmUpSpeech, setSpeechMuted, isSpeechMuted, speak } from '@/lib/speech
 import { cn } from '@/lib/utils';
 import { CURATED_TOURS, matchesLocation, type CuratedTour } from '@/lib/curated-tours';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
+import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -483,6 +484,7 @@ export default function CreateYourTourPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <NavigationHeader />
+      <Breadcrumb items={[{ label: 'Create Your Tour' }]} />
 
       {/* Hero */}
       <header className="bg-black text-white py-6">

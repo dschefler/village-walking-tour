@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
+import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 
 export const metadata = {
@@ -137,6 +138,7 @@ export default function HowToUsePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <NavigationHeader />
+      <Breadcrumb items={[{ label: 'How to Use' }]} />
 
       {/* Hero */}
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-12">

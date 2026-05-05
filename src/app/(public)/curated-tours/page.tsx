@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Bookmark, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
+import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { CURATED_TOURS } from '@/lib/curated-tours';
 
@@ -9,6 +10,7 @@ export default function PublicCuratedToursPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <NavigationHeader />
+      <Breadcrumb items={[{ label: 'Curated Theme Tours' }]} />
 
       <header className="bg-gradient-to-br from-[#A40000] to-[#8A0000] text-white py-12">
         <div className="container mx-auto px-4">

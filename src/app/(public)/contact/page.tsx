@@ -1,5 +1,6 @@
 import { Mail, Heart, MessageSquare } from 'lucide-react';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
+import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { DonationSection } from '@/components/contact/DonationSection';
@@ -13,6 +14,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <NavigationHeader />
+      <Breadcrumb items={[{ label: 'Contact' }]} />
 
       {/* Hero */}
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-12">
