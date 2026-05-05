@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('sites')
-    .select('id, name, description, organization_id')
+    .select('id, name, description, organization_id, audio_url')
     .eq('tour_id', tourId)
     .order('display_order');
 

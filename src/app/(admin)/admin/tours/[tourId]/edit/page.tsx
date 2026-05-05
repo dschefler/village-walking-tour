@@ -240,13 +240,19 @@ export default function EditTourPage() {
     try {
       const sitesRes = await fetch(`/api/admin/bulk-regen-audio?tourId=${tourId}`);
       if (!sitesRes.ok) throw new Error((await sitesRes.json()).error || 'Failed to load sites');
-      const allSites: { id: string; name: string; description: string | null; organization_id: string | null }[] = await sitesRes.json();
+      const allSites: { id: string; name: string; description: string | null; organization_id: string | null; audio_url: string | null }[] = await sitesRes.json();
 
-      const toProcess = allSites.filter((s) => s.description?.trim());
-      const skipped = allSites.length - toProcess.length;
+      const toProcess = allSites.filter((s) => s.description?.trim() && !s.audio_url);
+      const skipped = allSites.filter((s) => !s.description?.trim()).length;
+      const alreadyDone = allSites.length - toProcess.length - skipped;
       let success = 0;
       let failed = 0;
       const errors: string[] = [];
+
+      if (toProcess.length === 0) {
+        setRegenStatus({ running: false, message: `All ${alreadyDone} narrations already generated — nothing to do.` });
+        return;
+      }
 
       for (let i = 0; i < toProcess.length; i++) {
         const site = toProcess[i];
@@ -266,10 +272,11 @@ export default function EditTourPage() {
         }
       }
 
-      const detail = errors.length ? ` First error: ${errors[0]}` : '';
+      const failedNames = errors.map((e) => e.split(':')[0]).join(', ');
+      const detail = failed > 0 ? ` Still needs credits: ${failedNames}.` : '';
       setRegenStatus({
         running: false,
-        message: `Done — ${success} generated, ${skipped} skipped (no description), ${failed} failed.${detail}`,
+        message: `Done — ${success} generated${alreadyDone > 0 ? `, ${alreadyDone} already had audio` : ''}, ${skipped} skipped (no description), ${failed} failed.${detail}`,
       });
       if (success > 0) loadTour();
     } catch (err) {
