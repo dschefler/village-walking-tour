@@ -245,9 +245,10 @@ export default function EditTourPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
+      const detail = data.errors?.length ? ` First error: ${data.errors[0]}` : '';
       setRegenStatus({
         running: false,
-        message: `Done — ${data.success} generated, ${data.skipped} skipped (no description), ${data.failed} failed.`,
+        message: `Done — ${data.success} generated, ${data.skipped} skipped (no description), ${data.failed} failed.${detail}`,
       });
       if (data.success > 0) loadTour();
     } catch (err) {
