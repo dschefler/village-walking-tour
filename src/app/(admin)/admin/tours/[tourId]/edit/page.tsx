@@ -13,6 +13,7 @@ import {
   MapPin,
   Eye,
   QrCode,
+  Volume2,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { createClient } from '@/lib/supabase/client';
@@ -64,6 +65,7 @@ export default function EditTourPage() {
   const [showSiteEditor, setShowSiteEditor] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [regenStatus, setRegenStatus] = useState<{ running: boolean; message: string } | null>(null);
 
   const supabase = createClient();
 
@@ -232,6 +234,26 @@ export default function EditTourPage() {
       </div>
     );
   }
+
+  const handleRegenAllAudio = async () => {
+    setRegenStatus({ running: true, message: 'Generating narrations…' });
+    try {
+      const res = await fetch('/api/admin/bulk-regen-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tourId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      setRegenStatus({
+        running: false,
+        message: `Done — ${data.success} generated, ${data.skipped} skipped (no description), ${data.failed} failed.`,
+      });
+      if (data.success > 0) loadTour();
+    } catch (err) {
+      setRegenStatus({ running: false, message: err instanceof Error ? err.message : 'Error regenerating audio' });
+    }
+  };
 
   return (
     <div className="p-6">
@@ -447,6 +469,33 @@ export default function EditTourPage() {
                 path={`tours/${tourId}`}
                 organizationId={tour?.organization_id ?? undefined}
               />
+            </CardContent>
+          </Card>
+
+          {/* Audio Narrations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Volume2 className="w-4 h-4" />
+                Audio Narrations
+              </CardTitle>
+              <CardDescription>
+                Generate Arabella&apos;s narration for every location that has a description.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handleRegenAllAudio}
+                disabled={regenStatus?.running}
+              >
+                <Volume2 className="w-4 h-4" />
+                {regenStatus?.running ? 'Generating…' : 'Generate All Narrations'}
+              </Button>
+              {regenStatus && !regenStatus.running && (
+                <p className="text-xs text-muted-foreground">{regenStatus.message}</p>
+              )}
             </CardContent>
           </Card>
 
