@@ -59,7 +59,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               height={48}
               className="rounded-full"
             />
-            <span className={`text-sm${!isTenant ? ' font-old-english' : ''}`}>{siteName}</span>
+            <span className={`text-sm${!isTenant ? ' font-old-english font-normal' : ''}`}>{siteName}</span>
           </Link>
 
           {/* Desktop Navigation */}
