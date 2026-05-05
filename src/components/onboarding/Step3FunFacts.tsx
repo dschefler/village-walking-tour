@@ -1,5 +1,8 @@
 'use client';
 
+// To update: log in to elevenlabs.io → Voices → your voice library → click Arabella → copy the Voice ID
+const JENNA_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK';
+
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Loader2, Lightbulb, Save, SkipForward, Volume2, Check, Play, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,28 +36,23 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip, onSave }: Ste
   const [saving, setSaving] = useState(false);
   const [savingOnly, setSavingOnly] = useState(false);
   const [error, setError] = useState('');
-  const [defaultVoiceId, setDefaultVoiceId] = useState<string | null>(null);
 
   // Per-fact audio generation state: keyed as `${siteIndex}-${factIndex}`
   const [generatingKey, setGeneratingKey] = useState<string | null>(null);
   const [playingKey, setPlayingKey] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Load sites, existing facts, and org default voice
+  // Load sites and existing facts
   useEffect(() => {
     async function loadData() {
       try {
-        const [sitesRes, factsRes, orgRes] = await Promise.all([
+        const [sitesRes, factsRes] = await Promise.all([
           fetch(`/api/sites?tourId=${tourId}`),
           fetch(`/api/fun-facts?tourId=${tourId}`),
-          fetch(`/api/organizations/${orgId}`),
         ]);
 
         const sites: Site[] = sitesRes.ok ? await sitesRes.json() : [];
         const existingFacts: FunFact[] = factsRes.ok ? await factsRes.json() : [];
-        const org = orgRes.ok ? await orgRes.json() : null;
-
-        if (org?.default_tts_voice) setDefaultVoiceId(org.default_tts_voice);
 
         const factsBySite: Record<string, FactEntry[]> = {};
         for (const f of existingFacts) {
@@ -136,7 +134,7 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip, onSave }: Ste
   };
 
   const handleGenerateAudio = async (siteIndex: number, factIndex: number, text: string) => {
-    if (!defaultVoiceId || !text.trim()) return;
+    if (!text.trim()) return;
     const key = `${siteIndex}-${factIndex}`;
     stopPreview();
     setGeneratingKey(key);
@@ -144,7 +142,7 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip, onSave }: Ste
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), voice_id: defaultVoiceId, org_id: orgId }),
+        body: JSON.stringify({ text: text.trim(), voice_id: JENNA_VOICE_ID, org_id: orgId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Generation failed');
@@ -296,7 +294,7 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip, onSave }: Ste
                             )}
                           </Button>
                           <Check className="w-3 h-3 text-green-600" />
-                          {defaultVoiceId && fact.text.trim() && (
+                          {fact.text.trim() && (
                             <Button
                               type="button"
                               variant="ghost"
@@ -310,7 +308,7 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip, onSave }: Ste
                             </Button>
                           )}
                         </>
-                      ) : defaultVoiceId ? (
+                      ) : (
                         <Button
                           type="button"
                           variant="ghost"
@@ -325,10 +323,6 @@ export function Step3FunFacts({ orgId, tourId, onComplete, onSkip, onSave }: Ste
                             <><Volume2 className="w-3 h-3" /> Generate audio</>
                           )}
                         </Button>
-                      ) : (
-                        <p className="text-xs text-muted-foreground italic">
-                          Set a default voice in the narration step to add audio.
-                        </p>
                       )}
                     </div>
                   </div>

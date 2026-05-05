@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// To find Arabella's voice ID: log in to elevenlabs.io → Voices → your voice library → click Arabella → copy the Voice ID from the URL or detail panel
+const JENNA_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK';
+
 const VOICE_OPTIONS = [
-  { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'Calm, professional female' },
-  { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Warm, engaging male' },
-  { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Clear, authoritative male' },
-  { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', description: 'Young, friendly female' },
-  { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', description: 'Young, energetic male' },
-  { id: 'VR6AewLTigWG4xSOukaG', name: 'Arnold', description: 'Deep, storytelling male' },
+  { id: JENNA_VOICE_ID, name: 'Arabella', description: 'Warm and articulate female' },
 ];
 
 const PLAN_LIMITS: Record<string, number> = {

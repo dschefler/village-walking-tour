@@ -4,34 +4,26 @@ import { useState, useRef } from 'react';
 import { Loader2, Wand2, Check, X, Play, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const VOICES = [
-  { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'Calm, professional female' },
-  { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Warm, engaging male' },
-  { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Clear, authoritative male' },
-  { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', description: 'Young, friendly female' },
-  { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', description: 'Young, energetic male' },
-  { id: 'VR6AewLTigWG4xSOukaG', name: 'Arnold', description: 'Deep, storytelling male' },
-];
+// To find Arabella's voice ID: log in to elevenlabs.io → Voices → your voice library → click Arabella → copy the Voice ID
+const JENNA_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK';
+
+const JENNA_VOICE = { id: JENNA_VOICE_ID, name: 'Arabella', description: 'Warm and articulate female' };
 
 interface TTSGeneratorProps {
   text: string;
   onGenerated: (audioUrl: string) => void;
   orgId?: string;
-  defaultVoiceId?: string;
   className?: string;
 }
 
-export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, className = '' }: TTSGeneratorProps) {
-  const [selectedVoice, setSelectedVoice] = useState<string | null>(
-    defaultVoiceId && VOICES.find((v) => v.id === defaultVoiceId) ? defaultVoiceId : null
-  );
+export function TTSGenerator({ text, onGenerated, orgId, className = '' }: TTSGeneratorProps) {
   const [generating, setGenerating] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Preview state — keyed by voice id
-  const [loadingPreview, setLoadingPreview] = useState<string | null>(null); // voice id being fetched
-  const [playingPreview, setPlayingPreview] = useState<string | null>(null); // voice id playing
+  // Preview state for Arabella sample
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [playingPreview, setPlayingPreview] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const stopPreview = () => {
@@ -40,47 +32,36 @@ export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, classNa
       audioRef.current.src = '';
       audioRef.current = null;
     }
-    setPlayingPreview(null);
+    setPlayingPreview(false);
   };
 
-  const handlePreview = async (voiceId: string) => {
-    // Stop if already playing this voice
-    if (playingPreview === voiceId) {
+  const handlePreview = async () => {
+    if (playingPreview) {
       stopPreview();
       return;
     }
     stopPreview();
 
-    setLoadingPreview(voiceId);
+    setLoadingPreview(true);
     try {
-      const res = await fetch(`/api/tts/preview/${voiceId}`);
+      const res = await fetch(`/api/tts/preview/${JENNA_VOICE.id}`);
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || 'Preview failed');
 
       const audio = new Audio(data.url);
       audioRef.current = audio;
-      setPlayingPreview(voiceId);
+      setPlayingPreview(true);
       audio.play().catch(() => {});
-      audio.onended = () => setPlayingPreview(null);
-      audio.onerror = () => setPlayingPreview(null);
+      audio.onended = () => setPlayingPreview(false);
+      audio.onerror = () => setPlayingPreview(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Preview failed');
     } finally {
-      setLoadingPreview(null);
+      setLoadingPreview(false);
     }
-  };
-
-  const handleSelectVoice = (id: string) => {
-    stopPreview();
-    setSelectedVoice((prev) => (prev === id ? prev : id));
-    setGeneratedUrl(null);
   };
 
   const handleGenerate = async () => {
-    if (!selectedVoice) {
-      setError('Select a voice above first.');
-      return;
-    }
     if (!text.trim()) {
       setError('Add a description above — it will be read aloud as the narration.');
       return;
@@ -94,7 +75,7 @@ export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, classNa
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, voice_id: selectedVoice, org_id: orgId }),
+        body: JSON.stringify({ text, voice_id: JENNA_VOICE.id, org_id: orgId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Generation failed');
@@ -108,59 +89,33 @@ export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, classNa
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Voice picker */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {VOICES.map((voice) => {
-          const isSelected = selectedVoice === voice.id;
-          const isPreviewing = playingPreview === voice.id;
-          const isLoading = loadingPreview === voice.id;
-          return (
-            <div
-              key={voice.id}
-              className={`rounded-lg border-2 overflow-hidden transition-colors ${
-                isSelected
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-primary/40'
-              }`}
-            >
-              {/* Voice name — clicking selects it */}
-              <button
-                type="button"
-                onClick={() => handleSelectVoice(voice.id)}
-                className="w-full text-left p-2.5"
-              >
-                <p className="font-medium text-sm">{voice.name}</p>
-                <p className="text-xs text-muted-foreground">{voice.description}</p>
-              </button>
-
-              {/* Hear sample button — always visible */}
-              <button
-                type="button"
-                onClick={() => handlePreview(voice.id)}
-                disabled={isLoading}
-                className={`w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border-t transition-colors ${
-                  isPreviewing
-                    ? 'bg-primary/10 text-primary border-primary/20'
-                    : 'bg-muted/50 hover:bg-muted text-muted-foreground border-border'
-                }`}
-              >
-                {isLoading ? (
-                  <><Loader2 className="w-3 h-3 animate-spin" /> Loading…</>
-                ) : isPreviewing ? (
-                  <><Square className="w-3 h-3 fill-current" /> Stop</>
-                ) : (
-                  <><Play className="w-3 h-3 fill-current" /> Hear sample</>
-                )}
-              </button>
-            </div>
-          );
-        })}
+      {/* Voice indicator */}
+      <div className="flex items-center justify-between rounded-lg border border-primary bg-primary/5 px-3 py-2">
+        <div>
+          <p className="font-medium text-sm">{JENNA_VOICE.name}</p>
+          <p className="text-xs text-muted-foreground">{JENNA_VOICE.description}</p>
+        </div>
+        <button
+          type="button"
+          onClick={handlePreview}
+          disabled={loadingPreview}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+            playingPreview
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'bg-muted/50 hover:bg-muted text-muted-foreground border-border'
+          }`}
+        >
+          {loadingPreview ? (
+            <><Loader2 className="w-3 h-3 animate-spin" /> Loading…</>
+          ) : playingPreview ? (
+            <><Square className="w-3 h-3 fill-current" /> Stop</>
+          ) : (
+            <><Play className="w-3 h-3 fill-current" /> Hear sample</>
+          )}
+        </button>
       </div>
       <p className="text-xs text-muted-foreground">
-        {selectedVoice
-          ? <>&ldquo;Hear sample&rdquo; is free. Only &ldquo;Generate Narration&rdquo; uses a monthly credit.</>
-          : <>Click a voice to select it, or use &ldquo;Hear sample&rdquo; to preview before choosing.</>
-        }
+        &ldquo;Hear sample&rdquo; is free. Only &ldquo;Generate Narration&rdquo; uses a monthly credit.
       </p>
 
       {/* Text preview */}
@@ -179,7 +134,7 @@ export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, classNa
         type="button"
         variant="outline"
         onClick={handleGenerate}
-        disabled={generating || !text.trim() || !selectedVoice}
+        disabled={generating || !text.trim()}
         className="w-full gap-2"
       >
         {generating ? (

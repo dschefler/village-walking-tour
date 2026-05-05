@@ -64,7 +64,6 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [defaultVoiceId, setDefaultVoiceId] = useState<string | undefined>(undefined);
 
   // Fun facts state
   const [funFacts, setFunFacts] = useState<{ id?: string; fact_text: string }[]>([]);
@@ -95,19 +94,6 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     slug: '',
   });
 
-  // Fetch org's default TTS voice
-  useEffect(() => {
-    if (organizationId) {
-      supabase
-        .from('organizations')
-        .select('default_tts_voice')
-        .eq('id', organizationId)
-        .single()
-        .then(({ data }) => {
-          if (data?.default_tts_voice) setDefaultVoiceId(data.default_tts_voice);
-        });
-    }
-  }, [organizationId]);
 
   useEffect(() => {
     if (site) {
@@ -670,7 +656,6 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
                 text={formData.description}
                 onGenerated={(url) => setFormData((prev) => ({ ...prev, audio_url: url }))}
                 orgId={organizationId}
-                defaultVoiceId={defaultVoiceId}
               />
             </div>
             <div className="relative flex items-center gap-2">
