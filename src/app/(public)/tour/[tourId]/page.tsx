@@ -24,6 +24,7 @@ import { StampCard } from '@/components/tour/StampCard';
 import { StampEarnedOverlay } from '@/components/tour/StampEarnedOverlay';
 import { TourCompleteOverlay } from '@/components/tour/TourCompleteOverlay';
 import { DidYouKnowPopup } from '@/components/tour/DidYouKnowPopup';
+import { getFactsForSite } from '@/data/fun-facts';
 import { FeedbackModal } from '@/components/tour/FeedbackModal';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
@@ -98,8 +99,12 @@ export default function TourPage() {
     loadFacts();
   }, [tourId]);
 
-  const showFactForSite = useCallback((siteId: string) => {
-    const facts = factsBySite[siteId] || [];
+  const showFactForSite = useCallback((siteId: string, siteName?: string) => {
+    let facts = factsBySite[siteId] || [];
+    // Fall back to static facts file when DB has no facts for this site
+    if (facts.length === 0 && siteName) {
+      facts = getFactsForSite(siteName).map((text) => ({ text, audioUrl: null }));
+    }
     if (facts.length === 0) return;
     const shown = shownFactIndices[siteId] || [];
     const unseen = facts.map((_, i) => i).filter((i) => !shown.includes(i));
@@ -246,7 +251,7 @@ export default function TourPage() {
       }
 
       // Show fact after stamp overlay dismisses (2.2s)
-      setTimeout(() => showFactForSite(site.id), 2400);
+      setTimeout(() => showFactForSite(site.id, site.name), 2400);
 
       // Clear stamp animation after it plays
       setTimeout(() => setJustStampedSiteId(null), 600);
@@ -263,7 +268,7 @@ export default function TourPage() {
         triggerStampCelebration(site.id);
       } else {
         // Already visited — show a fact
-        showFactForSite(site.id);
+        showFactForSite(site.id, site.name);
       }
     }
   };
@@ -325,7 +330,7 @@ export default function TourPage() {
             setTimeout(() => setShowTourComplete(true), 2400);
           }
           // Show fact after stamp overlay
-          setTimeout(() => showFactForSite(site.id), 2400);
+          setTimeout(() => showFactForSite(site.id, site.name), 2400);
           setTimeout(() => setJustStampedSiteId(null), 600);
         }
       }
