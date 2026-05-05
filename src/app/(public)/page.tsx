@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { HideWhenInstalled } from '@/components/pwa/HideWhenInstalled';
-import { Button } from '@/components/ui/button';
 import type { Tour } from '@/types';
 
 export const metadata: Metadata = {
@@ -121,34 +120,34 @@ export default async function HomePage() {
             this self-guided walking tour. Explore at your own pace with GPS navigation
             and audio narration.
           </p>
-          <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto w-full">
+          <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto w-full mt-2">
             <Link
               href="/how-to-use"
-              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
+              className="flex items-center gap-2.5 px-4 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg shadow transition-colors"
             >
-              <HelpCircle className="w-8 h-8" />
-              <span className="text-sm font-semibold text-center leading-tight">How to Use</span>
+              <HelpCircle className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-semibold leading-tight">How to Use</span>
             </Link>
             <Link
               href="/historic-sites"
-              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
+              className="flex items-center gap-2.5 px-4 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg shadow transition-colors"
             >
-              <MapPin className="w-8 h-8" />
-              <span className="text-sm font-semibold text-center leading-tight">Start Exploring</span>
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-semibold leading-tight">Start Exploring</span>
             </Link>
             <Link
               href="/create-your-tour"
-              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
+              className="flex items-center gap-2.5 px-4 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg shadow transition-colors"
             >
-              <Route className="w-8 h-8" />
-              <span className="text-sm font-semibold text-center leading-tight">Create Your Tour</span>
+              <Route className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-semibold leading-tight">Create Your Tour</span>
             </Link>
             <Link
               href="/curated-tours"
-              className="flex flex-col items-center justify-center gap-2 aspect-square bg-primary hover:bg-primary/80 text-white rounded-xl shadow-lg transition-colors p-4"
+              className="flex items-center gap-2.5 px-4 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg shadow transition-colors"
             >
-              <Bookmark className="w-8 h-8" />
-              <span className="text-sm font-semibold text-center leading-tight">Curated Theme Tours</span>
+              <Bookmark className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-semibold leading-tight">Curated Theme Tours</span>
             </Link>
           </div>
         </div>
@@ -179,13 +178,30 @@ export default async function HomePage() {
               </div>
             )}
 
-            {/* Mobile — show direct install hint */}
-            <div className="md:hidden">
-              <p className="text-sm text-gray-500">
-                On iPhone: tap the Share button, then &ldquo;Add to Home Screen.&rdquo;
-                <br />
-                On Android: tap the menu, then &ldquo;Install app.&rdquo;
-              </p>
+            {/* Mobile — browser-specific install steps */}
+            <div className="md:hidden space-y-4 max-w-xs mx-auto text-left">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-800 mb-1">iPhone · Safari</p>
+                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                  <li>Tap the <strong>Share</strong> button (box with arrow) at the bottom</li>
+                  <li>Tap <strong>&ldquo;Add to Home Screen&rdquo;</strong></li>
+                  <li>Tap <strong>&ldquo;Add&rdquo;</strong></li>
+                </ol>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-800 mb-1">iPhone · Chrome</p>
+                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                  <li>Tap the <strong>Share</strong> button (box with arrow) at the bottom</li>
+                  <li>Tap <strong>&ldquo;Add to Home Screen&rdquo;</strong></li>
+                </ol>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-800 mb-1">Android · Chrome</p>
+                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                  <li>Tap the <strong>three-dot menu</strong> (⋮) in the top right</li>
+                  <li>Tap <strong>&ldquo;Add to Home screen&rdquo;</strong> or <strong>&ldquo;Install app&rdquo;</strong></li>
+                </ol>
+              </div>
             </div>
           </div>
         </section>
