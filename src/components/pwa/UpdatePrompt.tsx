@@ -19,8 +19,7 @@ export async function unregisterAndReload() {
     const regs = await navigator.serviceWorker.getRegistrations();
     await Promise.all(regs.map(r => r.unregister()));
   }
-  // Navigate to root with a cache-bust param so iOS doesn't restore the frozen page
-  window.location.href = '/?_=' + Date.now();
+  window.location.reload();
 }
 
 const BUILD_VERSION_KEY = 'app-build-version';
@@ -32,6 +31,17 @@ export function UpdatePrompt() {
 
   function scheduleReload() {
     if (reloadScheduled.current) return;
+    // Loop guard: track reload timestamps in sessionStorage
+    // If we've reloaded 3+ times in the last 60 seconds, bail out
+    const key = 'update-reload-times';
+    const now = Date.now();
+    const recent = JSON.parse(sessionStorage.getItem(key) || '[]') as number[];
+    const withinWindow = recent.filter(t => now - t < 60_000);
+    if (withinWindow.length >= 3) {
+      console.warn('[UpdatePrompt] Reload loop detected — suppressing further reloads');
+      return;
+    }
+    sessionStorage.setItem(key, JSON.stringify([...withinWindow, now]));
     reloadScheduled.current = true;
     setCountdown(5);
   }

@@ -18,8 +18,7 @@ async function refreshApp() {
     const names = await caches.keys();
     await Promise.all(names.map(n => caches.delete(n)));
   }
-  // Navigate with timestamp param — bypasses iOS frozen-page restoration
-  window.location.href = '/?_=' + Date.now();
+  window.location.reload();
 }
 
 interface NavigationHeaderProps {
