@@ -15,6 +15,7 @@ import { TourRouteMap } from '@/components/map/TourRouteMap';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { useProximityNotifications } from '@/hooks/use-proximity-notifications';
 import { useNotificationStore } from '@/stores/notification-store';
+import { useTourBuilderStore } from '@/stores/tour-builder-store';
 import { ProximityNotification } from '@/components/pwa/ProximityNotification';
 import type { ProximityAlert } from '@/types';
 import { TourCompletePromptContainer } from '@/components/pwa/TourCompletePrompt';
@@ -232,6 +233,7 @@ export default function CreateYourTourPage() {
   const [followMode, setFollowMode] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showCuratedModal, setShowCuratedModal] = useState(false);
+  const { pendingIds, clear: clearPending } = useTourBuilderStore();
 
   const routeSectionRef = useRef<HTMLDivElement>(null);
   const prevStepRef = useRef(-1);
@@ -284,6 +286,17 @@ export default function CreateYourTourPage() {
 
     fetchSites();
   }, []);
+
+  // Pre-select any sites chosen from the map (tour-builder-store)
+  useEffect(() => {
+    if (sites.length === 0 || pendingIds.length === 0) return;
+    const valid = new Set(pendingIds.filter(id => sites.some(s => s.id === id)));
+    if (valid.size > 0) {
+      setSelectedIds(valid);
+      clearPending();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sites]);
 
   const totalDistance = useMemo(() => {
     return calculateTotalDistance(createdRoute);

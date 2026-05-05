@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react';
 import Map, { Marker, NavigationControl, type MapRef } from 'react-map-gl';
-import { MapPin } from 'lucide-react';
+import { MapPin, Check } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -18,6 +18,7 @@ interface HistoricSitesMapProps {
   sites: SiteItem[];
   hoveredSiteId: string | null;
   onSiteClick?: (site: SiteItem) => void;
+  selectedIds?: Set<string>;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export function HistoricSitesMap({
   sites,
   hoveredSiteId,
   onSiteClick,
+  selectedIds,
   className,
 }: HistoricSitesMapProps) {
   const mapRef = useRef<MapRef>(null);
@@ -102,6 +104,7 @@ export function HistoricSitesMap({
 
       {sites.map((site) => {
         const isHovered = site.id === hoveredSiteId;
+        const isSelected = selectedIds?.has(site.id) ?? false;
 
         return (
           <Marker
@@ -123,12 +126,14 @@ export function HistoricSitesMap({
               {/* Marker pin */}
               <div
                 className={`
-                  flex items-center justify-center w-8 h-8 rounded-full
-                  ${isHovered ? 'bg-primary' : 'bg-black'}
-                  shadow-lg border-2 border-white
+                  flex items-center justify-center w-8 h-8 rounded-full shadow-lg border-2 border-white
+                  ${isSelected ? 'bg-primary' : isHovered ? 'bg-primary' : 'bg-black'}
                 `}
               >
-                <MapPin className="w-4 h-4 text-white" />
+                {isSelected
+                  ? <Check className="w-4 h-4 text-white" />
+                  : <MapPin className="w-4 h-4 text-white" />
+                }
               </div>
 
               {/* Label on hover */}
