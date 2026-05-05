@@ -3,10 +3,10 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Map, List, Bookmark, Volume2, VolumeX } from 'lucide-react';
+import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Map, List, Bookmark, Volume2, VolumeX, ChevronRight } from 'lucide-react';
 import { warmUpSpeech, setSpeechMuted, isSpeechMuted, speak } from '@/lib/speech';
 import { cn } from '@/lib/utils';
-import { CURATED_TOURS, matchesLocation } from '@/lib/curated-tours';
+import { CURATED_TOURS, matchesLocation, type CuratedTour } from '@/lib/curated-tours';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -231,6 +231,7 @@ export default function CreateYourTourPage() {
   const [mapboxFailed, setMapboxFailed] = useState(false);
   const [followMode, setFollowMode] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [showCuratedModal, setShowCuratedModal] = useState(false);
 
   const routeSectionRef = useRef<HTMLDivElement>(null);
   const prevStepRef = useRef(-1);
@@ -484,7 +485,11 @@ export default function CreateYourTourPage() {
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Browse mode selector */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="flex flex-col items-center gap-2 p-4 bg-[#A40000] rounded-xl border-2 border-[#A40000] shadow-sm text-center text-white">
+            <List className="w-6 h-6" />
+            <span className="text-xs font-semibold">Select Sites</span>
+          </div>
           <Link
             href="/historic-sites"
             className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#A40000] transition-all text-center"
@@ -492,50 +497,58 @@ export default function CreateYourTourPage() {
             <Map className="w-6 h-6 text-[#A40000]" />
             <span className="text-xs font-semibold text-gray-700">View by Map</span>
           </Link>
-          <Link
-            href="/curated-tours"
+          <button
+            onClick={() => setShowCuratedModal(true)}
             className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#A40000] transition-all text-center"
           >
             <Bookmark className="w-6 h-6 text-[#A40000]" />
             <span className="text-xs font-semibold text-gray-700">Curated Tours</span>
-          </Link>
-          <div className="flex flex-col items-center gap-2 p-4 bg-[#A40000] rounded-xl border-2 border-[#A40000] shadow-sm text-center text-white">
-            <List className="w-6 h-6" />
-            <span className="text-xs font-semibold">Select Sites</span>
-          </div>
+          </button>
         </div>
+
+        {/* Curated Tours modal */}
+        {showCuratedModal && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0" onClick={() => setShowCuratedModal(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-5 py-4 border-b">
+                <h3 className="font-bold text-lg text-gray-900">Choose a Curated Tour</h3>
+                <button onClick={() => setShowCuratedModal(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="divide-y">
+                {CURATED_TOURS.map((tour) => {
+                  const matchCount = sites.filter(s => tour.locations.some(loc => matchesLocation(s.name, loc))).length;
+                  return (
+                    <button
+                      key={tour.slug}
+                      onClick={() => {
+                        const ids = new Set(
+                          sites.filter(s => tour.locations.some(loc => matchesLocation(s.name, loc))).map(s => s.id)
+                        );
+                        setSelectedIds(ids);
+                        setCategoryFilter(null);
+                        setShowCuratedModal(false);
+                      }}
+                      className="w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors flex items-center justify-between gap-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 leading-snug">{tour.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{tour.tagline}</p>
+                        <p className="text-xs text-[#A40000] font-medium mt-1">{matchCount} site{matchCount !== 1 ? 's' : ''}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Site Selection */}
           <div className="space-y-4">
-            {/* Category filter */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setCategoryFilter(null)}
-                className={cn(
-                  'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
-                  categoryFilter === null
-                    ? 'bg-[#A40000] text-white border-[#A40000]'
-                    : 'bg-white text-gray-600 border-gray-300 hover:border-[#A40000]'
-                )}
-              >
-                All Sites
-              </button>
-              {CURATED_TOURS.map((tour) => (
-                <button
-                  key={tour.slug}
-                  onClick={() => setCategoryFilter(tour.slug)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
-                    categoryFilter === tour.slug
-                      ? 'bg-[#A40000] text-white border-[#A40000]'
-                      : 'bg-white text-gray-600 border-gray-300 hover:border-[#A40000]'
-                  )}
-                >
-                  {tour.name.replace('Southampton Village', '').replace(' in ', '').trim()}
-                </button>
-              ))}
-            </div>
 
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium text-gray-600">
