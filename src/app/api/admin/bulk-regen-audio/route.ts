@@ -3,82 +3,69 @@ import { createClient } from '@/lib/supabase/server';
 
 const ARABELLA_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK';
 
-export async function POST(request: NextRequest) {
+// GET: return all sites for a tour (id, name, description)
+export async function GET(request: NextRequest) {
   const supabase = createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 503 });
-  }
+  const tourId = new URL(request.url).searchParams.get('tourId');
+  if (!tourId) return NextResponse.json({ error: 'tourId required' }, { status: 400 });
 
-  const { tourId } = await request.json();
-  if (!tourId) {
-    return NextResponse.json({ error: 'tourId is required' }, { status: 400 });
-  }
-
-  const { data: sites, error: sitesError } = await supabase
+  const { data, error } = await supabase
     .from('sites')
     .select('id, name, description, organization_id')
     .eq('tour_id', tourId)
     .order('display_order');
 
-  if (sitesError) {
-    return NextResponse.json({ error: sitesError.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data ?? []);
+}
+
+// POST: generate audio for a single site
+export async function POST(request: NextRequest) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 503 });
+
+  const { siteId, text, orgId } = await request.json();
+  if (!siteId || !text?.trim()) return NextResponse.json({ error: 'siteId and text required' }, { status: 400 });
+
+  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ARABELLA_VOICE_ID}`, {
+    method: 'POST',
+    headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: text.trim(),
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+    }),
+  });
+
+  if (!ttsRes.ok) {
+    const err = await ttsRes.text();
+    return NextResponse.json({ error: `ElevenLabs: ${err}` }, { status: 502 });
   }
 
-  const results = { success: 0, failed: 0, skipped: 0, errors: [] as string[] };
+  const audioBuffer = await ttsRes.arrayBuffer();
+  const filename = `tts/${orgId ?? user.id}/${siteId}-${Date.now()}.mp3`;
 
-  for (const site of sites ?? []) {
-    if (!site.description?.trim()) {
-      results.skipped++;
-      continue;
-    }
+  const { error: uploadError } = await supabase.storage
+    .from('tour-media')
+    .upload(filename, audioBuffer, { contentType: 'audio/mpeg', upsert: true });
 
-    try {
-      const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ARABELLA_VOICE_ID}`, {
-        method: 'POST',
-        headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: site.description.trim(),
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-        }),
-      });
+  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
 
-      if (!ttsRes.ok) {
-        throw new Error(`ElevenLabs error: ${await ttsRes.text()}`);
-      }
+  const { data: urlData } = supabase.storage.from('tour-media').getPublicUrl(filename);
 
-      const audioBuffer = await ttsRes.arrayBuffer();
-      const orgId = site.organization_id ?? user.id;
-      const filename = `tts/${orgId}/${site.id}-${Date.now()}.mp3`;
+  const { error: updateError } = await supabase
+    .from('sites')
+    .update({ audio_url: urlData.publicUrl })
+    .eq('id', siteId);
 
-      const { error: uploadError } = await supabase.storage
-        .from('tour-media')
-        .upload(filename, audioBuffer, { contentType: 'audio/mpeg', upsert: true });
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
-      if (uploadError) throw new Error(uploadError.message);
-
-      const { data: urlData } = supabase.storage.from('tour-media').getPublicUrl(filename);
-
-      const { error: updateError } = await supabase
-        .from('sites')
-        .update({ audio_url: urlData.publicUrl })
-        .eq('id', site.id);
-
-      if (updateError) throw new Error(updateError.message);
-
-      results.success++;
-    } catch (err) {
-      results.failed++;
-      results.errors.push(`${site.name}: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  }
-
-  return NextResponse.json(results);
+  return NextResponse.json({ audio_url: urlData.publicUrl });
 }

@@ -65,7 +65,7 @@ export default function EditTourPage() {
   const [showSiteEditor, setShowSiteEditor] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [showQRCode, setShowQRCode] = useState(false);
-  const [regenStatus, setRegenStatus] = useState<{ running: boolean; message: string } | null>(null);
+  const [regenStatus, setRegenStatus] = useState<{ running: boolean; message: string; progress?: string } | null>(null);
 
   const supabase = createClient();
 
@@ -236,21 +236,42 @@ export default function EditTourPage() {
   }
 
   const handleRegenAllAudio = async () => {
-    setRegenStatus({ running: true, message: 'Generating narrations…' });
+    setRegenStatus({ running: true, message: 'Loading locations…' });
     try {
-      const res = await fetch('/api/admin/bulk-regen-audio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tourId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      const detail = data.errors?.length ? ` First error: ${data.errors[0]}` : '';
+      const sitesRes = await fetch(`/api/admin/bulk-regen-audio?tourId=${tourId}`);
+      if (!sitesRes.ok) throw new Error((await sitesRes.json()).error || 'Failed to load sites');
+      const allSites: { id: string; name: string; description: string | null; organization_id: string | null }[] = await sitesRes.json();
+
+      const toProcess = allSites.filter((s) => s.description?.trim());
+      const skipped = allSites.length - toProcess.length;
+      let success = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      for (let i = 0; i < toProcess.length; i++) {
+        const site = toProcess[i];
+        setRegenStatus({ running: true, message: `Generating…`, progress: `${i + 1} of ${toProcess.length}: ${site.name}` });
+
+        const res = await fetch('/api/admin/bulk-regen-audio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ siteId: site.id, text: site.description, orgId: site.organization_id }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          failed++;
+          errors.push(`${site.name}: ${data.error}`);
+        } else {
+          success++;
+        }
+      }
+
+      const detail = errors.length ? ` First error: ${errors[0]}` : '';
       setRegenStatus({
         running: false,
-        message: `Done — ${data.success} generated, ${data.skipped} skipped (no description), ${data.failed} failed.${detail}`,
+        message: `Done — ${success} generated, ${skipped} skipped (no description), ${failed} failed.${detail}`,
       });
-      if (data.success > 0) loadTour();
+      if (success > 0) loadTour();
     } catch (err) {
       setRegenStatus({ running: false, message: err instanceof Error ? err.message : 'Error regenerating audio' });
     }
@@ -494,8 +515,15 @@ export default function EditTourPage() {
                 <Volume2 className="w-4 h-4" />
                 {regenStatus?.running ? 'Generating…' : 'Generate All Narrations'}
               </Button>
-              {regenStatus && !regenStatus.running && (
-                <p className="text-xs text-muted-foreground">{regenStatus.message}</p>
+              {regenStatus && (
+                <div className="space-y-1">
+                  {regenStatus.progress && (
+                    <p className="text-xs text-muted-foreground">{regenStatus.progress}</p>
+                  )}
+                  {!regenStatus.running && (
+                    <p className="text-xs text-muted-foreground">{regenStatus.message}</p>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
