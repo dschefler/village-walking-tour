@@ -10,7 +10,6 @@ import { CuratedToursDropdown } from './CuratedToursDropdown';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 
 async function refreshApp() {
-  // Unregister SW first so the new version activates on reload
   if ('serviceWorker' in navigator) {
     const registrations = await navigator.serviceWorker.getRegistrations();
     await Promise.all(registrations.map(r => r.unregister()));
@@ -19,7 +18,8 @@ async function refreshApp() {
     const names = await caches.keys();
     await Promise.all(names.map(n => caches.delete(n)));
   }
-  window.location.reload();
+  // Navigate with timestamp param — bypasses iOS frozen-page restoration
+  window.location.href = '/?_=' + Date.now();
 }
 
 interface NavigationHeaderProps {
