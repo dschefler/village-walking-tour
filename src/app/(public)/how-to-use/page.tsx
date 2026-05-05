@@ -26,6 +26,18 @@ export const metadata = {
 
 const features = [
   {
+    icon: Smartphone,
+    title: 'Install the App on Your Phone',
+    description:
+      'No app store needed — scan the QR code on the home page or visit southamptonwalkingtour.com on your phone, then add it to your home screen. Steps vary by browser:',
+    steps: [
+      'iPhone · Safari: tap the Share button (the box with an arrow at the bottom of the screen), then tap "Add to Home Screen," then tap "Add"',
+      'iPhone · Chrome: tap the Share button (box with arrow at the bottom), then tap "Add to Home Screen"',
+      'Android · Chrome: tap the three-dot menu (⋮) in the top-right corner, then tap "Add to Home screen" or "Install app"',
+      'Once installed, the tour opens like a regular app — no browser bar, full screen',
+    ],
+  },
+  {
     icon: MapPin,
     title: 'Start Exploring',
     description:
@@ -130,12 +142,6 @@ const features = [
 ];
 
 const tips = [
-  {
-    icon: Smartphone,
-    title: 'Add to Home Screen',
-    description:
-      'Install the app for the best experience. iPhone (Safari): tap the Share button (box with arrow) then "Add to Home Screen." iPhone (Chrome): tap Share then "Add to Home Screen." Android: tap the three-dot menu (⋮) and "Add to Home screen" or "Install app."',
-  },
   {
     icon: Download,
     title: 'Browse Before You Go',
