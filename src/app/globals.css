@@ -10,12 +10,24 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'LombardicNarrow';
+  src: url('/fonts/LombardicNarrow-GvWG.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 .font-old-english {
   font-family: var(--font-old-english);
 }
 
 .font-engravers {
   font-family: 'EngraversOldEnglish', serif;
+}
+
+.font-lombardic {
+  font-family: 'LombardicNarrow', serif;
 }
 
 @layer base {
