@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, UnifrakturMaguntia } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
@@ -7,11 +7,6 @@ import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { UpdatePrompt } from '@/components/pwa/UpdatePrompt';
 
 const inter = Inter({ subsets: ['latin'] });
-const oldEnglish = UnifrakturMaguntia({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-old-english',
-});
 
 export const metadata: Metadata = {
   title: {
@@ -71,7 +66,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
       </head>
-      <body className={`${inter.className} ${oldEnglish.variable}`}>
+      <body className={inter.className}>
         <UpdatePrompt />
         <OfflineIndicator />
         {children}
