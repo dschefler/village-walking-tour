@@ -2,8 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'EngraversOldEnglish';
+  src: url('/fonts/OPTIEngraversOldEnglish.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 .font-old-english {
   font-family: var(--font-old-english);
+}
+
+.font-engravers {
+  font-family: 'EngraversOldEnglish', serif;
 }
 
 @layer base {
