@@ -114,7 +114,7 @@ export default async function HomePage() {
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h1 className="mb-6 flex flex-col items-center gap-1">
             <span className="text-2xl md:text-3xl opacity-90">Welcome to</span>
-            <span className="font-lombardic font-normal text-4xl md:text-5xl lg:text-6xl">Southampton Village Historical Walking Tours</span>
+            <span className="font-olde-english font-normal text-4xl md:text-5xl lg:text-6xl">Southampton Village Historical Walking Tours</span>
           </h1>
           <p className="text-lg md:text-xl opacity-90 mb-8 max-w-2xl mx-auto">
             Discover the rich history and hidden stories of our village through
