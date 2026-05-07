@@ -245,7 +245,7 @@ export default async function TenantLocationPage({
               latitude={location.latitude}
               longitude={location.longitude}
               name={location.name}
-              backHref={`/t/${params.orgSlug}/historic-sites`}
+              backHref="/historic-sites"
             />
 
             {location.tour_slug && location.tour_name && (
