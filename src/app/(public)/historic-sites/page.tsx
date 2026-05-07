@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,25 @@ export default function HistoricSitesPage() {
   const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
   const { pendingIds, toggle, clear } = useTourBuilderStore();
   const router = useRouter();
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleAudio = (site: SiteItem) => {
+    if (!site.audio_url) return;
+    if (playingId === site.id) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      setPlayingId(null);
+    } else {
+      audioRef.current?.pause();
+      const audio = new Audio(site.audio_url);
+      audioRef.current = audio;
+      setPlayingId(site.id);
+      audio.play().catch(() => {});
+      audio.onended = () => setPlayingId(null);
+      audio.onerror = () => setPlayingId(null);
+    }
+  };
 
   useEffect(() => {
     async function fetchSites() {
@@ -218,12 +237,23 @@ export default function HistoricSitesPage() {
                             {isSelected ? <><Check className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add to Tour</>}
                           </button>
                           {site.audio_url && (
-                            <span className="text-xs text-[#A40000] flex items-center gap-0.5">
-                              <Volume2 className="w-3 h-3" /> Audio
-                            </span>
+                            <button
+                              onClick={() => handleAudio(site)}
+                              className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
+                                playingId === site.id
+                                  ? 'bg-[#014487] text-white border-[#014487]'
+                                  : 'border-[#014487] text-[#014487] hover:bg-[#014487]/10'
+                              }`}
+                            >
+                              <Volume2 className="w-3 h-3" />
+                              {playingId === site.id ? 'Stop' : 'Audio'}
+                            </button>
                           )}
-                          <Link href={`/location/${site.slug || site.id}`} className="ml-auto text-xs text-gray-500 hover:text-[#A40000] flex items-center gap-0.5">
-                            Details <ChevronRight className="w-3 h-3" />
+                          <Link
+                            href={`/location/${site.slug || site.id}`}
+                            className="ml-auto flex items-center gap-0.5 text-xs font-semibold text-[#A40000] hover:underline"
+                          >
+                            Read More <ChevronRight className="w-3 h-3" />
                           </Link>
                         </div>
                       </div>

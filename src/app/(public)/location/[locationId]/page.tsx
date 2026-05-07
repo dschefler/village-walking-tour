@@ -16,6 +16,7 @@ import { ImageGallery } from '@/components/gallery/ImageGallery';
 import { ListenToAudioButton } from '@/components/audio/ListenToAudioButton';
 import { LocationArrivalTracker } from '@/components/location/LocationArrivalTracker';
 import { SiteHoursCard } from '@/components/location/SiteHoursCard';
+import { AddToTourButton } from '@/components/location/AddToTourButton';
 import type { Media, SiteHours } from '@/types';
 
 interface LocationWithMedia {
@@ -208,6 +209,9 @@ export default async function LocationPage({ params }: { params: { locationId: s
 
             {/* Hours */}
             {location.hours && <SiteHoursCard hours={location.hours} />}
+
+            {/* Add to Tour */}
+            <AddToTourButton siteId={location.id} />
 
             {/* Listen to Audio Button */}
             <ListenToAudioButton
