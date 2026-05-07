@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,8 @@ import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { HistoricSitesMap } from '@/components/map/HistoricSitesMap';
 import { useTourBuilderStore } from '@/stores/tour-builder-store';
+import { AudioPlayer } from '@/components/audio/AudioPlayer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface SiteItem {
   id: string;
@@ -35,25 +37,7 @@ export default function HistoricSitesPage() {
   const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
   const { pendingIds, toggle, clear } = useTourBuilderStore();
   const router = useRouter();
-  const [playingId, setPlayingId] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const handleAudio = (site: SiteItem) => {
-    if (!site.audio_url) return;
-    if (playingId === site.id) {
-      audioRef.current?.pause();
-      audioRef.current = null;
-      setPlayingId(null);
-    } else {
-      audioRef.current?.pause();
-      const audio = new Audio(site.audio_url);
-      audioRef.current = audio;
-      setPlayingId(site.id);
-      audio.play().catch(() => {});
-      audio.onended = () => setPlayingId(null);
-      audio.onerror = () => setPlayingId(null);
-    }
-  };
+  const [audioDialogSite, setAudioDialogSite] = useState<SiteItem | null>(null);
 
   useEffect(() => {
     async function fetchSites() {
@@ -225,33 +209,31 @@ export default function HistoricSitesPage() {
                             <p className="text-xs text-gray-500 line-clamp-2 mt-1">{site.description}</p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <button
-                            onClick={() => toggle(site.id)}
-                            className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
-                              isSelected
-                                ? 'bg-[#A40000] text-white'
-                                : 'border border-[#A40000] text-[#A40000] hover:bg-[#A40000]/10'
-                            }`}
-                          >
-                            {isSelected ? <><Check className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add to Tour</>}
-                          </button>
-                          {site.audio_url && (
+                        <div className="mt-2 space-y-1.5">
+                          <div className="flex items-center gap-2">
                             <button
-                              onClick={() => handleAudio(site)}
-                              className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
-                                playingId === site.id
-                                  ? 'bg-[#014487] text-white border-[#014487]'
-                                  : 'border-[#014487] text-[#014487] hover:bg-[#014487]/10'
+                              onClick={() => toggle(site.id)}
+                              className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                                isSelected
+                                  ? 'bg-[#A40000] text-white'
+                                  : 'border border-[#A40000] text-[#A40000] hover:bg-[#A40000]/10'
                               }`}
                             >
-                              <Volume2 className="w-3 h-3" />
-                              {playingId === site.id ? 'Stop' : 'Audio'}
+                              {isSelected ? <><Check className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add to Tour</>}
                             </button>
-                          )}
+                            {site.audio_url && (
+                              <button
+                                onClick={() => setAudioDialogSite(site)}
+                                className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-[#014487] text-[#014487] hover:bg-[#014487]/10 transition-colors"
+                              >
+                                <Volume2 className="w-3 h-3" />
+                                Audio
+                              </button>
+                            )}
+                          </div>
                           <Link
                             href={`/location/${site.slug || site.id}`}
-                            className="ml-auto flex items-center gap-0.5 text-xs font-semibold text-[#A40000] hover:underline"
+                            className="flex items-center gap-0.5 text-xs font-semibold text-[#A40000] hover:underline"
                           >
                             Read More <ChevronRight className="w-3 h-3" />
                           </Link>
@@ -280,6 +262,26 @@ export default function HistoricSitesPage() {
       )}
 
       <Footer />
+
+      {/* Audio dialog */}
+      <Dialog open={!!audioDialogSite} onOpenChange={(open) => { if (!open) setAudioDialogSite(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Volume2 className="w-5 h-5" />
+              {audioDialogSite?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {audioDialogSite?.audio_url && (
+            <AudioPlayer
+              audioUrl={audioDialogSite.audio_url}
+              siteId={audioDialogSite.id}
+              siteName={audioDialogSite.name}
+              autoPlay
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

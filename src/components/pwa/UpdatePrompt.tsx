@@ -24,6 +24,10 @@ export async function unregisterAndReload() {
 
 const BUILD_VERSION_KEY = 'app-build-version';
 
+// Baked into the bundle at build time by next.config.js env.NEXT_PUBLIC_BUILD_ID.
+// This lets us detect a new deployment the moment the new JS loads — no API needed.
+const BAKED_BUILD_ID = process.env.NEXT_PUBLIC_BUILD_ID;
+
 export function UpdatePrompt() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const reloadScheduled = useRef(false);
@@ -47,6 +51,20 @@ export function UpdatePrompt() {
   }
 
   async function checkVersion() {
+    // 1. Fast path: compare the ID baked into this JS bundle vs what's stored.
+    //    When a new deployment's JS loads (via NetworkFirst SW), this fires immediately.
+    if (BAKED_BUILD_ID && BAKED_BUILD_ID !== 'dev') {
+      const stored = localStorage.getItem(BUILD_VERSION_KEY);
+      if (!stored) {
+        localStorage.setItem(BUILD_VERSION_KEY, BAKED_BUILD_ID);
+      } else if (stored !== BAKED_BUILD_ID) {
+        localStorage.setItem(BUILD_VERSION_KEY, BAKED_BUILD_ID);
+        scheduleReload();
+        return;
+      }
+    }
+
+    // 2. Fallback: poll the API — catches new deployments even before the new JS bundle loads.
     try {
       const res = await fetch('/api/build-version', { cache: 'no-store' });
       if (!res.ok) return;
