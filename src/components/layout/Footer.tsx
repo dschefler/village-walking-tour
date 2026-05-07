@@ -62,9 +62,14 @@ export function Footer() {
 
       <div className="bg-primary">
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-white">
-            &copy; {currentYear} Southampton Village Walking Tour. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center md:items-start gap-0.5">
+            <p className="text-sm text-white">
+              &copy; {currentYear} Southampton Village Walking Tour. All rights reserved.
+            </p>
+            <p className="text-xs text-white/75">
+              Designed and Developed by Thorn Creative Marketing
+            </p>
+          </div>
           <Link href="/admin" className="text-sm text-white hover:text-gray-300 transition-colors">
             Admin Login
           </Link>

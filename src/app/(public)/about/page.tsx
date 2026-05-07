@@ -119,7 +119,7 @@ export default function AboutPage() {
         </div>
 
         {/* Historic photo grid */}
-        <div className="container mx-auto px-4 pb-12 max-w-3xl">
+        <div className="container mx-auto px-4 pb-4 max-w-3xl">
           <div className="grid grid-cols-2 gap-3">
             {[
               { src: '/about/postcard-main-jobs.jpeg', alt: 'Main Street and Job\'s Lane, Southampton, L.I.' },
@@ -138,6 +138,13 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Credits */}
+        <div className="container mx-auto px-4 pb-12 max-w-3xl">
+          <p className="text-sm text-muted-foreground italic text-center">
+            With special thanks to Mary Cummings and Nancy Kane for content creation.
+          </p>
         </div>
 
       </main>
