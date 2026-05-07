@@ -70,9 +70,6 @@ export function Footer() {
               Designed and Developed by Thorn Creative Marketing
             </p>
           </div>
-          <Link href="/admin" className="text-sm text-white hover:text-gray-300 transition-colors">
-            Admin Login
-          </Link>
         </div>
       </div>
     </footer>
