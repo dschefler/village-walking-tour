@@ -79,7 +79,7 @@ export default function HistoricSitesPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
       <NavigationHeader />
       <Breadcrumb items={[{ label: 'Historic Sites' }]} />
 
@@ -109,10 +109,10 @@ export default function HistoricSitesPage() {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 min-w-0">
           {/* Map Section */}
-          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)]">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full min-h-[400px] relative">
+          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)] min-w-0 w-full">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full min-h-[400px] relative w-full">
               <HistoricSitesMap
                 sites={sites}
                 hoveredSiteId={hoveredSiteId}
@@ -167,7 +167,7 @@ export default function HistoricSitesPage() {
           </div>
 
           {/* Sites Listing */}
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0 w-full">
             <h2 className="text-xl font-semibold text-gray-900">All Historic Sites</h2>
             <div className="space-y-3">
               {sites.map((site) => {
