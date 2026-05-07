@@ -1,14 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Volume2, ChevronRight, Loader2 } from 'lucide-react';
+import { MapPin, Volume2, ChevronRight, Loader2, Plus, Check, Route, X } from 'lucide-react';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { HistoricSitesMap } from '@/components/map/HistoricSitesMap';
-import { useTenant } from '@/lib/context/tenant-context';
+import { useTourBuilderStore } from '@/stores/tour-builder-store';
+import { AudioPlayer } from '@/components/audio/AudioPlayer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface SiteItem {
   id: string;
@@ -30,18 +32,14 @@ interface SiteItem {
 export default function TenantHistoricSitesPage() {
   const params = useParams();
   const orgSlug = params.orgSlug as string;
-
-  let orgName = '';
-  try {
-    const { organization } = useTenant();
-    orgName = organization.name;
-  } catch {
-    // fallback
-  }
+  const router = useRouter();
 
   const [sites, setSites] = useState<SiteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredSiteId, setHoveredSiteId] = useState<string | null>(null);
+  const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
+  const [audioDialogSite, setAudioDialogSite] = useState<SiteItem | null>(null);
+  const { pendingIds, toggle, clear } = useTourBuilderStore();
 
   useEffect(() => {
     async function fetchSites() {
@@ -56,15 +54,19 @@ export default function TenantHistoricSitesPage() {
         setLoading(false);
       }
     }
-
     fetchSites();
   }, [orgSlug]);
 
+  const selectedIds = new Set(pendingIds);
+
   const getImageUrl = (storagePath: string) => {
-    if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-      return storagePath;
-    }
+    if (storagePath.startsWith('http') || storagePath.startsWith('/')) return storagePath;
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
+  };
+
+  const handleMapClick = (site: { id: string; name: string; slug: string | null; latitude: number; longitude: number }) => {
+    const full = sites.find(s => s.id === site.id) ?? null;
+    if (full) { setPopupSite(full); setHoveredSiteId(site.id); }
   };
 
   if (loading) {
@@ -79,96 +81,162 @@ export default function TenantHistoricSitesPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
       <NavigationHeader orgSlug={orgSlug} />
 
       <header className="bg-black text-white py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Historic Sites</h1>
           <p className="text-gray-300">
-            Explore {sites.length} historic locations
+            Explore {sites.length} historic locations in Southampton Village
           </p>
         </div>
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)]">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full min-h-[400px]">
+        {pendingIds.length > 0 && (
+          <div className="mb-4 flex items-center gap-3 bg-[#A40000]/10 border border-[#A40000]/30 rounded-xl px-4 py-3">
+            <span className="text-sm font-medium text-[#A40000]">{pendingIds.length} site{pendingIds.length !== 1 ? 's' : ''} selected for your tour</span>
+            <button onClick={clear} className="text-xs text-gray-500 hover:text-gray-700 underline">Clear</button>
+            <button
+              onClick={() => router.push('/create-your-tour')}
+              className="ml-auto flex items-center gap-1.5 bg-[#A40000] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#8a0000] transition-colors"
+            >
+              <Route className="w-4 h-4" />
+              Build Tour
+            </button>
+          </div>
+        )}
+
+        <div className="grid lg:grid-cols-2 gap-8 min-w-0">
+          {/* Map Section */}
+          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)] min-w-0 w-full">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full min-h-[400px] relative w-full">
               <HistoricSitesMap
                 sites={sites}
                 hoveredSiteId={hoveredSiteId}
-                onSiteClick={(site) => {
-                  window.location.href = `/t/${orgSlug}/location/${site.slug || site.id}`;
-                }}
+                selectedIds={selectedIds}
+                onSiteClick={handleMapClick}
               />
+
+              {/* Site popup card */}
+              {popupSite && (
+                <div className="absolute bottom-0 left-0 right-0 bg-white shadow-2xl rounded-t-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
+                  <div className="flex items-start gap-3 p-4">
+                    {(() => {
+                      const img = popupSite.media?.find(m => m.is_primary) ?? popupSite.media?.[0];
+                      return img ? (
+                        <div className="w-16 h-16 flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-100">
+                          <Image src={getImageUrl(img.storage_path)} alt={popupSite.name} fill className="object-cover" sizes="64px" />
+                        </div>
+                      ) : null;
+                    })()}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 leading-snug">{popupSite.name}</p>
+                      {popupSite.address && <p className="text-xs text-gray-500 mt-0.5">{popupSite.address}</p>}
+                      {popupSite.description && <p className="text-xs text-gray-600 mt-1 line-clamp-2">{popupSite.description}</p>}
+                    </div>
+                    <button onClick={() => { setPopupSite(null); setHoveredSiteId(null); }} className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex gap-2 px-4 pb-4">
+                    <button
+                      onClick={() => toggle(popupSite.id)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                        selectedIds.has(popupSite.id)
+                          ? 'bg-[#A40000] text-white'
+                          : 'border-2 border-[#A40000] text-[#A40000] hover:bg-[#A40000]/10'
+                      }`}
+                    >
+                      {selectedIds.has(popupSite.id) ? <><Check className="w-4 h-4" /> Added to Tour</> : <><Plus className="w-4 h-4" /> Add to Tour</>}
+                    </button>
+                    <Link
+                      href={`/location/${popupSite.slug || popupSite.id}`}
+                      className="flex items-center justify-center gap-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Details
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="space-y-4">
+          {/* Sites Listing */}
+          <div className="space-y-4 min-w-0 w-full">
             <h2 className="text-xl font-semibold text-gray-900">All Historic Sites</h2>
             <div className="space-y-3">
               {sites.map((site) => {
                 const primaryImage = site.media?.find((m) => m.is_primary) || site.media?.[0];
+                const isSelected = selectedIds.has(site.id);
+
                 return (
-                  <Link
+                  <div
                     key={site.id}
-                    href={`/t/${orgSlug}/location/${site.slug || site.id}`}
+                    className={`bg-white rounded-lg shadow-sm border-2 transition-all duration-200 overflow-hidden ${
+                      isSelected ? 'border-[#A40000]' : hoveredSiteId === site.id ? 'border-[#A40000] shadow-lg' : 'border-transparent'
+                    }`}
                     onMouseEnter={() => setHoveredSiteId(site.id)}
                     onMouseLeave={() => setHoveredSiteId(null)}
                   >
-                    <div
-                      className={`bg-white rounded-lg shadow-sm border-2 transition-all duration-200 overflow-hidden hover:shadow-lg hover:border-primary cursor-pointer ${
-                        hoveredSiteId === site.id ? 'border-primary shadow-lg' : 'border-transparent'
-                      }`}
-                    >
-                      <div className="flex">
-                        <div className="w-32 h-32 flex-shrink-0 relative bg-gray-100">
-                          {primaryImage ? (
-                            <Image
-                              src={getImageUrl(primaryImage.storage_path)}
-                              alt={primaryImage.alt_text || site.name}
-                              fill
-                              className="object-cover"
-                              sizes="128px"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <MapPin className="w-8 h-8 text-gray-300" />
-                            </div>
+                    <div className="flex">
+                      <div className="w-24 h-24 flex-shrink-0 relative bg-gray-100">
+                        {primaryImage ? (
+                          <Image src={getImageUrl(primaryImage.storage_path)} alt={primaryImage.alt_text || site.name} fill className="object-cover" sizes="96px" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <MapPin className="w-8 h-8 text-gray-300" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-sm leading-snug">{site.name}</h3>
+                          {site.address && (
+                            <p className="text-xs text-[#014487] flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{site.address}</span>
+                            </p>
+                          )}
+                          {site.description && (
+                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">{site.description}</p>
                           )}
                         </div>
-                        <div className="flex-1 p-4 flex flex-col justify-between">
-                          <div>
-                            <h3 className="font-semibold text-gray-900 mb-1">{site.name}</h3>
-                            {site.address && (
-                              <p className="text-sm text-muted-foreground flex items-center gap-1 mb-2">
-                                <MapPin className="w-3 h-3" />
-                                {site.address}
-                              </p>
-                            )}
-                            {site.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2">{site.description}</p>
+                        <div className="mt-2 space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => toggle(site.id)}
+                              className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                                isSelected
+                                  ? 'bg-[#A40000] text-white'
+                                  : 'border border-[#A40000] text-[#A40000] hover:bg-[#A40000]/10'
+                              }`}
+                            >
+                              {isSelected ? <><Check className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add to Tour</>}
+                            </button>
+                            {site.audio_url && (
+                              <button
+                                onClick={() => setAudioDialogSite(site)}
+                                className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-[#014487] text-[#014487] hover:bg-[#014487]/10 transition-colors"
+                              >
+                                <Volume2 className="w-3 h-3" />
+                                Audio
+                              </button>
                             )}
                           </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <div className="flex items-center gap-2">
-                              {site.audio_url && (
-                                <span className="inline-flex items-center gap-1 text-xs text-primary">
-                                  <Volume2 className="w-3 h-3" />
-                                  Audio
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-primary text-sm font-medium flex items-center">
-                              View Details
-                              <ChevronRight className="w-4 h-4" />
-                            </span>
-                          </div>
+                          <Link
+                            href={`/location/${site.slug || site.id}`}
+                            className="flex items-center gap-0.5 text-xs font-semibold text-[#A40000] hover:underline"
+                          >
+                            Read More <ChevronRight className="w-3 h-3" />
+                          </Link>
                         </div>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -176,7 +244,40 @@ export default function TenantHistoricSitesPage() {
         </div>
       </main>
 
+      {/* Floating Build Tour button (mobile) */}
+      {pendingIds.length > 0 && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 md:hidden">
+          <button
+            onClick={() => router.push('/create-your-tour')}
+            className="w-full flex items-center justify-center gap-2 bg-[#A40000] text-white text-sm font-bold py-3.5 rounded-xl shadow-xl hover:bg-[#8a0000] transition-colors"
+          >
+            <Route className="w-5 h-5" />
+            Build Tour with {pendingIds.length} Site{pendingIds.length !== 1 ? 's' : ''}
+          </button>
+        </div>
+      )}
+
       <Footer />
+
+      {/* Audio dialog */}
+      <Dialog open={!!audioDialogSite} onOpenChange={(open) => { if (!open) setAudioDialogSite(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Volume2 className="w-5 h-5" />
+              {audioDialogSite?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {audioDialogSite?.audio_url && (
+            <AudioPlayer
+              audioUrl={audioDialogSite.audio_url}
+              siteId={audioDialogSite.id}
+              siteName={audioDialogSite.name}
+              autoPlay
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
