@@ -14,6 +14,7 @@ import {
   Eye,
   QrCode,
   Volume2,
+  ImageIcon,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { createClient } from '@/lib/supabase/client';
@@ -66,6 +67,7 @@ export default function EditTourPage() {
   const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [showQRCode, setShowQRCode] = useState(false);
   const [regenStatus, setRegenStatus] = useState<{ running: boolean; message: string; progress?: string } | null>(null);
+  const [compressStatus, setCompressStatus] = useState<{ running: boolean; message: string; progress?: string } | null>(null);
 
   const supabase = createClient();
 
@@ -234,6 +236,35 @@ export default function EditTourPage() {
       </div>
     );
   }
+
+  const handleCompressImages = async () => {
+    setCompressStatus({ running: true, message: 'Loading images…' });
+    const orgId = tour?.organization_id;
+    try {
+      const res = await fetch(`/api/admin/compress-images${orgId ? `?orgId=${orgId}` : ''}`);
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to load images');
+      const images: { id: string; filename: string; storage_path: string; file_size: number }[] = await res.json();
+
+      let compressed = 0, skipped = 0, failed = 0, savedBytes = 0;
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        setCompressStatus({ running: true, message: 'Optimizing…', progress: `${i + 1} of ${images.length}: ${img.filename}` });
+        const r = await fetch('/api/admin/compress-images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mediaId: img.id, storagePath: img.storage_path }),
+        });
+        const d = await r.json();
+        if (!r.ok) { failed++; }
+        else if (d.skipped) { skipped++; }
+        else { compressed++; savedBytes += d.savedBytes ?? 0; }
+      }
+      const savedMB = (savedBytes / 1024 / 1024).toFixed(1);
+      setCompressStatus({ running: false, message: `Done — ${compressed} optimized (saved ${savedMB} MB), ${skipped} already small, ${failed} failed.` });
+    } catch (err) {
+      setCompressStatus({ running: false, message: err instanceof Error ? err.message : 'Error' });
+    }
+  };
 
   const handleRegenAllAudio = async () => {
     setRegenStatus({ running: true, message: 'Loading locations…' });
@@ -498,6 +529,40 @@ export default function EditTourPage() {
                 path={`tours/${tourId}`}
                 organizationId={tour?.organization_id ?? undefined}
               />
+            </CardContent>
+          </Card>
+
+          {/* Optimize Images */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ImageIcon className="w-4 h-4" />
+                Optimize Images
+              </CardTitle>
+              <CardDescription>
+                Compress all uploaded images to web size. Run once to fix slow-loading photos.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handleCompressImages}
+                disabled={compressStatus?.running}
+              >
+                <ImageIcon className="w-4 h-4" />
+                {compressStatus?.running ? 'Optimizing…' : 'Optimize All Images'}
+              </Button>
+              {compressStatus && (
+                <div className="space-y-1">
+                  {compressStatus.progress && (
+                    <p className="text-xs text-muted-foreground">{compressStatus.progress}</p>
+                  )}
+                  {!compressStatus.running && (
+                    <p className="text-xs text-muted-foreground">{compressStatus.message}</p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 

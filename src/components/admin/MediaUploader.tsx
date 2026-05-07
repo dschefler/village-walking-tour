@@ -27,6 +27,42 @@ interface MediaUploaderProps {
   multiple?: boolean;
 }
 
+async function compressImage(file: File, maxDimension = 1920, quality = 0.82): Promise<File> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width <= maxDimension && height <= maxDimension && file.size < 500 * 1024) {
+        resolve(file);
+        return;
+      }
+      if (width > height) {
+        height = Math.round((height * maxDimension) / width);
+        width = maxDimension;
+      } else {
+        width = Math.round((width * maxDimension) / height);
+        height = maxDimension;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return; }
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg', lastModified: Date.now() }));
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 function getMediaUrl(storagePath: string): string {
   if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
     return storagePath;
@@ -99,12 +135,15 @@ export function MediaUploader({
     fetchLibrary();
   }, [showLibrary, organizationId, accept]);
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (rawFile: File) => {
     setUploading(true);
     setError(null);
     setProgress(0);
 
     try {
+      // Compress images before upload so Supabase stores web-sized files
+      const file = rawFile.type.startsWith('image/') ? await compressImage(rawFile) : rawFile;
+
       // Generate unique filename
       const ext = file.name.split('.').pop();
       const filename = `${generateId()}.${ext}`;
