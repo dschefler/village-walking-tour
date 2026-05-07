@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Route, Smartphone, HelpCircle, Bookmark, MapPin } from 'lucide-react';
+import { ShareAppButton } from '@/components/ShareAppButton';
 import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
@@ -150,6 +151,7 @@ export default async function HomePage() {
               <Bookmark className="w-4 h-4 flex-shrink-0" />
               <span className="text-sm font-semibold leading-tight">Curated Theme Tours</span>
             </Link>
+            <ShareAppButton />
           </div>
         </div>
       </header>
