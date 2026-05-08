@@ -35,7 +35,7 @@ export function Footer() {
             <Mail className="w-4 h-4 text-[#A40000] shrink-0" />
             Contact
           </Link>
-          <Link href="/contact#donate" className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary transition-colors">
+          <Link href="/contact" className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary transition-colors">
             <Heart className="w-4 h-4 text-[#A40000] shrink-0" />
             Support Us
           </Link>
