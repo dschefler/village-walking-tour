@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { MapPin, HelpCircle, Mail, Heart, Info, Route, Bookmark, Share2 } from 'lucide-react';
+import { MapPin, HelpCircle, Mail, Heart, Info, Route, Bookmark } from 'lucide-react';
+import { ShareAppButton } from '@/components/ShareAppButton';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -39,24 +40,7 @@ export function Footer() {
             <Heart className="w-4 h-4 text-[#A40000] shrink-0" />
             Support Us
           </Link>
-          <button
-            onClick={async () => {
-              const shareData = {
-                title: 'Southampton Village Historical Walking Tours',
-                text: 'Explore the historic district of Southampton Village — free self-guided GPS walking tour with audio narration.',
-                url: 'https://southamptonwalkingtour.com',
-              };
-              if (navigator.share) {
-                try { await navigator.share(shareData); } catch { /* cancelled */ }
-              } else {
-                try { await navigator.clipboard.writeText(shareData.url); alert('Link copied!'); } catch { /* unavailable */ }
-              }
-            }}
-            className="flex items-center gap-2 text-sm font-bold text-[#A40000] hover:text-[#8a0000] transition-colors text-left"
-          >
-            <Share2 className="w-4 h-4 shrink-0" />
-            Share this App
-          </button>
+          <ShareAppButton />
         </div>
       </div>
 
