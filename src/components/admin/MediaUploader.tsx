@@ -65,9 +65,10 @@ async function compressImage(file: File, maxDimension = 1920, quality = 0.82): P
 
 function getMediaUrl(storagePath: string): string {
   if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-    return storagePath;
+    return storagePath.trim();
   }
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
+  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim();
+  return `${base}/storage/v1/object/public/tour-media/${storagePath}`;
 }
 
 export function MediaUploader({
@@ -193,7 +194,7 @@ export function MediaUploader({
       }
 
       setProgress(100);
-      onUpload(urlData.publicUrl, mediaData?.id);
+      onUpload(urlData.publicUrl.trim(), mediaData?.id);
     } catch (err) {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');

@@ -156,5 +156,5 @@ export async function POST(request: NextRequest) {
     await supabase.from('tts_usage').insert({ org_id: orgId, user_id: user.id });
   }
 
-  return NextResponse.json({ audio_url: urlData.publicUrl });
+  return NextResponse.json({ audio_url: urlData.publicUrl.trim() });
 }
