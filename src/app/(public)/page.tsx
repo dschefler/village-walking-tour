@@ -9,6 +9,8 @@ import { Footer } from '@/components/layout/Footer';
 import { HideWhenInstalled } from '@/components/pwa/HideWhenInstalled';
 import type { Tour } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Southampton Village Walking Tour | Free Self-Guided Historic District App',
   description:
