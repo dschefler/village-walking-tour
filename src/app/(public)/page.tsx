@@ -94,9 +94,9 @@ export default async function HomePage() {
       {/* Hero Section with Background Image */}
       <header className="relative flex-1 min-h-[80vh] flex items-center justify-center">
         {/* Background Image */}
-        {tour?.cover_image_url ? (
+        {tour?.cover_image_url?.trim() ? (
           <Image
-            src={tour.cover_image_url}
+            src={tour.cover_image_url.trim()}
             alt={tour.name || 'Village Walking Tour'}
             fill
             className="object-cover"
