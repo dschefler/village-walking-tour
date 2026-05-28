@@ -19,10 +19,11 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: isSub ? 'subscription' : 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
-      ...(isSub && { subscription_data: { trial_period_days: 7 } }),
+      ...(isSub && { subscription_data: { trial_period_days: 7, metadata: { plan: priceKey } } }),
       ...(email && { customer_email: email }),
       allow_promotion_codes: true,
       billing_address_collection: 'required',
+      metadata: { plan: priceKey },
       success_url: `${BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}&type=${isSub ? 'subscription' : 'payment'}`,
       cancel_url: `${BASE_URL}/product#pricing`,
     });
