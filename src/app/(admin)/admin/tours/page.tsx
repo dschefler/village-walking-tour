@@ -8,11 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 async function getTours() {
   const supabase = createClient();
 
-  const { data: org } = await supabase
-    .from('organizations')
-    .select('id')
-    .eq('slug', 'southampton')
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: membership } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', user.id)
+    .limit(1)
     .single();
+
+  if (!membership) return [];
 
   const { data, error } = await supabase
     .from('tours')
@@ -20,7 +26,7 @@ async function getTours() {
       *,
       sites:sites(count)
     `)
-    .eq('organization_id', org?.id)
+    .eq('organization_id', membership.organization_id)
     .order('updated_at', { ascending: false });
 
   if (error) {

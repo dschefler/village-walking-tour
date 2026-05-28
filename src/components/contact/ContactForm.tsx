@@ -60,7 +60,7 @@ export function ContactForm({ orgSlug }: ContactFormProps = {}) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, orgSlug }),
       });
 
       if (!response.ok) {

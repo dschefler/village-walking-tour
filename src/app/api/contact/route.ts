@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    const { name, email, subject, message, orgSlug } = body;
 
     // Validate required fields
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
@@ -25,6 +25,17 @@ export async function POST(request: Request) {
 
     const supabase = createClient();
 
+    // Resolve org contact email when a slug is provided
+    let recipientEmail = process.env.CONTACT_EMAIL_TO;
+    if (orgSlug) {
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('contact_email')
+        .eq('slug', orgSlug)
+        .single();
+      if (org?.contact_email) recipientEmail = org.contact_email;
+    }
+
     // Store in database
     const { error: dbError } = await supabase.from('contact_submissions').insert({
       name: name.trim(),
@@ -44,16 +55,15 @@ export async function POST(request: Request) {
 
     // Send email notification if SendGrid is configured
     const sendGridApiKey = process.env.SENDGRID_API_KEY;
-    const contactEmailTo = process.env.CONTACT_EMAIL_TO;
 
-    if (sendGridApiKey && contactEmailTo) {
+    if (sendGridApiKey && recipientEmail) {
       try {
         const sgMail = await import('@sendgrid/mail');
         sgMail.default.setApiKey(sendGridApiKey);
 
         await sgMail.default.send({
-          to: contactEmailTo,
-          from: contactEmailTo, // Must be verified sender
+          to: recipientEmail,
+          from: process.env.CONTACT_EMAIL_TO ?? recipientEmail, // Must be a verified sender
           replyTo: email,
           subject: `[Village Walking Tours] ${subject || 'New Contact Form Submission'}`,
           text: `

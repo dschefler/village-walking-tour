@@ -50,7 +50,7 @@ export default function PricingPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
             <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-              Start with a 14-day free trial with full Pro features. No credit card required.
+              Start with a 7-day free trial with full Pro features. No credit card required.
             </p>
           </div>
 

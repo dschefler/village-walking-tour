@@ -1,27 +1,32 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Map, Image, MapPin, Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-async function getSouthamptonOrgId() {
+async function getAdminOrg() {
   const supabase = createClient();
-  const { data } = await supabase
-    .from('organizations')
-    .select('id')
-    .eq('slug', 'southampton')
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: membership } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', user.id)
+    .limit(1)
     .single();
-  return data?.id;
+
+  return membership?.organization_id ?? null;
 }
 
-async function getStats() {
+async function getStats(orgId: string) {
   const supabase = createClient();
-  const orgId = await getSouthamptonOrgId();
 
   const [toursResult, sitesResult, mediaResult] = await Promise.all([
     supabase.from('tours').select('id', { count: 'exact' }).eq('organization_id', orgId),
     supabase.from('sites').select('id, tour:tours!inner(organization_id)', { count: 'exact' }).eq('tours.organization_id', orgId),
-    supabase.from('media').select('id', { count: 'exact' }),
+    supabase.from('media').select('id', { count: 'exact' }).eq('organization_id', orgId),
   ]);
 
   return {
@@ -31,23 +36,25 @@ async function getStats() {
   };
 }
 
-async function getRecentTours() {
+async function getRecentTours(orgId: string) {
   const supabase = createClient();
-  const orgId = await getSouthamptonOrgId();
-
   const { data } = await supabase
     .from('tours')
     .select('id, name, slug, is_published, updated_at')
     .eq('organization_id', orgId)
     .order('updated_at', { ascending: false })
     .limit(5);
-
   return data || [];
 }
 
 export default async function AdminDashboard() {
-  const stats = await getStats();
-  const recentTours = await getRecentTours();
+  const orgId = await getAdminOrg();
+  if (!orgId) redirect('/login');
+
+  const [stats, recentTours] = await Promise.all([
+    getStats(orgId),
+    getRecentTours(orgId),
+  ]);
 
   return (
     <div className="p-6">

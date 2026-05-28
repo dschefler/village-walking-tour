@@ -82,12 +82,20 @@ export default function LoginForm() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
+            <div className="flex items-center justify-between">
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </div>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-primary hover:underline"
+            >
+              Forgot your password?
+            </Link>
             <Link
               href="/"
               className="text-sm text-muted-foreground hover:text-foreground"
