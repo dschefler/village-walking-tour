@@ -3,17 +3,20 @@ import Link from 'next/link';
 import {
   MapPin,
   Stamp,
-  Wifi,
   WifiOff,
   Palette,
   Smartphone,
-  ChevronRight,
   Check,
   Volume2,
   Lightbulb,
-  BarChart3,
   Paintbrush,
   Clock,
+  Car,
+  BellRing,
+  Route,
+  Bookmark,
+  QrCode,
+  Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -94,17 +97,42 @@ const features = [
   {
     icon: MapPin,
     title: 'GPS Navigation',
-    description: 'Turn-by-turn walking directions to every tour stop. Works outdoors where it matters.',
+    description: 'Turn-by-turn directions to every stop, with live distance and step counts. Works outdoors where it matters.',
+  },
+  {
+    icon: Car,
+    title: 'Walk or Drive Mode',
+    description: 'Visitors choose how they explore. Walking mode gives step counts and pace; driving mode gives road distances and time.',
+  },
+  {
+    icon: BellRing,
+    title: 'Arrival Alerts',
+    description: 'Visitors get a notification the moment they arrive near a site — no more squinting at a map to know they\'ve arrived.',
+  },
+  {
+    icon: Route,
+    title: 'Create Your Own Tour',
+    description: 'Visitors pick their own stops and get a custom optimized route. Great for repeat visits and different interests.',
+  },
+  {
+    icon: Bookmark,
+    title: 'Curated Tours',
+    description: 'Offer pre-built themed routes — a family walk, an art trail, a history deep-dive — right from your homepage.',
   },
   {
     icon: Stamp,
     title: 'Stamp Cards',
-    description: 'Visitors collect stamps as they visit each site. Gamification keeps them engaged.',
+    description: 'Visitors collect digital stamps at each site. Gamification keeps them engaged and coming back.',
   },
   {
     icon: Volume2,
     title: 'AI Audio Narration',
-    description: 'Generate professional narration from your descriptions with one click. No studio needed.',
+    description: 'Generate professional narration from your site descriptions with one click. No studio, no voice actor needed.',
+  },
+  {
+    icon: Lightbulb,
+    title: '"Did You Know?" Facts',
+    description: 'Surprise visitors with pop-up fun facts as they explore each stop. Makes every visit feel a little magical.',
   },
   {
     icon: WifiOff,
@@ -114,27 +142,17 @@ const features = [
   {
     icon: Palette,
     title: 'Your Branding',
-    description: 'Custom colors, logo, and domain. It looks like your app, not ours.',
+    description: 'Custom colors, logo, and domain. It looks like your app, not ours — because it is.',
   },
   {
-    icon: Smartphone,
-    title: 'Installable PWA',
-    description: 'Installs on any phone from a share link. No app store submission required.',
+    icon: QrCode,
+    title: 'Instant Sharing & QR Codes',
+    description: 'Visitors share the app via a QR code that opens your tour instantly. Perfect for posters, brochures, and signage.',
   },
   {
-    icon: Lightbulb,
-    title: '"Did You Know?" Facts',
-    description: 'Surprise visitors with fun facts and audio tidbits as they explore each stop.',
-  },
-  {
-    icon: Wifi,
-    title: 'Hours & Directions',
-    description: 'Show visiting hours, addresses, and one-tap navigation to each location.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Analytics Dashboard',
-    description: 'See which stops visitors engage with most and track tour completions.',
+    icon: Heart,
+    title: 'Donation Support',
+    description: 'Accept donations directly through the app. Ideal for historical societies, nonprofits, and volunteer-run tours.',
   },
 ];
 
