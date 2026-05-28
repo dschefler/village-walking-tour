@@ -21,8 +21,8 @@ export default function CuratedToursListPage({
             Curated Tours
           </h1>
           <p className="text-lg opacity-90 max-w-2xl">
-            Explore Southampton Village through themed tours curated around specific chapters of
-            local history. Locations are pre-selected — customize your route before you go.
+            Explore themed tours curated around specific topics, eras, or aspects of local history and culture.
+            Locations are pre-selected — customize your route before you go.
           </p>
         </div>
       </header>

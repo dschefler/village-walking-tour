@@ -9,6 +9,7 @@ import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { HistoricSitesMap } from '@/components/map/HistoricSitesMap';
 import { useTourBuilderStore } from '@/stores/tour-builder-store';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 import { AudioPlayer } from '@/components/audio/AudioPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -40,6 +41,8 @@ export default function TenantHistoricSitesPage() {
   const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
   const [audioDialogSite, setAudioDialogSite] = useState<SiteItem | null>(null);
   const { pendingIds, toggle, clear } = useTourBuilderStore();
+  const tenant = useTenantOptional();
+  const orgName = tenant?.organization.app_name || tenant?.organization.name || 'this area';
 
   useEffect(() => {
     async function fetchSites() {
@@ -88,19 +91,19 @@ export default function TenantHistoricSitesPage() {
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Historic Sites</h1>
           <p className="text-gray-300">
-            Explore {sites.length} historic locations in Southampton Village
+            Explore {sites.length} historic location{sites.length !== 1 ? 's' : ''} in {orgName}
           </p>
         </div>
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-8">
         {pendingIds.length > 0 && (
-          <div className="mb-4 flex items-center gap-3 bg-[#A40000]/10 border border-[#A40000]/30 rounded-xl px-4 py-3">
-            <span className="text-sm font-medium text-[#A40000]">{pendingIds.length} site{pendingIds.length !== 1 ? 's' : ''} selected for your tour</span>
+          <div className="mb-4 flex items-center gap-3 bg-primary/10 border border-primary/30 rounded-xl px-4 py-3">
+            <span className="text-sm font-medium text-primary">{pendingIds.length} site{pendingIds.length !== 1 ? 's' : ''} selected for your tour</span>
             <button onClick={clear} className="text-xs text-gray-500 hover:text-gray-700 underline">Clear</button>
             <button
-              onClick={() => router.push('/create-your-tour')}
-              className="ml-auto flex items-center gap-1.5 bg-[#A40000] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#8a0000] transition-colors"
+              onClick={() => router.push(`/t/${orgSlug}/create-your-tour`)}
+              className="ml-auto flex items-center gap-1.5 bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
             >
               <Route className="w-4 h-4" />
               Build Tour
@@ -145,14 +148,14 @@ export default function TenantHistoricSitesPage() {
                       onClick={() => toggle(popupSite.id)}
                       className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
                         selectedIds.has(popupSite.id)
-                          ? 'bg-[#A40000] text-white'
-                          : 'border-2 border-[#A40000] text-[#A40000] hover:bg-[#A40000]/10'
+                          ? 'bg-primary text-white'
+                          : 'border-2 border-primary text-primary hover:bg-primary/10'
                       }`}
                     >
                       {selectedIds.has(popupSite.id) ? <><Check className="w-4 h-4" /> Added to Tour</> : <><Plus className="w-4 h-4" /> Add to Tour</>}
                     </button>
                     <Link
-                      href={`/location/${popupSite.slug || popupSite.id}`}
+                      href={`/t/${orgSlug}/location/${popupSite.slug || popupSite.id}`}
                       className="flex items-center justify-center gap-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Details
@@ -176,7 +179,7 @@ export default function TenantHistoricSitesPage() {
                   <div
                     key={site.id}
                     className={`bg-white rounded-lg shadow-sm border-2 transition-all duration-200 overflow-hidden ${
-                      isSelected ? 'border-[#A40000]' : hoveredSiteId === site.id ? 'border-[#A40000] shadow-lg' : 'border-transparent'
+                      isSelected ? 'border-primary' : hoveredSiteId === site.id ? 'border-primary shadow-lg' : 'border-transparent'
                     }`}
                     onMouseEnter={() => setHoveredSiteId(site.id)}
                     onMouseLeave={() => setHoveredSiteId(null)}
@@ -211,8 +214,8 @@ export default function TenantHistoricSitesPage() {
                               onClick={() => toggle(site.id)}
                               className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
                                 isSelected
-                                  ? 'bg-[#A40000] text-white'
-                                  : 'border border-[#A40000] text-[#A40000] hover:bg-[#A40000]/10'
+                                  ? 'bg-primary text-white'
+                                  : 'border border-primary text-primary hover:bg-primary/10'
                               }`}
                             >
                               {isSelected ? <><Check className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add to Tour</>}
@@ -228,8 +231,8 @@ export default function TenantHistoricSitesPage() {
                             )}
                           </div>
                           <Link
-                            href={`/location/${site.slug || site.id}`}
-                            className="flex items-center gap-0.5 text-xs font-semibold text-[#A40000] hover:underline"
+                            href={`/t/${orgSlug}/location/${site.slug || site.id}`}
+                            className="flex items-center gap-0.5 text-xs font-semibold text-primary hover:underline"
                           >
                             Read More <ChevronRight className="w-3 h-3" />
                           </Link>
@@ -248,8 +251,8 @@ export default function TenantHistoricSitesPage() {
       {pendingIds.length > 0 && (
         <div className="fixed bottom-4 left-4 right-4 z-40 md:hidden">
           <button
-            onClick={() => router.push('/create-your-tour')}
-            className="w-full flex items-center justify-center gap-2 bg-[#A40000] text-white text-sm font-bold py-3.5 rounded-xl shadow-xl hover:bg-[#8a0000] transition-colors"
+            onClick={() => router.push(`/t/${orgSlug}/create-your-tour`)}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-white text-sm font-bold py-3.5 rounded-xl shadow-xl hover:bg-primary/80 transition-colors"
           >
             <Route className="w-5 h-5" />
             Build Tour with {pendingIds.length} Site{pendingIds.length !== 1 ? 's' : ''}

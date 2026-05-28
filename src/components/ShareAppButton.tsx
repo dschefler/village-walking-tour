@@ -4,26 +4,36 @@ import { useState, useEffect } from 'react';
 import { Share2, Copy, Check, X, Smartphone } from 'lucide-react';
 import QRCode from 'qrcode';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 
-const APP_URL = 'https://southamptonwalkingtour.com';
+const SOUTHAMPTON_URL = 'https://southamptonwalkingtour.com';
 
 export function ShareAppButton() {
+  const tenant = useTenantOptional();
+  const org = tenant?.organization;
+
+  const appUrl = org
+    ? `https://southamptonwalkingtour.com/t/${org.slug}`
+    : SOUTHAMPTON_URL;
+  const appTitle = org ? org.app_name || org.name : 'Southampton Village Historical Walking Tours';
+  const primaryColor = org?.primary_color || '#A40000';
+
   const [open, setOpen] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    QRCode.toDataURL(APP_URL, {
+    QRCode.toDataURL(appUrl, {
       width: 220,
       margin: 2,
-      color: { dark: '#A40000', light: '#ffffff' },
+      color: { dark: primaryColor, light: '#ffffff' },
     }).then(setQrDataUrl).catch(() => {});
-  }, [open]);
+  }, [open, appUrl, primaryColor]);
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(APP_URL);
+      await navigator.clipboard.writeText(appUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch { /* unavailable */ }
@@ -32,9 +42,9 @@ export function ShareAppButton() {
   const nativeShare = async () => {
     try {
       await navigator.share({
-        title: 'Southampton Village Historical Walking Tours',
+        title: appTitle,
         text: 'Free self-guided GPS walking tour with audio narration.',
-        url: APP_URL,
+        url: appUrl,
       });
     } catch { /* cancelled */ }
   };
@@ -43,7 +53,7 @@ export function ShareAppButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 text-sm font-bold text-[#A40000] hover:text-[#8a0000] transition-colors text-left"
+        className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors text-left"
       >
         <Share2 className="w-4 h-4 shrink-0" />
         Share this App
@@ -52,7 +62,7 @@ export function ShareAppButton() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm p-0 overflow-hidden">
           {/* Header */}
-          <div className="bg-[#A40000] px-5 py-4 flex items-center justify-between">
+          <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: primaryColor }}>
             <div>
               <p className="text-white font-bold text-base leading-tight">Share the Walking Tour</p>
               <p className="text-white/80 text-xs mt-0.5">Free · No download required</p>
@@ -66,7 +76,7 @@ export function ShareAppButton() {
             {/* QR Code */}
             <div className="flex flex-col items-center gap-2">
               {qrDataUrl ? (
-                <img src={qrDataUrl} alt="QR code for southamptonwalkingtour.com" className="rounded-lg shadow-sm" width={180} height={180} />
+                <img src={qrDataUrl} alt={`QR code for ${appUrl}`} className="rounded-lg shadow-sm" width={180} height={180} />
               ) : (
                 <div className="w-[180px] h-[180px] bg-gray-100 rounded-lg animate-pulse" />
               )}
@@ -75,10 +85,11 @@ export function ShareAppButton() {
 
             {/* Copyable link */}
             <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-              <span className="flex-1 text-xs text-gray-600 truncate">{APP_URL}</span>
+              <span className="flex-1 text-xs text-gray-600 truncate">{appUrl}</span>
               <button
                 onClick={copyLink}
-                className="flex items-center gap-1 text-xs font-semibold text-[#A40000] hover:text-[#8a0000] shrink-0 transition-colors"
+                className="flex items-center gap-1 text-xs font-semibold shrink-0 transition-colors"
+                style={{ color: primaryColor }}
               >
                 {copied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
               </button>
@@ -88,7 +99,8 @@ export function ShareAppButton() {
             {'share' in navigator && (
               <button
                 onClick={nativeShare}
-                className="w-full flex items-center justify-center gap-2 bg-[#A40000] text-white text-sm font-semibold py-2.5 rounded-lg hover:bg-[#8a0000] transition-colors"
+                className="w-full flex items-center justify-center gap-2 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
+                style={{ backgroundColor: primaryColor }}
               >
                 <Share2 className="w-4 h-4" />
                 Send via Text / Email / More
@@ -98,7 +110,7 @@ export function ShareAppButton() {
             {/* Install hint */}
             <div className="bg-gray-50 rounded-lg p-3">
               <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5 mb-1.5">
-                <Smartphone className="w-3.5 h-3.5 text-[#A40000]" />
+                <Smartphone className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                 To install as an app
               </p>
               <p className="text-xs text-gray-500 leading-relaxed">

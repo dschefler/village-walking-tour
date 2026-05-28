@@ -82,7 +82,7 @@ export function ProximityNotification({
             {/* Site name over photo */}
             <div className="absolute bottom-0 left-0 right-0 px-4 pb-3">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <MapPin className="w-3.5 h-3.5 text-[#A40000]" />
+                <MapPin className="w-3.5 h-3.5 text-primary" />
                 <span className="text-xs text-white/80 font-medium uppercase tracking-wide">You&apos;ve Arrived</span>
               </div>
               <h4 className="font-bold text-white text-base leading-snug">{alert.siteName}</h4>
@@ -93,11 +93,11 @@ export function ProximityNotification({
         {/* Header (no photo fallback) */}
         {!alert.imageUrl && (
           <div className="flex items-start gap-3 px-4 pt-4 pb-2">
-            <div className="flex-shrink-0 p-2 bg-[#A40000]/10 rounded-full">
-              <MapPin className="w-5 h-5 text-[#A40000]" />
+            <div className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
+              <MapPin className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#A40000] font-semibold uppercase tracking-wide">You&apos;ve Arrived</p>
+              <p className="text-xs text-primary font-semibold uppercase tracking-wide">You&apos;ve Arrived</p>
               <h4 className="font-bold text-base leading-snug">{alert.siteName}</h4>
             </div>
             <button onClick={handleDismiss} className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-600 rounded-full">
@@ -120,7 +120,7 @@ export function ProximityNotification({
               <button
                 onClick={toggle}
                 disabled={isLoading}
-                className="flex-shrink-0 w-12 h-12 rounded-full bg-[#A40000] text-white flex items-center justify-center shadow disabled:opacity-60"
+                className="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow disabled:opacity-60"
               >
                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> :
                   isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
@@ -130,7 +130,7 @@ export function ProximityNotification({
                   {isLoading ? 'Loading…' : isPlaying ? 'Playing audio tour' : 'Tap to hear audio'}
                 </p>
                 <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#A40000] transition-all" style={{ width: `${progressPercent}%` }} />
+                  <div className="h-full bg-primary transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
                 {duration > 0 && (
                   <div className="flex justify-between mt-0.5 text-xs text-gray-400">
@@ -170,7 +170,7 @@ export function ProximityNotification({
             ) : isFinalStop ? (
               <button
                 onClick={handleDismiss}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-lg px-3 py-2 text-sm font-semibold"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/80 text-white rounded-lg px-3 py-2 text-sm font-semibold"
               >
                 Tour Complete
                 <ChevronRight className="w-4 h-4" />
@@ -178,7 +178,7 @@ export function ProximityNotification({
             ) : (
               <button
                 onClick={handleDismiss}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-lg px-3 py-2 text-sm font-semibold"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/80 text-white rounded-lg px-3 py-2 text-sm font-semibold"
               >
                 Continue
               </button>
