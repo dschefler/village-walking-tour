@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   const supabase = createClient();
   const orgSlug = request.nextUrl.searchParams.get('orgSlug');
 
-  // If orgSlug provided, resolve the org first
+  // Resolve org: by slug (public) or by the authenticated user's membership (admin)
   let orgId: string | null = null;
   if (orgSlug) {
     const { data: org } = await supabase
@@ -17,6 +17,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
     orgId = org.id;
+  } else {
+    // No slug — use the authenticated user's org
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: membership } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .single();
+      if (membership) orgId = membership.organization_id;
+    }
   }
 
   // Get all published locations with their media

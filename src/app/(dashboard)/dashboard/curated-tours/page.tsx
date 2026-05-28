@@ -164,21 +164,18 @@ export default function CuratedToursAdminPage() {
   useEffect(() => {
     async function load() {
       try {
-        // Get org slug
-        const orgRes = await fetch('/api/organizations');
+        // Get org info and sites in parallel
+        const [orgRes, sitesRes] = await Promise.all([
+          fetch('/api/organizations/current'),
+          fetch('/api/locations'),
+        ]);
         if (orgRes.ok) {
-          const orgs = await orgRes.json();
-          if (orgs.length > 0) {
-            const slug = orgs[0].slug as string;
-            setOrgSlug(slug);
-
-            // Load sites for this org
-            const sitesRes = await fetch(`/api/locations?orgSlug=${slug}`);
-            if (sitesRes.ok) {
-              const sitesData = await sitesRes.json();
-              setSites(sitesData.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })));
-            }
-          }
+          const org = await orgRes.json();
+          setOrgSlug(org.slug ?? '');
+        }
+        if (sitesRes.ok) {
+          const sitesData = await sitesRes.json();
+          setSites(sitesData.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })));
         }
 
         // Load curated tours (auth'd)
