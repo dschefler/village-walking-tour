@@ -413,14 +413,14 @@ export default function TenantCreateYourTourPage() {
             <span className="text-xs font-semibold">Select Sites</span>
           </div>
           <Link
-            href="/historic-sites"
+            href={`/t/${orgSlug}/historic-sites`}
             className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:shadow-md transition-all text-center"
           >
             <Map className="w-6 h-6" style={{ color: primaryColor }} />
             <span className="text-xs font-semibold text-gray-700">View by Map</span>
           </Link>
           <Link
-            href="/curated-tours"
+            href={`/t/${orgSlug}/curated-tours`}
             className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:shadow-md transition-all text-center"
           >
             <Bookmark className="w-6 h-6" style={{ color: primaryColor }} />
@@ -779,7 +779,8 @@ export default function TenantCreateYourTourPage() {
         <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden">
           <button
             onClick={createTour}
-            className="w-full flex items-center justify-center gap-2 bg-[#A40000] text-white rounded-xl py-4 text-base font-semibold shadow-2xl"
+            className="w-full flex items-center justify-center gap-2 text-white rounded-xl py-4 text-base font-semibold shadow-2xl"
+            style={{ backgroundColor: primaryColor }}
           >
             <Navigation className="w-5 h-5" />
             Start Walking · {selectedIds.size} site{selectedIds.size !== 1 ? 's' : ''}

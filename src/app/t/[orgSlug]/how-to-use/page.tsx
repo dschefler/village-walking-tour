@@ -22,7 +22,7 @@ const features = [
     icon: Bookmark,
     title: 'Curated Tours',
     description:
-      'Explore Southampton through themed tours curated around specific chapters of local history — Black history, the Revolutionary era, and veterans of our armed forces.',
+      'Explore themed tours curated around specific topics, eras, or aspects of local history and culture.',
     steps: [
       'Tap "Curated Tours" in the navigation bar',
       'Choose a theme that interests you',

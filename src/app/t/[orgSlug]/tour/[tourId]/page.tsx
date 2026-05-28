@@ -220,6 +220,7 @@ export default function TenantTourPage() {
     }
 
     setNavigatingToSite(target);
+    window.open(buildMapsUrl(target, lat, lng), '_blank');
   };
 
   const triggerStampCelebration = useCallback(

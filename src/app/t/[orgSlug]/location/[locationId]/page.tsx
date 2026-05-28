@@ -14,6 +14,7 @@ import { ImageGallery } from '@/components/gallery/ImageGallery';
 import { ListenToAudioButton } from '@/components/audio/ListenToAudioButton';
 import { LocationArrivalTracker } from '@/components/location/LocationArrivalTracker';
 import { SiteHoursCard } from '@/components/location/SiteHoursCard';
+import { AddToTourButton } from '@/components/location/AddToTourButton';
 import type { Media, SiteHours } from '@/types';
 
 interface LocationWithMedia {
@@ -127,7 +128,7 @@ export default async function TenantLocationPage({
   }
 
   const primaryImage = location.media?.find((m) => m.is_primary) || location.media?.[0];
-  const images = location.media?.filter((m) => m.file_type === 'image') || [];
+  const images = location.media?.filter((m) => m.file_type === 'image' && m.id !== primaryImage?.id) || [];
   const funFacts = await getFunFacts(location.id);
 
   return (
@@ -234,6 +235,8 @@ export default async function TenantLocationPage({
 
             {/* Hours */}
             {location.hours && <SiteHoursCard hours={location.hours} />}
+
+            <AddToTourButton siteId={location.id} />
 
             <ListenToAudioButton
               audioUrl={location.audio_url}
