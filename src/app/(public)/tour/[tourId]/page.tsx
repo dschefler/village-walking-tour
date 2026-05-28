@@ -607,8 +607,7 @@ export default function TourPage() {
               <Button
                 className="w-full"
                 onClick={() => {
-                  const url = `https://www.google.com/maps/dir/?api=1&destination=${selectedSiteWithMedia.latitude},${selectedSiteWithMedia.longitude}&travelmode=walking`;
-                  window.open(url, '_blank');
+                  window.open(buildMapsUrl(selectedSiteWithMedia, userLocation?.latitude, userLocation?.longitude), '_blank');
                 }}
               >
                 Navigate to this site
