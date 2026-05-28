@@ -65,6 +65,9 @@ export default function SettingsPage() {
   const [seoDescription, setSeoDescription] = useState('');
   const [seoKeywords, setSeoKeywords] = useState('');
 
+  // Feature flags
+  const [curatedToursEnabled, setCuratedToursEnabled] = useState(true);
+
   // Donation fields
   const [donationsEnabled, setDonationsEnabled] = useState(false);
   const [donationAmounts, setDonationAmounts] = useState<number[]>([5, 10, 20, 50]);
@@ -108,6 +111,7 @@ export default function SettingsPage() {
             setSeoTitle(o.seo_title || '');
             setSeoDescription(o.seo_description || '');
             setSeoKeywords(o.seo_keywords || '');
+            setCuratedToursEnabled(o.curated_tours_enabled ?? true);
             setDonationsEnabled(o.donations_enabled ?? false);
             setDonationAmounts(o.donation_amounts ?? [5, 10, 20, 50]);
             setThemeMode(o.theme_mode || 'light');
@@ -189,6 +193,7 @@ export default function SettingsPage() {
           seo_title: seoTitle.trim() || null,
           seo_description: seoDescription.trim() || null,
           seo_keywords: seoKeywords.trim() || null,
+          curated_tours_enabled: curatedToursEnabled,
           donations_enabled: donationsEnabled,
           donation_amounts: donationAmounts.length > 0 ? donationAmounts : [5, 10, 20, 50],
           theme_mode: themeMode,
@@ -819,6 +824,29 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Features */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Features</CardTitle>
+            <CardDescription>Enable or disable optional sections of your public tour site</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Curated Theme Tours</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Show a &ldquo;Curated Tours&rdquo; section where you can create pre-built themed tours for walkers.
+                  When disabled, the button is hidden from your homepage.
+                </p>
+              </div>
+              <Switch
+                checked={curatedToursEnabled}
+                onCheckedChange={setCuratedToursEnabled}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         <Button onClick={handleSave} disabled={saving} className="gap-2">
           {saving ? (

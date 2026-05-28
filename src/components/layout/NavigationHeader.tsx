@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { OrgCuratedTour } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info, Bookmark } from 'lucide-react';
@@ -34,6 +35,15 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
   const prefix = orgSlug ? `/t/${orgSlug}` : '';
   const isTenant = !!orgSlug;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [curatedTours, setCuratedTours] = useState<OrgCuratedTour[]>([]);
+
+  useEffect(() => {
+    if (!orgSlug) return;
+    fetch(`/api/curated-tours?orgSlug=${orgSlug}`)
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setCuratedTours(data))
+      .catch(() => {});
+  }, [orgSlug]);
 
   // Determine logo and name
   const logoSrc = (isTenant && org?.logo_url) || '/logo.png';
@@ -83,7 +93,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
                 Create Your Tour
               </Link>
             </Button>
-            <CuratedToursDropdown transparent={transparent} orgSlug={orgSlug} />
+            <CuratedToursDropdown transparent={transparent} orgSlug={orgSlug} tours={curatedTours} />
             <Button variant="ghost" asChild className={hoverClass}>
               <Link href={`${prefix}/contact`} className={`flex items-center gap-2 ${textClass}`}>
                 <Mail className="w-4 h-4" />
@@ -161,14 +171,16 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               <Route className="w-5 h-5" />
               <span>Create Your Tour</span>
             </Link>
-            <Link
-              href={`${prefix}/curated-tours`}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Bookmark className="w-5 h-5" />
-              <span>Curated Tours</span>
-            </Link>
+            {curatedTours.length > 0 && (
+              <Link
+                href={`${prefix}/curated-tours`}
+                className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Bookmark className="w-5 h-5" />
+                <span>Curated Tours</span>
+              </Link>
+            )}
             <Link
               href={`${prefix}/contact`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}

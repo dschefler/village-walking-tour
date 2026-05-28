@@ -16,7 +16,8 @@ import { useTenantOptional } from '@/lib/context/tenant-context';
 import { ProximityNotificationContainer } from '@/components/pwa/ProximityNotification';
 import { TourCompletePromptContainer } from '@/components/pwa/TourCompletePrompt';
 import { cn } from '@/lib/utils';
-import { type CuratedTour, matchesLocation } from '@/lib/curated-tours';
+import { matchesLocation } from '@/lib/curated-tours';
+import type { OrgCuratedTour } from '@/types';
 
 interface SiteItem {
   id: string;
@@ -121,7 +122,7 @@ function estimateSteps(distanceMeters: number): string {
 
 interface CuratedTourClientProps {
   orgSlug: string;
-  tour: CuratedTour;
+  tour: OrgCuratedTour;
 }
 
 export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
@@ -171,7 +172,7 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
   }, [orgSlug]);
 
   const curatedSites = useMemo(
-    () => sites.filter((site) => tour.locations.some((loc) => matchesLocation(site.name, loc))),
+    () => sites.filter((site) => tour.site_names.some((loc) => matchesLocation(site.name, loc))),
     [sites, tour]
   );
 

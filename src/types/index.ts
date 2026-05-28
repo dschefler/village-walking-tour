@@ -179,6 +179,21 @@ export interface ProximityAlert {
   imageUrl?: string | null;
 }
 
+// Curated tour (org-specific, stored in DB)
+export interface OrgCuratedTour {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  tagline: string;
+  description: string;
+  time_estimate: string; // e.g. "1 hour", "2 hours"
+  site_names: string[];  // fuzzy-matched against site names
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // Organization / multi-tenant types
 export interface Organization {
   id: string;
@@ -209,6 +224,7 @@ export interface Organization {
   default_tts_voice: string | null;
   custom_domain: string | null;
   is_active: boolean;
+  curated_tours_enabled: boolean;
   onboarding_completed: boolean;
   onboarding_step: number;
   stripe_customer_id: string | null;

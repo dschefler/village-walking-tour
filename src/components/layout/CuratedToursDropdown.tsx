@@ -10,14 +10,17 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { CURATED_TOURS } from '@/lib/curated-tours';
+import type { OrgCuratedTour } from '@/types';
 
 interface CuratedToursDropdownProps {
   transparent?: boolean;
   orgSlug?: string;
+  tours: OrgCuratedTour[];
 }
 
-export function CuratedToursDropdown({ transparent = false, orgSlug }: CuratedToursDropdownProps) {
+export function CuratedToursDropdown({ transparent = false, orgSlug, tours }: CuratedToursDropdownProps) {
+  if (tours.length === 0) return null;
+
   const prefix = orgSlug ? `/t/${orgSlug}` : '';
   const buttonClass = transparent
     ? 'text-white hover:text-primary hover:bg-white/60'
@@ -43,7 +46,7 @@ export function CuratedToursDropdown({ transparent = false, orgSlug }: CuratedTo
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {CURATED_TOURS.map((tour) => (
+        {tours.map((tour) => (
           <DropdownMenuItem key={tour.slug} asChild>
             <Link
               href={`${prefix}/curated-tours/${tour.slug}`}
@@ -51,7 +54,7 @@ export function CuratedToursDropdown({ transparent = false, orgSlug }: CuratedTo
             >
               <span className="font-medium text-left">{tour.name}</span>
               <span className="text-xs text-muted-foreground text-left">
-                {tour.locations.length} locations
+                {tour.site_names.length} location{tour.site_names.length !== 1 ? 's' : ''}
               </span>
             </Link>
           </DropdownMenuItem>
