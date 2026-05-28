@@ -13,12 +13,11 @@ export async function GET(
 
   // Basic validation — only allow our curated voice IDs
   const ALLOWED_VOICE_IDS = [
-    '21m00Tcm4TlvDq8ikWAM',
-    'ErXwobaYiN019PkySvjV',
-    'pNInz6obpgDQGcFmaJgB',
-    'MF3mGyEYCl7XYWbV9V6O',
-    'TxGEqnHWrfWFTfGW9XjX',
-    'VR6AewLTigWG4xSOukaG',
+    'Z3R5wn05IrDiVCyEkUrK', // Arabella
+    '21m00Tcm4TlvDq8ikWAM', // Rachel
+    'pNInz6obpgDQGcFmaJgB', // Adam
+    'TxGEqnHWrfWFTfGW9XjX', // Josh
+    'MF3mGyEYCl7XYWbV9V6O', // Elli
   ];
   if (!ALLOWED_VOICE_IDS.includes(voiceId)) {
     return NextResponse.json({ error: 'Invalid voice ID' }, { status: 400 });

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, Save, X, Sun, Moon, Mic, Heart, Plus, ExternalLink } from 'lucide-react';
+import { Loader2, Save, X, Sun, Moon, Mic, Heart, Plus, ExternalLink, Play, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,12 @@ import { Switch } from '@/components/ui/switch';
 import { MediaUploader } from '@/components/admin/MediaUploader';
 import { useToast } from '@/hooks/use-toast';
 import type { Organization } from '@/types';
+
+interface VoiceOption {
+  id: string;
+  name: string;
+  description: string;
+}
 
 const FONT_OPTIONS = [
   'Inter',
@@ -37,6 +43,11 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [ttsUsage, setTtsUsage] = useState<{ used: number; limit: number; tier: string } | null>(null);
+  const [voices, setVoices] = useState<VoiceOption[]>([]);
+  const [defaultTtsVoice, setDefaultTtsVoice] = useState<string>('');
+  const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
+  const [previewPlayingId, setPreviewPlayingId] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [name, setName] = useState('');
   const [appName, setAppName] = useState('');
@@ -69,6 +80,10 @@ export default function SettingsPage() {
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (data) setTtsUsage(data); })
       .catch(() => {});
+    fetch('/api/tts')
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: VoiceOption[]) => setVoices(data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -98,6 +113,7 @@ export default function SettingsPage() {
             setFontFamily(o.font_family || 'Inter');
             setBackgroundColor(o.background_color || '#FFFFFF');
             setTextColor(o.text_color || '#111827');
+            setDefaultTtsVoice(o.default_tts_voice || '');
           }
         }
       } catch {
@@ -108,6 +124,37 @@ export default function SettingsPage() {
     }
     load();
   }, []);
+
+  const stopVoicePreview = () => {
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.src = '';
+      previewAudioRef.current = null;
+    }
+    setPreviewPlayingId(null);
+  };
+
+  const handleVoicePreview = async (voiceId: string) => {
+    if (previewPlayingId === voiceId) {
+      stopVoicePreview();
+      return;
+    }
+    stopVoicePreview();
+    setPreviewLoadingId(voiceId);
+    try {
+      const res = await fetch(`/api/tts/preview/${voiceId}`);
+      const data = await res.json();
+      if (!res.ok || !data.url) return;
+      const audio = new Audio(data.url);
+      previewAudioRef.current = audio;
+      setPreviewPlayingId(voiceId);
+      audio.play().catch(() => {});
+      audio.onended = () => setPreviewPlayingId(null);
+      audio.onerror = () => setPreviewPlayingId(null);
+    } finally {
+      setPreviewLoadingId(null);
+    }
+  };
 
   const handleThemeModeToggle = (mode: 'light' | 'dark') => {
     setThemeMode(mode);
@@ -147,6 +194,7 @@ export default function SettingsPage() {
           font_family: fontFamily,
           background_color: backgroundColor,
           text_color: textColor,
+          default_tts_voice: defaultTtsVoice || null,
         }),
       });
 
@@ -675,6 +723,68 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {voices.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mic className="w-4 h-4" />
+                Default Narration Voice
+              </CardTitle>
+              <CardDescription>
+                Selected voice is used when generating audio for tour locations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1.5">
+                {voices.map((voice) => {
+                  const isSelected = (defaultTtsVoice || voices[0].id) === voice.id;
+                  const isLoadingPreview = previewLoadingId === voice.id;
+                  const isPlayingPreview = previewPlayingId === voice.id;
+                  return (
+                    <div
+                      key={voice.id}
+                      onClick={() => setDefaultTtsVoice(voice.id)}
+                      className={`flex items-center justify-between rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${
+                          isSelected ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+                        }`} />
+                        <div>
+                          <p className="text-sm font-medium leading-none">{voice.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{voice.description}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleVoicePreview(voice.id); }}
+                        disabled={isLoadingPreview}
+                        className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border transition-colors flex-shrink-0 ${
+                          isPlayingPreview
+                            ? 'bg-primary/10 text-primary border-primary/20'
+                            : 'bg-muted/50 hover:bg-muted text-muted-foreground border-border'
+                        }`}
+                      >
+                        {isLoadingPreview ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : isPlayingPreview ? (
+                          <><Square className="w-3 h-3 fill-current" /> Stop</>
+                        ) : (
+                          <><Play className="w-3 h-3 fill-current" /> Sample</>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {ttsUsage && (
           <Card>
