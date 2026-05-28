@@ -13,6 +13,25 @@ import { slugify } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import type { Organization } from '@/types';
 
+const FONT_OPTIONS = [
+  'Cormorant Garamond',
+  'Inter',
+  'Roboto',
+  'Open Sans',
+  'Lato',
+  'Montserrat',
+  'Poppins',
+  'Source Sans 3',
+  'Playfair Display',
+  'Merriweather',
+  'Libre Baskerville',
+  'DM Sans',
+  'Nunito',
+  'Raleway',
+  'Work Sans',
+  'Crimson Text',
+];
+
 interface Step1Props {
   existingOrg: Organization | null;
   existingCoverImageUrl?: string;
@@ -28,6 +47,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
   const [contactEmail, setContactEmail] = useState(existingOrg?.contact_email || '');
   const [primaryColor, setPrimaryColor] = useState(existingOrg?.primary_color || '#3B82F6');
   const [secondaryColor, setSecondaryColor] = useState(existingOrg?.secondary_color || '#1E40AF');
+  const [fontFamily, setFontFamily] = useState(existingOrg?.font_family || 'Inter');
   const [coverImage, setCoverImage] = useState(existingCoverImageUrl || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -72,6 +92,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
             contact_email: contactEmail.trim() || null,
             primary_color: primaryColor,
             secondary_color: secondaryColor,
+            font_family: fontFamily,
             ...(advanceStep ? { onboarding_step: 2 } : {}),
           }),
         });
@@ -119,6 +140,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
             contact_email: contactEmail.trim() || null,
             primary_color: primaryColor,
             secondary_color: secondaryColor,
+            font_family: fontFamily,
           }),
         });
         if (!res.ok) {
@@ -251,8 +273,26 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
           </div>
         </div>
 
+        {/* Font Family */}
+        <div>
+          <Label htmlFor="font-family">Font Style</Label>
+          <select
+            id="font-family"
+            value={fontFamily}
+            onChange={(e) => setFontFamily(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1"
+          >
+            {FONT_OPTIONS.map((font) => (
+              <option key={font} value={font}>{font}</option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Sets the typeface used throughout your tour app. You can change this anytime in Settings.
+          </p>
+        </div>
+
         {/* Live Preview */}
-        <div className="border rounded-lg p-4 bg-muted/30">
+        <div className="border rounded-lg p-4 bg-muted/30" style={{ fontFamily: `"${fontFamily}", ui-sans-serif, system-ui, sans-serif` }}>
           <p className="text-xs text-muted-foreground mb-3">Preview</p>
           <div className="flex items-center gap-3 mb-3">
             <div
