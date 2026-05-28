@@ -16,7 +16,7 @@ const PLAN_LABELS: Record<string, string> = {
 
 async function sendEmail(to: string, subject: string, html: string) {
   const apiKey = process.env.SENDGRID_API_KEY;
-  const from = process.env.CONTACT_EMAIL_TO;
+  const from = process.env.SENDGRID_FROM_EMAIL; // verified sender (info@walkingtourbuilder.com)
   if (!apiKey || !from) return;
 
   try {

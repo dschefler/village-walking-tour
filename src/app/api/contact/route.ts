@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 
         await sgMail.default.send({
           to: recipientEmail,
-          from: process.env.CONTACT_EMAIL_TO ?? recipientEmail, // Must be a verified sender
+          from: process.env.SENDGRID_FROM_EMAIL ?? recipientEmail, // Must be a verified sender
           replyTo: email,
           subject: `[Village Walking Tours] ${subject || 'New Contact Form Submission'}`,
           text: `
