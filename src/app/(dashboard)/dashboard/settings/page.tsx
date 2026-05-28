@@ -20,6 +20,7 @@ interface VoiceOption {
 }
 
 const FONT_OPTIONS = [
+  'Cormorant Garamond',
   'Inter',
   'Roboto',
   'Open Sans',
@@ -71,7 +72,7 @@ export default function SettingsPage() {
 
   // Theme fields
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
-  const [fontFamily, setFontFamily] = useState('Inter');
+  const [fontFamily, setFontFamily] = useState('Open Sans');
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [textColor, setTextColor] = useState('#111827');
 
