@@ -496,7 +496,7 @@ export default function SettingsPage() {
             <div>
               <Label>Address</Label>
               <Textarea
-                placeholder="123 Main Street, Southampton, NY 11968"
+                placeholder="123 Main Street, Your Town, NY 12345"
                 value={contactAddress}
                 onChange={(e) => setContactAddress(e.target.value)}
                 rows={2}
@@ -524,7 +524,7 @@ export default function SettingsPage() {
                 </span>
               </div>
               <Input
-                placeholder={name || 'e.g., Southampton Village Historic Walking Tour'}
+                placeholder={name || 'e.g., Downtown Historic Walking Tour'}
                 value={seoTitle}
                 onChange={(e) => setSeoTitle(e.target.value.slice(0, 70))}
               />
@@ -542,7 +542,7 @@ export default function SettingsPage() {
                 </span>
               </div>
               <Textarea
-                placeholder="e.g., Explore Southampton Village's rich history on a free self-guided walking tour. Stamp your card at 10 historic sites. No download required."
+                placeholder="e.g., Explore our town's rich history on a free self-guided walking tour. Stamp your card at historic sites. No download required."
                 value={seoDescription}
                 onChange={(e) => setSeoDescription(e.target.value.slice(0, 160))}
                 rows={3}
@@ -556,7 +556,7 @@ export default function SettingsPage() {
             <div>
               <Label>Keywords</Label>
               <Input
-                placeholder="walking tour, historic district, self-guided, Southampton, free app"
+                placeholder="walking tour, historic district, self-guided, your town name, free app"
                 value={seoKeywords}
                 onChange={(e) => setSeoKeywords(e.target.value)}
               />

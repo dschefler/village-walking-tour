@@ -13,7 +13,9 @@ export function ShareAppButton() {
   const org = tenant?.organization;
 
   const appUrl = org
-    ? `https://southamptonwalkingtour.com/t/${org.slug}`
+    ? org.custom_domain
+      ? `https://${org.custom_domain}`
+      : `https://walkingtourbuilder.com/t/${org.slug}`
     : SOUTHAMPTON_URL;
   const appTitle = org ? org.app_name || org.name : 'Southampton Village Historical Walking Tours';
   const primaryColor = org?.primary_color || '#A40000';

@@ -180,7 +180,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
           <Label htmlFor="org-name">Organization Name *</Label>
           <Input
             id="org-name"
-            placeholder="e.g., Southampton Village Walking Tour"
+            placeholder="e.g., Downtown Historic Walking Tour"
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
           />
@@ -195,7 +195,7 @@ export function Step1OrgSetup({ existingOrg, existingCoverImageUrl, existingTour
             <span className="text-sm text-muted-foreground">/t/</span>
             <Input
               id="org-slug"
-              placeholder="southampton"
+              placeholder="my-town"
               value={slug}
               onChange={(e) => {
                 setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));

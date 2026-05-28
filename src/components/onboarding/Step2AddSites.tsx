@@ -344,7 +344,7 @@ export function Step2AddSites({ org, existingTourId, coverImageUrl, onComplete, 
                   <div>
                     <Label>Address</Label>
                     <Input
-                      placeholder="e.g., 91 Coopers Farm Road, Southampton, NY"
+                      placeholder="e.g., 123 Main Street, Your Town, NY"
                       value={site.address}
                       onChange={(e) => updateSite(index, 'address', e.target.value)}
                     />
