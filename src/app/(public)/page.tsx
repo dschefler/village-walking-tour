@@ -86,7 +86,43 @@ export default async function HomePage() {
     // QR generation failed, section will be hidden
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    name: 'Southampton Village Walking Tour',
+    description: "A free self-guided GPS walking tour of Southampton Village's historic district. Discover landmark buildings, hidden history, and local stories with audio narration and fun facts.",
+    url: 'https://southamptonwalkingtour.com',
+    touristType: ['History buffs', 'Families', 'Cultural tourists'],
+    isAccessibleForFree: true,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Southampton',
+      addressRegion: 'NY',
+      addressCountry: 'US',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 40.8843,
+      longitude: -72.3896,
+    },
+    audience: {
+      '@type': 'Audience',
+      audienceType: 'General public',
+    },
+    availableLanguage: 'English',
+    provider: {
+      '@type': 'Organization',
+      name: 'Southampton Village Walking Tour',
+      url: 'https://southamptonwalkingtour.com',
+    },
+  };
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     <div className="min-h-screen flex flex-col bg-black">
       {/* Navigation - transparent over image */}
       <div className="absolute top-0 left-0 right-0 z-50">
@@ -212,5 +248,6 @@ export default async function HomePage() {
 
       <Footer />
     </div>
+    </>
   );
 }
