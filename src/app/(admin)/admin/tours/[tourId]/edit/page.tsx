@@ -273,14 +273,15 @@ export default function EditTourPage() {
       if (!sitesRes.ok) throw new Error((await sitesRes.json()).error || 'Failed to load sites');
       const allSites: { id: string; name: string; description: string | null; organization_id: string | null; audio_url: string | null }[] = await sitesRes.json();
 
-      const toProcess = allSites.filter((s) => s.description?.trim());
-      const skipped = allSites.length - toProcess.length;
+      const toProcess = allSites.filter((s) => s.description?.trim() && !s.audio_url);
+      const skipped = allSites.filter((s) => !s.description?.trim()).length;
+      const alreadyDone = allSites.length - toProcess.length - skipped;
       let success = 0;
       let failed = 0;
       const errors: string[] = [];
 
       if (toProcess.length === 0) {
-        setRegenStatus({ running: false, message: 'No locations with descriptions found — nothing to generate.' });
+        setRegenStatus({ running: false, message: `All ${alreadyDone} narrations already generated — nothing to do.` });
         return;
       }
 
@@ -305,7 +306,7 @@ export default function EditTourPage() {
       const firstError = errors.length > 0 ? ` First error: ${errors[0]}` : '';
       setRegenStatus({
         running: false,
-        message: `Done — ${success} generated, ${skipped} skipped (no description), ${failed} failed.${firstError}`,
+        message: `Done — ${success} generated, ${alreadyDone} already had audio, ${skipped} skipped (no description), ${failed} failed.${firstError}`,
       });
       if (success > 0) loadTour();
     } catch (err) {
