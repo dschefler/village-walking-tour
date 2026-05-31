@@ -306,7 +306,7 @@ export default function EditTourPage() {
       const detail = failed > 0 ? ` Still needs credits: ${failedNames}.` : '';
       setRegenStatus({
         running: false,
-        message: `Done — ${success} generated${alreadyDone > 0 ? `, ${alreadyDone} already had audio` : ''}, ${skipped} skipped (no description), ${failed} failed.${detail}`,
+        message: `Done — ${success} generated, ${skipped} skipped (no description), ${failed} failed.${detail}`,
       });
       if (success > 0) loadTour();
     } catch (err) {
