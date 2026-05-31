@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 const VOICE_OPTIONS = [
-  { id: '2RSrGXhRlTEUFC0nwaNn', name: 'Chuck Newsworthy', description: 'Authoritative, engaging male — great for tours' },
   { id: 'Z3R5wn05IrDiVCyEkUrK', name: 'Arabella', description: 'Warm, articulate female — great for history tours' },
   { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel',   description: 'Calm, authoritative female narrator' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam',     description: 'Deep, authoritative male narrator' },
