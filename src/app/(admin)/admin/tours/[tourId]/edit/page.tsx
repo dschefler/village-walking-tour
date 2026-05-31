@@ -302,11 +302,10 @@ export default function EditTourPage() {
         }
       }
 
-      const failedNames = errors.map((e) => e.split(':')[0]).join(', ');
-      const detail = failed > 0 ? ` Still needs credits: ${failedNames}.` : '';
+      const firstError = errors.length > 0 ? ` First error: ${errors[0]}` : '';
       setRegenStatus({
         running: false,
-        message: `Done — ${success} generated, ${skipped} skipped (no description), ${failed} failed.${detail}`,
+        message: `Done — ${success} generated, ${skipped} skipped (no description), ${failed} failed.${firstError}`,
       });
       if (success > 0) loadTour();
     } catch (err) {
