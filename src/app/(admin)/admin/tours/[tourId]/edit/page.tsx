@@ -574,7 +574,9 @@ export default function EditTourPage() {
                 Audio Narrations
               </CardTitle>
               <CardDescription>
-                Generate Arabella&apos;s narration for every location that has a description.
+                {org?.slug === 'southampton'
+                  ? "Generate Chuck Newsworthy's narration for every location that has a description."
+                  : 'Generate AI narration for every location that has a description.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
