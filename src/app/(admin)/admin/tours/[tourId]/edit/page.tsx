@@ -266,6 +266,21 @@ export default function EditTourPage() {
     }
   };
 
+  const handleClearAllAudio = async () => {
+    if (!confirm('Clear all existing audio from every location? This cannot be undone — you will need to regenerate narrations afterwards.')) return;
+    try {
+      const { error } = await supabase
+        .from('sites')
+        .update({ audio_url: null })
+        .eq('tour_id', tourId);
+      if (error) throw error;
+      await loadTour();
+      setRegenStatus({ running: false, message: 'All audio cleared. You can now regenerate with the new voice.' });
+    } catch (err) {
+      setRegenStatus({ running: false, message: err instanceof Error ? err.message : 'Failed to clear audio.' });
+    }
+  };
+
   const handleRegenAllAudio = async () => {
     setRegenStatus({ running: true, message: 'Loading locations…' });
     try {
@@ -587,6 +602,14 @@ export default function EditTourPage() {
               >
                 <Volume2 className="w-4 h-4" />
                 {regenStatus?.running ? 'Generating…' : 'Generate All Narrations'}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-destructive border-destructive/40 hover:bg-destructive/10"
+                onClick={handleClearAllAudio}
+                disabled={regenStatus?.running}
+              >
+                Clear All Audio
               </Button>
               {regenStatus && (
                 <div className="space-y-1">
