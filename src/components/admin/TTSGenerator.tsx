@@ -15,12 +15,13 @@ interface TTSGeneratorProps {
   onGenerated: (audioUrl: string) => void;
   orgId?: string;
   defaultVoiceId?: string;
+  lockedVoiceId?: string;
   className?: string;
 }
 
-export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, className = '' }: TTSGeneratorProps) {
+export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, lockedVoiceId, className = '' }: TTSGeneratorProps) {
   const [voices, setVoices] = useState<VoiceOption[]>([]);
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(defaultVoiceId || '');
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(lockedVoiceId || defaultVoiceId || '');
   const [generating, setGenerating] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, classNa
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (lockedVoiceId) return; // skip fetching voices — voice is fixed
     fetch('/api/tts')
       .then((r) => r.ok ? r.json() : [])
       .then((data: VoiceOption[]) => {
@@ -108,8 +110,8 @@ export function TTSGenerator({ text, onGenerated, orgId, defaultVoiceId, classNa
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Voice selector */}
-      {voices.length > 0 && (
+      {/* Voice selector — hidden when voice is locked to a specific ID */}
+      {!lockedVoiceId && voices.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Choose a voice</p>
           <div className="space-y-1.5">

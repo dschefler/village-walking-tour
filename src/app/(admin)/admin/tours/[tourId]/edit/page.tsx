@@ -652,6 +652,7 @@ export default function EditTourPage() {
             displayOrder={sites.length + 1}
             onClose={handleSiteEditorClose}
             organizationId={tour?.organization_id ?? undefined}
+            lockedVoiceId={org?.slug === 'southampton' ? '2RSrGXhRlTEUFC0nwaNn' : undefined}
           />
         </DialogContent>
       </Dialog>

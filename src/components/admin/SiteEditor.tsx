@@ -55,9 +55,10 @@ interface SiteEditorProps {
   displayOrder: number;
   onClose: () => void;
   organizationId?: string;
+  lockedVoiceId?: string;
 }
 
-export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId }: SiteEditorProps) {
+export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId, lockedVoiceId }: SiteEditorProps) {
   const { toast } = useToast();
   const mapRef = useRef<MapRef>(null);
   const supabase = createClient();
@@ -656,6 +657,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
                 text={formData.description}
                 onGenerated={(url) => setFormData((prev) => ({ ...prev, audio_url: url }))}
                 orgId={organizationId}
+                lockedVoiceId={lockedVoiceId}
               />
             </div>
             <div className="relative flex items-center gap-2">
