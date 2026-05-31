@@ -1,7 +1,6 @@
 'use client';
 
-// To update: log in to elevenlabs.io → Voices → your voice library → click Arabella → copy the Voice ID
-const JENNA_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK';
+const JENNA_VOICE_ID = '2RSrGXhRlTEUFC0nwaNn'; // Chuck Newsworthy
 
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Loader2, Lightbulb, Save, SkipForward, Volume2, Check, Play, Square } from 'lucide-react';

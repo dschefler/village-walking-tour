@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-const ARABELLA_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK';
+const CHUCK_NEWSWORTHY_VOICE_ID = '2RSrGXhRlTEUFC0nwaNn';
 
 // GET: return all sites for a tour (id, name, description)
 export async function GET(request: NextRequest) {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   const { siteId, text, orgId } = await request.json();
   if (!siteId || !text?.trim()) return NextResponse.json({ error: 'siteId and text required' }, { status: 400 });
 
-  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ARABELLA_VOICE_ID}`, {
+  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${CHUCK_NEWSWORTHY_VOICE_ID}`, {
     method: 'POST',
     headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({
