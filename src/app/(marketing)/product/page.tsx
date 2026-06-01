@@ -314,13 +314,20 @@ export default async function MarketingLandingPage() {
           <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         </div>
         <div className="container mx-auto px-4 text-center relative">
-          <div className="mx-auto mb-8 inline-block bg-white rounded-2xl px-10 py-5 shadow-xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/wtb-social.jpg"
-              alt="Walking Tour Builder"
-              style={{ height: '140px', width: 'auto' }}
-            />
+          <div className="flex items-center justify-center gap-4 mb-10">
+            <svg width="56" height="68" viewBox="0 0 28 34" fill="none" aria-hidden="true">
+              <path d="M14 0C8.48 0 4 4.48 4 10c0 7.5 10 18 10 18S24 17.5 24 10c0-5.52-4.48-10-10-10z" fill="white" opacity="0.95"/>
+              <circle cx="14" cy="10" r="4" fill="#1A6B5F"/>
+              <circle cx="4" cy="26" r="1.8" fill="white" opacity="0.7"/>
+              <circle cx="9" cy="29" r="1.8" fill="white" opacity="0.7"/>
+              <circle cx="14" cy="31" r="1.8" fill="white" opacity="0.7"/>
+              <circle cx="19" cy="29" r="1.8" fill="white" opacity="0.7"/>
+              <circle cx="24" cy="26" r="1.8" fill="white" opacity="0.7"/>
+            </svg>
+            <div className="text-left">
+              <div className="text-3xl md:text-4xl font-bold text-white leading-tight">Walking Tour</div>
+              <div className="text-3xl md:text-4xl font-bold text-accent leading-tight">Builder</div>
+            </div>
           </div>
           <div className="inline-flex items-center gap-2 bg-white/15 text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <Smartphone className="w-4 h-4" />
