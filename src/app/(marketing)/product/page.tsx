@@ -278,7 +278,7 @@ export default async function MarketingLandingPage() {
       {/* Nav */}
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 flex h-14 items-center justify-between">
-          <Link href="/" className="flex items-center">
+          <Link href="/product" className="flex items-center">
             <Image
               src="/images/wtb-og-source.png"
               alt="Walking Tour Builder"
