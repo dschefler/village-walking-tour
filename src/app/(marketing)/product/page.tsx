@@ -289,9 +289,9 @@ export default async function MarketingLandingPage() {
             />
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/t/southampton" className="text-sm text-muted-foreground hover:text-foreground">
+            <a href="https://southamptonwalkingtour.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground">
               Live Demo
-            </Link>
+            </a>
             <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
               Pricing
             </Link>
@@ -328,9 +328,9 @@ export default async function MarketingLandingPage() {
               showArrow
             />
             <Button asChild size="lg" className="text-lg px-8 !bg-transparent border border-white/50 text-white hover:!bg-white/10 hover:text-white rounded-lg">
-              <Link href="/t/southampton">
+              <a href="https://southamptonwalkingtour.com" target="_blank" rel="noopener noreferrer">
                 See Live Demo
-              </Link>
+              </a>
             </Button>
           </div>
           <p className="text-sm text-primary-foreground/70 mt-4">
@@ -396,10 +396,10 @@ export default async function MarketingLandingPage() {
             Explore it live — the same experience your visitors will have.
           </p>
           <Button asChild size="lg" variant="outline">
-            <Link href="/t/southampton" className="gap-2">
+            <a href="https://southamptonwalkingtour.com" target="_blank" rel="noopener noreferrer" className="gap-2 inline-flex items-center">
               <MapPin className="w-5 h-5" />
               Explore Southampton Tour
-            </Link>
+            </a>
           </Button>
         </div>
       </section>
@@ -522,7 +522,7 @@ export default async function MarketingLandingPage() {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Walking Tour Builder. All rights reserved.</p>
           <div className="flex flex-wrap justify-center gap-6">
-            <Link href="/t/southampton" className="hover:text-foreground">Demo</Link>
+            <a href="https://southamptonwalkingtour.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Demo</a>
             <Link href="#pricing" className="hover:text-foreground">Pricing</Link>
             <Link href="#done-for-you" className="hover:text-foreground">Done For You</Link>
             <Link href="/terms" className="hover:text-foreground">Terms of Service</Link>
