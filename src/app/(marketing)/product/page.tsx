@@ -56,12 +56,21 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://walkingtourbuilder.com',
     siteName: 'Walking Tour Builder',
+    images: [
+      {
+        url: 'https://walkingtourbuilder.com/images/wtb-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Walking Tour Builder — Build GPS walking tour apps in minutes',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Walking Tour Builder',
     description:
       'Build branded GPS walking tour apps for your community. Stamp cards, audio narration, offline support. Free 7-day trial.',
+    images: ['https://walkingtourbuilder.com/images/wtb-og-image.png'],
   },
 };
 
