@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   MapPin,
   Stamp,
@@ -279,11 +278,10 @@ export default async function MarketingLandingPage() {
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 flex h-14 items-center justify-between">
           <Link href="/product" className="flex items-center">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/images/wtb-og-source.png"
               alt="Walking Tour Builder"
-              width={160}
-              height={87}
               className="mix-blend-multiply"
               style={{ height: '44px', width: 'auto' }}
             />
