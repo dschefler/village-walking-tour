@@ -3,10 +3,11 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   icons: {
     icon: [
-      { url: '/icons/wtb-favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icons/wtb-favicon.svg', type: 'image/svg+xml' },
       { url: '/icons/wtb-favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/wtb-favicon-16x16.png', sizes: '16x16', type: 'image/png' },
     ],
-    apple: '/icons/wtb-apple-touch-icon.png',
+    apple: '/icons/wtb-favicon-180x180.png',
   },
   openGraph: {
     images: [
