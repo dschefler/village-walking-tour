@@ -2,9 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
-import { InstallPrompt } from '@/components/pwa/InstallPrompt';
-import { UpdatePrompt } from '@/components/pwa/UpdatePrompt';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -70,10 +67,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={inter.className}>
-        <UpdatePrompt />
-        <OfflineIndicator />
         {children}
-        <InstallPrompt />
         <Toaster />
       </body>
     </html>
