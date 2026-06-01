@@ -250,6 +250,7 @@ export default async function MarketingLandingPage() {
       '@type': 'Organization',
       name: 'Walking Tour Builder',
       url: 'https://walkingtourbuilder.com',
+      logo: 'https://walkingtourbuilder.com/images/wtb-logo-full.jpg',
     },
     featureList: [
       'GPS-guided navigation',
@@ -318,8 +319,7 @@ export default async function MarketingLandingPage() {
           <img
             src="/images/wtb-logo-hero.png"
             alt="Walking Tour Builder"
-            className="mx-auto mb-8"
-            style={{ height: '260px', width: 'auto' }}
+            className="mx-auto mb-8 h-44 w-auto sm:h-56 md:h-64"
           />
           <div className="inline-flex items-center gap-2 bg-white/15 text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <Smartphone className="w-4 h-4" />
