@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   MapPin,
   Stamp,
@@ -277,8 +278,15 @@ export default async function MarketingLandingPage() {
       {/* Nav */}
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 flex h-14 items-center justify-between">
-          <Link href="/" className="font-bold text-lg">
-            Walking Tour Builder
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/icons/wtb-icon.png"
+              alt="Walking Tour Builder"
+              width={36}
+              height={36}
+              className="rounded-sm"
+            />
+            <span className="font-bold text-lg hidden sm:inline">Walking Tour Builder</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/t/southampton" className="text-sm text-muted-foreground hover:text-foreground">
