@@ -223,7 +223,47 @@ export default async function MarketingLandingPage() {
     { value: 'Offline', label: 'Works without WiFi' },
   ];
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Walking Tour Builder',
+    description: 'Build branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support. Perfect for towns, museums, parks, and historical societies.',
+    url: 'https://walkingtourbuilder.com',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web, iOS, Android',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      description: `${trialDays}-day free trial, no credit card required`,
+    },
+    provider: {
+      '@type': 'Organization',
+      name: 'Walking Tour Builder',
+      url: 'https://walkingtourbuilder.com',
+    },
+    featureList: [
+      'GPS-guided navigation',
+      'AI audio narration',
+      'Digital stamp cards',
+      'Offline support',
+      'Walk or drive mode',
+      'Arrival alerts',
+      'Custom branding',
+      'QR code sharing',
+    ],
+    audience: {
+      '@type': 'Audience',
+      audienceType: 'Towns, museums, parks, historical societies, tourism organizations',
+    },
+  };
+
   return (
+    <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
@@ -475,5 +515,6 @@ export default async function MarketingLandingPage() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
