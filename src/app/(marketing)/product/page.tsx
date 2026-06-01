@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     canonical: 'https://walkingtourbuilder.com',
   },
   openGraph: {
-    title: 'Walking Tour Builder — Create GPS Walking Tour Apps for Your Community',
+    title: 'Walking Tour Builder — GPS Tour Apps for Communities',
     description:
       'Build branded, GPS-guided walking tour apps in minutes. Stamp cards, AI audio narration, offline support. Start your free trial — no credit card required.',
     type: 'website',
