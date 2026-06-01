@@ -277,14 +277,22 @@ export default async function MarketingLandingPage() {
       {/* Nav */}
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 flex h-14 items-center justify-between">
-          <Link href="/product" className="flex items-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/wtb-og-image.jpg"
-              alt="Walking Tour Builder"
-              className="mix-blend-multiply"
-              style={{ height: '44px', width: 'auto' }}
-            />
+          <Link href="/product" className="flex items-center gap-2">
+            <svg width="28" height="34" viewBox="0 0 28 34" fill="none" aria-hidden="true">
+              {/* Map pin */}
+              <path d="M14 0C8.48 0 4 4.48 4 10c0 7.5 10 18 10 18S24 17.5 24 10c0-5.52-4.48-10-10-10z" fill="#1A6B5F"/>
+              <circle cx="14" cy="10" r="4" fill="white" opacity="0.85"/>
+              {/* Dotted path below */}
+              <circle cx="4" cy="26" r="1.8" fill="#CA7040"/>
+              <circle cx="9" cy="29" r="1.8" fill="#CA7040"/>
+              <circle cx="14" cy="31" r="1.8" fill="#CA7040"/>
+              <circle cx="19" cy="29" r="1.8" fill="#CA7040"/>
+              <circle cx="24" cy="26" r="1.8" fill="#CA7040"/>
+            </svg>
+            <span className="font-bold text-base leading-tight">
+              <span className="block text-[#1A6B5F]">Walking Tour</span>
+              <span className="block text-[#CA7040]">Builder</span>
+            </span>
           </Link>
           <div className="flex items-center gap-4">
             <a href="https://southamptonwalkingtour.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground">
