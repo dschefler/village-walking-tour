@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     images: [
       {
-        url: 'https://walkingtourbuilder.com/images/wtb-og-image.jpg',
+        url: 'https://walkingtourbuilder.com/images/wtb-social.jpg',
         width: 1200,
         height: 630,
         alt: 'Walking Tour Builder — Build GPS walking tour apps in minutes',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    images: ['https://walkingtourbuilder.com/images/wtb-og-image.jpg'],
+    images: ['https://walkingtourbuilder.com/images/wtb-social.jpg'],
   },
 };
 

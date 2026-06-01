@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     siteName: 'Walking Tour Builder',
     images: [
       {
-        url: 'https://walkingtourbuilder.com/images/wtb-og-image.jpg',
+        url: 'https://walkingtourbuilder.com/images/wtb-social.jpg',
         width: 1200,
         height: 630,
         alt: 'Walking Tour Builder — Build GPS walking tour apps in minutes',
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: 'Walking Tour Builder',
     description:
       'Build branded GPS walking tour apps for your community. Stamp cards, audio narration, offline support. Free 7-day trial.',
-    images: ['https://walkingtourbuilder.com/images/wtb-og-image.jpg'],
+    images: ['https://walkingtourbuilder.com/images/wtb-social.jpg'],
   },
 };
 
@@ -317,7 +317,7 @@ export default async function MarketingLandingPage() {
           <div className="mx-auto mb-8 inline-block bg-white rounded-2xl px-10 py-5 shadow-xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/wtb-og-image.jpg"
+              src="/images/wtb-social.jpg"
               alt="Walking Tour Builder"
               style={{ height: '140px', width: 'auto' }}
             />
