@@ -319,12 +319,7 @@ export default async function MarketingLandingPage() {
             src="/images/wtb-logo-hero.png"
             alt="Walking Tour Builder"
             className="mx-auto mb-8"
-            style={{
-              height: '260px',
-              width: 'auto',
-              maskImage: 'radial-gradient(ellipse 80% 80% at 50% 45%, black 55%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 45%, black 55%, transparent 100%)',
-            }}
+            style={{ height: '260px', width: 'auto' }}
           />
           <div className="inline-flex items-center gap-2 bg-white/15 text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <Smartphone className="w-4 h-4" />
