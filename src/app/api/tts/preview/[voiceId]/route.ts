@@ -13,7 +13,7 @@ export async function GET(
 
   // Basic validation — only allow our curated voice IDs
   const ALLOWED_VOICE_IDS = [
-    'Z3R5wn05IrDiVCyEkUrK', // Arabella
+    '2RSrGXhRlTEUFC0nwaNn', // Chuck Newsworthy (Southampton only)
     '21m00Tcm4TlvDq8ikWAM', // Rachel
     'pNInz6obpgDQGcFmaJgB', // Adam
     'TxGEqnHWrfWFTfGW9XjX', // Josh

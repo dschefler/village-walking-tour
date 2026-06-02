@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 const CHUCK_NEWSWORTHY_VOICE_ID = '2RSrGXhRlTEUFC0nwaNn';
-const DEFAULT_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK'; // Arabella — fallback for tenants with no default set
+const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel — fallback for tenants with no default set
 
 const PLAN_LIMITS: Record<string, number> = {
   starter: 20,
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
   // Determine which voice to use:
   // 1. Southampton always uses Chuck Newsworthy
-  // 2. Otherwise use: caller-provided voiceId → org default → Arabella fallback
+  // 2. Otherwise use: caller-provided voiceId → org default → Rachel fallback
   const voiceId = isSouthampton
     ? CHUCK_NEWSWORTHY_VOICE_ID
     : (requestedVoiceId || orgVoiceId || DEFAULT_VOICE_ID);
