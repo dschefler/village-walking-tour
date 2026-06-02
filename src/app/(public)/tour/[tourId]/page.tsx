@@ -13,6 +13,8 @@ import {
   Navigation,
   X,
   MessageSquare,
+  Car,
+  Footprints,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +30,7 @@ import { getFactsForSite } from '@/data/fun-facts';
 import { FeedbackModal } from '@/components/tour/FeedbackModal';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
-import { cn, formatDistance, formatDuration, calculateDistance, calculateWalkingTime, formatWalkingTime } from '@/lib/utils';
+import { cn, formatDistance, calculateDistance, calculateWalkingTime, formatWalkingTime, calculateSteps, formatSteps, calculateDrivingTime, formatDrivingTime } from '@/lib/utils';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { TourWithSites, Site, SiteWithMedia, FunFact } from '@/types';
 
@@ -59,6 +61,7 @@ export default function TourPage() {
   // In-app navigation mode
   const [navigatingToSite, setNavigatingToSite] = useState<Site | null>(null);
   const [showNextStopToast, setShowNextStopToast] = useState(false);
+  const [travelMode, setTravelMode] = useState<'walking' | 'driving'>('walking');
 
   // Fun facts from DB keyed by site_id
   const [factsBySite, setFactsBySite] = useState<Record<string, { text: string; audioUrl: string | null }[]>>({});
@@ -173,18 +176,20 @@ export default function TourPage() {
     }
   };
 
-  const buildMapsUrl = (target: Site, lat?: number, lng?: number): string => {
+  const buildMapsUrl = (target: Site, lat?: number, lng?: number, mode: 'walking' | 'driving' = travelMode): string => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isMac = /Macintosh/.test(navigator.userAgent);
     const origin = lat && lng ? `${lat},${lng}` : '';
+    const appleFlag = mode === 'driving' ? 'd' : 'w';
+    const googleMode = mode === 'driving' ? 'driving' : 'walking';
     if (isIOS || isMac) {
       return origin
-        ? `maps://maps.apple.com/?saddr=${origin}&daddr=${target.latitude},${target.longitude}&dirflg=w`
-        : `maps://maps.apple.com/?daddr=${target.latitude},${target.longitude}&dirflg=w`;
+        ? `maps://maps.apple.com/?saddr=${origin}&daddr=${target.latitude},${target.longitude}&dirflg=${appleFlag}`
+        : `maps://maps.apple.com/?daddr=${target.latitude},${target.longitude}&dirflg=${appleFlag}`;
     }
     return origin
-      ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target.latitude},${target.longitude}&travelmode=walking`
-      : `https://www.google.com/maps/dir/?api=1&destination=${target.latitude},${target.longitude}&travelmode=walking`;
+      ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target.latitude},${target.longitude}&travelmode=${googleMode}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${target.latitude},${target.longitude}&travelmode=${googleMode}`;
   };
 
   const handleStartWalking = async () => {
@@ -423,10 +428,16 @@ export default function TourPage() {
                       navigatingToSite.latitude,
                       navigatingToSite.longitude
                     );
-                    const mins = calculateWalkingTime(dist);
+                    if (travelMode === 'driving') {
+                      return (
+                        <p className="text-xs opacity-80">
+                          {formatDistance(dist)} · {formatDrivingTime(calculateDrivingTime(dist))}
+                        </p>
+                      );
+                    }
                     return (
                       <p className="text-xs opacity-80">
-                        {formatDistance(dist)} · {formatWalkingTime(mins)}
+                        {formatDistance(dist)} · {formatWalkingTime(calculateWalkingTime(dist))} · {formatSteps(calculateSteps(dist))}
                       </p>
                     );
                   })()}
@@ -456,15 +467,38 @@ export default function TourPage() {
             </div>
           </div>
         ) : (
-          <div className="px-4 py-2 border-t bg-primary/5">
+          <div className="px-4 pt-2 pb-2 border-t bg-primary/5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Travel mode:</span>
+              <div className="flex rounded-md border bg-muted p-0.5 gap-0.5">
+                <button
+                  onClick={() => setTravelMode('walking')}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                    travelMode === 'walking' ? 'bg-background shadow text-foreground' : 'text-muted-foreground'
+                  )}
+                >
+                  <Footprints className="w-3 h-3" /> Walk
+                </button>
+                <button
+                  onClick={() => setTravelMode('driving')}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                    travelMode === 'driving' ? 'bg-background shadow text-foreground' : 'text-muted-foreground'
+                  )}
+                >
+                  <Car className="w-3 h-3" /> Drive
+                </button>
+              </div>
+            </div>
             <Button
               className="w-full bg-primary text-primary-foreground hover:bg-primary/80 gap-2"
               onClick={handleStartWalking}
             >
-              <Navigation className="w-4 h-4" />
+              {travelMode === 'driving' ? <Car className="w-4 h-4" /> : <Navigation className="w-4 h-4" />}
               {(tourProgress[tour.id]?.visitedSites.length || 0) > 0
                 ? 'Navigate to Next Stop'
-                : 'Start Walking Tour'}
+                : travelMode === 'driving' ? 'Start Driving Directions' : 'Start Walking Tour'}
             </Button>
           </div>
         )}
@@ -679,9 +713,12 @@ export default function TourPage() {
                   navigatingToSite.latitude,
                   navigatingToSite.longitude
                 );
+                const timeStr = travelMode === 'driving'
+                  ? formatDrivingTime(calculateDrivingTime(dist))
+                  : formatWalkingTime(calculateWalkingTime(dist));
                 return (
                   <p className="text-xs opacity-75 mt-0.5">
-                    {formatDistance(dist)} · {formatWalkingTime(calculateWalkingTime(dist))}
+                    {formatDistance(dist)} · {timeStr}
                   </p>
                 );
               })()}

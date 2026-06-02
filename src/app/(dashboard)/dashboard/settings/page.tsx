@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, Save, X, Sun, Moon, Mic, Heart, Plus, ExternalLink, Play, Square } from 'lucide-react';
+import { Loader2, Save, X, Sun, Moon, Mic, Heart, Plus, ExternalLink, Play, Square, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +37,49 @@ const FONT_OPTIONS = [
   'Work Sans',
   'Crimson Text',
 ];
+
+function SubscriptionCard() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const openPortal = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to open portal');
+      window.location.href = data.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="w-4 h-4" />
+          Subscription &amp; Billing
+        </CardTitle>
+        <CardDescription>
+          Manage your plan, update payment details, or cancel your subscription. Monthly subscriptions can be cancelled any time — you keep access until the end of your current billing period. Annual subscriptions are eligible for a pro-rated refund within 30 days of renewal.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Button variant="outline" onClick={openPortal} disabled={loading} className="gap-2">
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+          Manage Subscription
+        </Button>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <p className="text-xs text-muted-foreground">
+          Opens the Stripe billing portal in a new page. You&apos;ll be returned here when done.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -738,7 +781,7 @@ export default function SettingsPage() {
                 Default Narration Voice
               </CardTitle>
               <CardDescription>
-                Selected voice is used when generating audio for tour locations
+                Choose the AI voice that will narrate your tour locations. Click <strong>Sample</strong> on any voice to hear a free preview — samples never use a monthly credit. Once you pick a voice, it pre-selects automatically whenever you generate narration in the tour editor. You can change it any time without affecting audio you&apos;ve already generated.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -797,30 +840,37 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mic className="w-4 h-4" />
-                Audio Narrations This Month
+                Monthly Narration Credits
               </CardTitle>
               <CardDescription>
-                AI-generated voice narrations for your tour locations
+                Each time you click <strong>Generate Narration</strong> on a tour location, it uses one credit. Voice previews (Sample) are always free and don&apos;t count. Credits reset on the 1st of every month — any unused credits don&apos;t carry over. If you reach your limit, existing narrations keep playing; you just can&apos;t generate new ones until the next reset or a plan upgrade.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">
-                  {ttsUsage.used} of {ttsUsage.limit === 999999 ? 'unlimited' : ttsUsage.limit} used
+                  {ttsUsage.used} of {ttsUsage.limit === 999999 ? 'unlimited' : ttsUsage.limit} used this month
                 </span>
                 <span className="text-xs capitalize px-2 py-0.5 rounded-full bg-muted font-medium">
                   {ttsUsage.tier} plan
                 </span>
               </div>
               {ttsUsage.limit !== 999999 && (
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="h-2 rounded-full bg-primary transition-all"
-                    style={{ width: `${Math.min(100, (ttsUsage.used / ttsUsage.limit) * 100)}%` }}
-                  />
-                </div>
+                <>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${
+                        ttsUsage.used / ttsUsage.limit >= 0.9 ? 'bg-destructive' :
+                        ttsUsage.used / ttsUsage.limit >= 0.7 ? 'bg-amber-400' : 'bg-primary'
+                      }`}
+                      style={{ width: `${Math.min(100, (ttsUsage.used / ttsUsage.limit) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {ttsUsage.limit - ttsUsage.used} credits remaining · resets the 1st of each month
+                  </p>
+                </>
               )}
-              <p className="text-xs text-muted-foreground mt-2">Resets on the 1st of each month.</p>
             </CardContent>
           </Card>
         )}
@@ -847,6 +897,9 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Subscription Management */}
+        <SubscriptionCard />
 
         <Button onClick={handleSave} disabled={saving} className="gap-2">
           {saving ? (

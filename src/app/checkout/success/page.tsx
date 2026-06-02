@@ -19,13 +19,13 @@ export default function CheckoutSuccessPage({
         </div>
 
         <h1 className="text-3xl font-bold mb-3">
-          {isSubscription ? 'Your Trial Has Started!' : 'Order Confirmed!'}
+          {isSubscription ? "You're All Set!" : 'Order Confirmed!'}
         </h1>
 
         {isSubscription ? (
           <>
             <p className="text-muted-foreground mb-6">
-              You have <strong>7 days free</strong> to explore everything. No charge until your trial ends — and you can cancel any time.
+              Welcome to Walking Tour Builder! Your subscription is active and you can start building your tour right away.
             </p>
             <div className="bg-muted/40 rounded-xl p-5 mb-8 text-left space-y-2">
               <div className="flex items-start gap-2">

@@ -4,7 +4,6 @@ import { saveAllMarketingContent } from './actions';
 const CONTENT_FIELDS: { key: string; label: string; multiline?: boolean }[] = [
   { key: 'hero_headline', label: 'Hero Headline' },
   { key: 'hero_subheadline', label: 'Hero Subheadline', multiline: true },
-  { key: 'trial_days', label: 'Free Trial Duration (days, e.g. 7)' },
   { key: 'pricing_subheadline', label: 'Pricing Section Subheadline' },
   { key: 'dfy_label', label: 'Done-For-You Badge Label' },
   { key: 'dfy_headline', label: 'Done-For-You Headline' },
@@ -17,8 +16,7 @@ const DEFAULTS: Record<string, string> = {
   hero_headline: 'Build a Walking Tour App for Your Community',
   hero_subheadline:
     'Create branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support — in minutes, not months.',
-  trial_days: '7',
-  pricing_subheadline: 'Start with a 7-day free trial. No credit card required.',
+  pricing_subheadline: 'Simple monthly pricing. Cancel any time.',
   dfy_label: 'Tour Builder Concierge',
   dfy_headline: 'Rather Have Us Build It For You?',
   dfy_subheadline:

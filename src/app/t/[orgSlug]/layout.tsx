@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { TenantProvider } from '@/lib/context/tenant-context';
 import { hexToHsl, getContrastColor } from '@/lib/color-utils';
 import { ContentVersionChecker } from '@/components/pwa/ContentVersionChecker';
+import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+import { UpdatePrompt } from '@/components/pwa/UpdatePrompt';
 import type { Organization } from '@/types';
 
 async function getOrganization(slug: string): Promise<Organization | null> {
@@ -133,6 +135,7 @@ export default async function TenantLayout({
         dangerouslySetInnerHTML={{ __html: themeCSS }}
       />
       <ContentVersionChecker orgSlug={params.orgSlug} />
+      <UpdatePrompt />
       <div
         className={`tenant-theme ${isDark ? 'dark' : ''}`}
         style={{

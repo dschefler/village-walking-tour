@@ -39,7 +39,7 @@ export default function PricingPage() {
               <Link href="/login">Log In</Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/signup">Start Free Trial</Link>
+              <Link href="/signup">Get Started</Link>
             </Button>
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function PricingPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
             <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-              Start with a 7-day free trial with full Pro features. No credit card required.
+              Simple monthly pricing. Cancel any time.
             </p>
           </div>
 
@@ -87,7 +87,7 @@ export default function PricingPage() {
                     className="w-full"
                     variant={tier.popular ? 'default' : 'outline'}
                   >
-                    <Link href="/signup">Start Free Trial</Link>
+                    <Link href="/signup">Get Started</Link>
                   </Button>
                 </CardContent>
               </Card>

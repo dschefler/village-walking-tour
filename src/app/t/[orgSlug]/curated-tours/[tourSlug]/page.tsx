@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { CuratedTourClient } from './CuratedTourClient';
+import { CURATED_TOURS } from '@/lib/curated-tours';
 import type { OrgCuratedTour } from '@/types';
 
 async function getTour(orgSlug: string, tourSlug: string): Promise<OrgCuratedTour | null> {
@@ -21,7 +22,25 @@ async function getTour(orgSlug: string, tourSlug: string): Promise<OrgCuratedTou
     .eq('slug', tourSlug)
     .single();
 
-  return data as OrgCuratedTour | null;
+  if (data) return data as OrgCuratedTour;
+
+  // Fall back to hardcoded tours (used by Southampton and any org without DB records)
+  const hardcoded = CURATED_TOURS.find((t) => t.slug === tourSlug);
+  if (!hardcoded) return null;
+
+  return {
+    id: hardcoded.slug,
+    organization_id: org.id,
+    name: hardcoded.name,
+    slug: hardcoded.slug,
+    tagline: hardcoded.tagline,
+    description: hardcoded.description,
+    time_estimate: '',
+    site_names: hardcoded.locations,
+    display_order: 0,
+    created_at: '',
+    updated_at: '',
+  };
 }
 
 export default async function CuratedTourDetailPage({

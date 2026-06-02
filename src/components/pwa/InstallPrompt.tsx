@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, X, Share } from 'lucide-react';
+import { Download, X, Share, Smartphone } from 'lucide-react';
+import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -22,45 +23,44 @@ function isInStandaloneMode(): boolean {
     ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone);
 }
 
+type PromptMode = 'idle' | 'android' | 'ios' | 'desktop' | 'installed';
+
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const [mode, setMode] = useState<PromptMode>('idle');
+  const [qrDataUrl, setQrDataUrl] = useState('');
 
   useEffect(() => {
     if (isInStandaloneMode()) {
-      setIsInstalled(true);
+      setMode('installed');
       return;
     }
 
-    // Check dismissal
     const dismissed = localStorage.getItem('pwa-install-dismissed');
     if (dismissed) {
-      const dismissedTime = parseInt(dismissed, 10);
-      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) {
-        return;
-      }
+      const daysSince = (Date.now() - parseInt(dismissed, 10)) / (1000 * 60 * 60 * 24);
+      if (daysSince < 7) return;
     }
 
-    // iOS — show custom instructions
     if (isIOS()) {
-      setShowIOSInstructions(true);
-      setIsVisible(true);
+      setMode('ios');
       return;
     }
 
-    // Android/Chrome — use beforeinstallprompt
+    // Wait briefly for beforeinstallprompt; fall back to desktop QR card
+    const fallbackTimer = setTimeout(() => {
+      setMode(prev => prev === 'idle' ? 'desktop' : prev);
+    }, 2000);
+
     const handleBeforeInstallPrompt = (e: Event) => {
+      clearTimeout(fallbackTimer);
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setIsVisible(true);
+      setMode('android');
     };
 
     const handleAppInstalled = () => {
-      setIsInstalled(true);
-      setIsVisible(false);
+      setMode('installed');
       setDeferredPrompt(null);
     };
 
@@ -68,29 +68,35 @@ export function InstallPrompt() {
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      clearTimeout(fallbackTimer);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
+  // Generate QR code when desktop mode activates
+  useEffect(() => {
+    if (mode !== 'desktop') return;
+    const url = window.location.origin;
+    QRCode.toDataURL(url, { width: 160, margin: 1 })
+      .then(setQrDataUrl)
+      .catch(() => {});
+  }, [mode]);
+
   const handleInstall = async () => {
     if (!deferredPrompt) return;
-
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      setIsVisible(false);
-    }
+    if (outcome === 'accepted') setMode('installed');
     setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
-    setIsVisible(false);
+    setMode('installed'); // hides the prompt
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
-  if (isInstalled || !isVisible) return null;
+  if (mode === 'idle' || mode === 'installed') return null;
 
   return (
     <div
@@ -108,17 +114,32 @@ export function InstallPrompt() {
         <X className="w-4 h-4" />
       </button>
 
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-          {showIOSInstructions ? (
-            <Share className="w-5 h-5 text-primary" />
-          ) : (
+      {/* Android — native install prompt */}
+      {mode === 'android' && (
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
             <Download className="w-5 h-5 text-primary" />
-          )}
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold">Install App</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Install this app for offline access and a better experience.
+            </p>
+            <Button size="sm" className="mt-3" onClick={handleInstall}>
+              Install
+            </Button>
+          </div>
         </div>
-        <div className="flex-1">
-          <h3 className="font-semibold">Install App</h3>
-          {showIOSInstructions ? (
+      )}
+
+      {/* iOS — share button instructions */}
+      {mode === 'ios' && (
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+            <Share className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold">Install App</h3>
             <div className="text-sm text-muted-foreground mt-1 space-y-2">
               <p>To install this app on your iPhone:</p>
               <ol className="list-decimal list-inside space-y-1">
@@ -131,18 +152,34 @@ export function InstallPrompt() {
                 <li>Tap <strong>&ldquo;Add&rdquo;</strong></li>
               </ol>
             </div>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground mt-1">
-                Install this app for offline access and a better experience.
-              </p>
-              <Button size="sm" className="mt-3" onClick={handleInstall}>
-                Install
-              </Button>
-            </>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Desktop — QR code to open on phone */}
+      {mode === 'desktop' && (
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+            <Smartphone className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold">Best on Mobile</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Scan to open the tour on your phone and install it as an app.
+            </p>
+            <div className="mt-3 flex justify-center">
+              {qrDataUrl ? (
+                <img src={qrDataUrl} alt="QR code to open tour on phone" className="rounded" width={120} height={120} />
+              ) : (
+                <div className="w-[120px] h-[120px] bg-muted rounded animate-pulse" />
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Point your phone camera at this code
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

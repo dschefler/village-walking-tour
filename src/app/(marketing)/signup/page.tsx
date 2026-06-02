@@ -55,7 +55,7 @@ export default function SignupPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Create Your Account</CardTitle>
           <CardDescription>
-            Start your free 7-day trial. No credit card required.
+            Create your account to start building your tour.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -15,7 +15,7 @@ interface TrialCTAProps {
 }
 
 export function TrialCTA({
-  label = 'Start Free 7-Day Trial',
+  label = 'Get Started',
   className,
   size = 'default',
   variant = 'default',
@@ -79,9 +79,9 @@ export function TrialCTA({
             </button>
 
             <div className="mb-6">
-              <h2 className="text-xl font-bold mb-2">Start Your Free 7-Day Trial</h2>
+              <h2 className="text-xl font-bold mb-2">Get Started</h2>
               <p className="text-muted-foreground text-sm">
-                Enter your email to get started. Full Pro features included — no credit card required.
+                Enter your email to create your account and start building your tour.
               </p>
             </div>
 
@@ -102,7 +102,7 @@ export function TrialCTA({
             </form>
 
             <p className="text-xs text-muted-foreground mt-4 text-center">
-              We&apos;ll use your email to follow up about your trial. No spam.
+              We&apos;ll send setup instructions to this email. No spam.
             </p>
           </div>
         </div>

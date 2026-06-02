@@ -33,7 +33,7 @@ export const revalidate = 300; // re-fetch content every 5 min
 export const metadata: Metadata = {
   title: 'Walking Tour Builder | Create GPS Walking Tour Apps for Your Community',
   description:
-    'Build branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support. Perfect for towns, museums, parks, and historical societies. Start your free 7-day trial.',
+    'Build branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support. Perfect for towns, museums, parks, and historical societies.',
   keywords: [
     'walking tour app builder',
     'self-guided walking tour software',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Walking Tour Builder — GPS Tour Apps for Communities',
     description:
-      'Build branded, GPS-guided walking tour apps in minutes. Stamp cards, AI audio narration, offline support. Start your free trial — no credit card required.',
+      'Build branded, GPS-guided walking tour apps in minutes. Stamp cards, AI audio narration, offline support. Simple monthly pricing, cancel any time.',
     type: 'website',
     url: 'https://walkingtourbuilder.com',
     siteName: 'Walking Tour Builder',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Walking Tour Builder',
     description:
-      'Build branded GPS walking tour apps for your community. Stamp cards, audio narration, offline support. Free 7-day trial.',
+      'Build branded GPS walking tour apps for your community. Stamp cards, audio narration, offline support. Simple monthly pricing.',
     images: ['https://walkingtourbuilder.com/images/wtb-social.jpg'],
   },
 };
@@ -78,8 +78,7 @@ const DEFAULTS = {
   hero_headline: 'Build a Walking Tour App for Your Community',
   hero_subheadline:
     'Create branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support — in minutes, not months.',
-  trial_days: '7',
-  pricing_subheadline: 'Start with a 7-day free trial. No credit card required.',
+  pricing_subheadline: 'Simple monthly pricing. Cancel any time.',
   dfy_label: 'Tour Builder Concierge',
   dfy_headline: 'Rather Have Us Build It For You?',
   dfy_subheadline:
@@ -223,11 +222,10 @@ const buildPackages = [
 
 export default async function MarketingLandingPage() {
   const content = await getContent();
-  const trialDays = content.trial_days || '7';
 
   const stats = [
     { value: 'No-code', label: 'Setup required' },
-    { value: `${trialDays}-day`, label: 'Free trial' },
+    { value: 'Cancel', label: 'Any time' },
     { value: 'Any device', label: 'iOS & Android' },
     { value: 'Offline', label: 'Works without WiFi' },
   ];
@@ -240,12 +238,10 @@ export default async function MarketingLandingPage() {
     url: 'https://walkingtourbuilder.com',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web, iOS, Android',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-      description: `${trialDays}-day free trial, no credit card required`,
-    },
+    offers: [
+      { '@type': 'Offer', price: '49', priceCurrency: 'USD', name: 'Starter', description: 'Starter plan — monthly subscription' },
+      { '@type': 'Offer', price: '99', priceCurrency: 'USD', name: 'Pro', description: 'Pro plan — monthly subscription' },
+    ],
     provider: {
       '@type': 'Organization',
       name: 'Walking Tour Builder',
@@ -303,7 +299,7 @@ export default async function MarketingLandingPage() {
             <Button asChild variant="ghost" size="sm">
               <Link href="/login">Log In</Link>
             </Button>
-            <TrialCTA label="Start Free Trial" size="sm" />
+            <TrialCTA label="Get Started" size="sm" />
           </div>
         </div>
       </nav>
@@ -333,7 +329,7 @@ export default async function MarketingLandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <TrialCTA
-              label={`Start Free ${trialDays}-Day Trial`}
+              label="Get Started"
               size="lg"
               className="text-lg px-8 bg-accent text-accent-foreground hover:bg-[#C46538]"
               showArrow
@@ -344,9 +340,6 @@ export default async function MarketingLandingPage() {
               </a>
             </Button>
           </div>
-          <p className="text-sm text-primary-foreground/70 mt-4">
-            No credit card required. Full Pro features during trial.
-          </p>
 
           {/* Stats bar */}
           <div className="mt-10 pb-2 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">

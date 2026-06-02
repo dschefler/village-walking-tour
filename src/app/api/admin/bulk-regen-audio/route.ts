@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 const CHUCK_NEWSWORTHY_VOICE_ID = '2RSrGXhRlTEUFC0nwaNn';
+const DEFAULT_VOICE_ID = 'Z3R5wn05IrDiVCyEkUrK'; // Arabella — fallback for tenants with no default set
+
+const PLAN_LIMITS: Record<string, number> = {
+  starter: 20,
+  pro: 100,
+  enterprise: 999999,
+};
 
 // GET: return all sites for a tour (id, name, description)
 export async function GET(request: NextRequest) {
@@ -22,7 +29,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(data ?? []);
 }
 
-// POST: generate audio for a single site
+// POST: generate audio for a single site (called in a loop by the admin page)
 export async function POST(request: NextRequest) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -31,10 +38,80 @@ export async function POST(request: NextRequest) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 503 });
 
-  const { siteId, text, orgId } = await request.json();
+  const { siteId, text, orgId, voiceId: requestedVoiceId } = await request.json();
   if (!siteId || !text?.trim()) return NextResponse.json({ error: 'siteId and text required' }, { status: 400 });
 
-  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${CHUCK_NEWSWORTHY_VOICE_ID}`, {
+  // Resolve org subscription tier and default voice
+  let subscriptionTier = 'starter';
+  let orgVoiceId: string | null = null;
+  let resolvedOrgId = orgId;
+  let isSouthampton = false;
+
+  if (resolvedOrgId) {
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('subscription_tier, default_tts_voice, slug')
+      .eq('id', resolvedOrgId)
+      .single();
+
+    if (org) {
+      subscriptionTier = org.subscription_tier;
+      orgVoiceId = org.default_tts_voice;
+      isSouthampton = org.slug === 'southampton';
+    }
+  } else {
+    // Fall back to first org the user belongs to
+    const { data: membership } = await supabase
+      .from('organization_members')
+      .select('organization_id, organizations(subscription_tier, default_tts_voice, slug)')
+      .eq('user_id', user.id)
+      .limit(1)
+      .single();
+
+    if (membership) {
+      resolvedOrgId = membership.organization_id;
+      const org = membership.organizations as any;
+      subscriptionTier = org?.subscription_tier ?? 'starter';
+      orgVoiceId = org?.default_tts_voice ?? null;
+      isSouthampton = org?.slug === 'southampton';
+    }
+  }
+
+  // Check monthly usage limit
+  if (resolvedOrgId) {
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const { count } = await supabase
+      .from('tts_usage')
+      .select('id', { count: 'exact', head: true })
+      .eq('org_id', resolvedOrgId)
+      .gte('created_at', monthStart.toISOString());
+
+    const limit = PLAN_LIMITS[subscriptionTier] ?? 20;
+    const used = count ?? 0;
+
+    if (used >= limit) {
+      return NextResponse.json(
+        {
+          error: `Monthly narration limit reached (${used}/${limit} used). Upgrade your plan for more.`,
+          used,
+          limit,
+        },
+        { status: 429 }
+      );
+    }
+  }
+
+  // Determine which voice to use:
+  // 1. Southampton always uses Chuck Newsworthy
+  // 2. Otherwise use: caller-provided voiceId → org default → Arabella fallback
+  const voiceId = isSouthampton
+    ? CHUCK_NEWSWORTHY_VOICE_ID
+    : (requestedVoiceId || orgVoiceId || DEFAULT_VOICE_ID);
+
+  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: 'POST',
     headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -50,7 +127,7 @@ export async function POST(request: NextRequest) {
   }
 
   const audioBuffer = await ttsRes.arrayBuffer();
-  const filename = `tts/${orgId ?? user.id}/${siteId}-${Date.now()}.mp3`;
+  const filename = `tts/${resolvedOrgId ?? user.id}/${siteId}-${Date.now()}.mp3`;
 
   const { error: uploadError } = await supabase.storage
     .from('tour-media')
@@ -66,6 +143,11 @@ export async function POST(request: NextRequest) {
     .eq('id', siteId);
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+
+  // Record usage
+  if (resolvedOrgId) {
+    await supabase.from('tts_usage').insert({ org_id: resolvedOrgId, user_id: user.id });
+  }
 
   return NextResponse.json({ audio_url: urlData.publicUrl });
 }

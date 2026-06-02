@@ -10,7 +10,6 @@ const VOICE_OPTIONS = [
 ];
 
 const PLAN_LIMITS: Record<string, number> = {
-  trial: 5,
   starter: 20,
   pro: 100,
   enterprise: 999999,

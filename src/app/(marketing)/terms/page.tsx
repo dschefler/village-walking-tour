@@ -72,7 +72,6 @@ export default function TermsPage() {
             <ul className="list-disc pl-6 space-y-1.5 text-muted-foreground">
               <li><strong>Monthly subscriptions:</strong> Cancel anytime. Cancellation takes effect at the end of the current billing period. No partial-month refunds.</li>
               <li><strong>Annual subscriptions:</strong> A pro-rated refund of unused months is available within 30 days of the annual renewal date. No refunds after 30 days.</li>
-              <li><strong>Free trial:</strong> No charge until the trial period ends. Cancel before the trial ends to avoid any charges.</li>
               <li><strong>Plan changes:</strong> Upgrades take effect immediately; downgrades take effect at the next billing cycle.</li>
             </ul>
           </section>

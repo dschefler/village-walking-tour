@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Map, Image, LogOut, Home, Settings, Megaphone } from 'lucide-react';
+import { Map, Image, LogOut, Home, Settings, Megaphone, BarChart2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 
@@ -60,6 +60,13 @@ export default async function AdminLayout({
           >
             <Megaphone className="w-5 h-5" />
             Marketing
+          </Link>
+          <Link
+            href="/admin/usage"
+            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors"
+          >
+            <BarChart2 className="w-5 h-5" />
+            Usage
           </Link>
         </nav>
 

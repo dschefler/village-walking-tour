@@ -117,10 +117,10 @@ ${isBuild ? '<p><strong>Action needed:</strong> Reach out within 1 business day 
         } else {
           await sendEmail(
             email,
-            `Welcome to Walking Tour Builder — your trial has started`,
+            `Welcome to Walking Tour Builder — you're all set!`,
             `
 <p>Hi ${name},</p>
-<p>You're signed up for the <strong>${planLabel}</strong>. Your 7-day free trial starts now — no charge until it ends, and you can cancel any time.</p>
+<p>Welcome to Walking Tour Builder! You're now subscribed to the <strong>${planLabel}</strong>.</p>
 <p>Create your account to start building your tour:</p>
 <p><a href="https://walkingtourbuilder.com/signup" style="background:#3B82F6;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:bold;">Set Up Your Tour →</a></p>
 <p>Once you're in, the setup wizard will walk you through adding your locations, branding, and going live. It takes about 30 minutes to have a working tour.</p>
@@ -145,9 +145,6 @@ ${isBuild ? '<p><strong>Action needed:</strong> Reach out within 1 business day 
         .update({
           subscription_status: status,
           subscription_tier: tier,
-          trial_ends_at: sub.trial_end
-            ? new Date(sub.trial_end * 1000).toISOString()
-            : null,
         })
         .eq('stripe_customer_id', customerId);
       break;

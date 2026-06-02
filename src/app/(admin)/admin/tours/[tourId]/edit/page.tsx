@@ -61,12 +61,13 @@ export default function EditTourPage() {
     cover_image_url: '',
   });
 
-  const [org, setOrg] = useState<{ slug: string; custom_domain: string | null; primary_color: string } | null>(null);
+  const [org, setOrg] = useState<{ slug: string; custom_domain: string | null; primary_color: string; default_tts_voice: string | null } | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSiteEditor, setShowSiteEditor] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [showQRCode, setShowQRCode] = useState(false);
   const [regenStatus, setRegenStatus] = useState<{ running: boolean; message: string; progress?: string } | null>(null);
+  const [ttsUsage, setTtsUsage] = useState<{ used: number; limit: number; tier: string } | null>(null);
   const [compressStatus, setCompressStatus] = useState<{ running: boolean; message: string; progress?: string } | null>(null);
 
   const supabase = createClient();
@@ -93,11 +94,17 @@ export default function EditTourPage() {
     if (tourData.organization_id) {
       const { data: orgData } = await supabase
         .from('organizations')
-        .select('slug, custom_domain, primary_color')
+        .select('slug, custom_domain, primary_color, default_tts_voice')
         .eq('id', tourData.organization_id)
         .single();
       setOrg(orgData ?? null);
     }
+
+    // Load TTS credit usage
+    fetch('/api/tts/usage')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setTtsUsage(data); })
+      .catch(() => {});
 
     setFormData({
       name: tourData.name,
@@ -307,16 +314,26 @@ export default function EditTourPage() {
         const res = await fetch('/api/admin/bulk-regen-audio', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ siteId: site.id, text: site.description, orgId: site.organization_id }),
+          body: JSON.stringify({
+            siteId: site.id,
+            text: site.description,
+            orgId: site.organization_id,
+            voiceId: org?.default_tts_voice ?? undefined,
+          }),
         });
         const data = await res.json();
         if (!res.ok) {
           failed++;
           errors.push(`${site.name}: ${data.error}`);
+          // Stop batch on credit limit hit
+          if (res.status === 429) break;
         } else {
           success++;
         }
       }
+
+      // Refresh usage counter after batch
+      fetch('/api/tts/usage').then((r) => r.ok ? r.json() : null).then((d) => { if (d) setTtsUsage(d); }).catch(() => {});
 
       const firstError = errors.length > 0 ? ` First error: ${errors[0]}` : '';
       setRegenStatus({
@@ -588,10 +605,22 @@ export default function EditTourPage() {
                 Audio Narrations
               </CardTitle>
               <CardDescription>
-                {org?.slug === 'southampton'
-                  ? "Generate Chuck Newsworthy's narration for every location that has a description."
-                  : 'Generate AI narration for every location that has a description.'}
+                Generate AI narration for every location that has a description.
               </CardDescription>
+              {ttsUsage && (
+                <div className={`mt-2 text-xs rounded-md px-2.5 py-1.5 flex items-center justify-between ${
+                  ttsUsage.used >= ttsUsage.limit
+                    ? 'bg-destructive/10 text-destructive'
+                    : ttsUsage.used >= ttsUsage.limit * 0.8
+                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  <span>
+                    {ttsUsage.used} / {ttsUsage.limit === 999999 ? '∞' : ttsUsage.limit} narrations used this month
+                  </span>
+                  <span className="font-medium capitalize">{ttsUsage.tier}</span>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               <Button
@@ -677,6 +706,7 @@ export default function EditTourPage() {
             onClose={handleSiteEditorClose}
             organizationId={tour?.organization_id ?? undefined}
             lockedVoiceId={org?.slug === 'southampton' ? '2RSrGXhRlTEUFC0nwaNn' : undefined}
+            defaultVoiceId={org?.default_tts_voice ?? undefined}
           />
         </DialogContent>
       </Dialog>
