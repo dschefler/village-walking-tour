@@ -22,7 +22,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     { url: SWT,                          lastModified: new Date(), changeFrequency: 'monthly', priority: 1   },
+    { url: `${SWT}/historic-sites`,      lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${SWT}/curated-tours`,       lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${SWT}/create-your-tour`,    lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${SWT}/how-to-use`,          lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${SWT}/about`,               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${SWT}/contact`,             lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.4 },
     { url: `${SWT}/privacy`,             lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.3 },
     { url: `${SWT}/terms`,               lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.3 },
   ];

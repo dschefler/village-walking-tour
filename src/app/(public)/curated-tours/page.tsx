@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Bookmark, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,13 @@ import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { CURATED_TOURS } from '@/lib/curated-tours';
+
+export const metadata: Metadata = {
+  title: 'Curated Tours',
+  description:
+    'Browse curated self-guided walking tours of Southampton Village — themed routes through the historic district with audio narration, photos, and fun facts.',
+  alternates: { canonical: 'https://southamptonwalkingtour.com/curated-tours' },
+};
 
 export default function PublicCuratedToursPage() {
   return (

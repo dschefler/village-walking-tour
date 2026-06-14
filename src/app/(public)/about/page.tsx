@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
+
+export const metadata: Metadata = {
+  title: 'About',
+  description:
+    "About the Southampton Village Walking Tour — a free, self-guided GPS audio tour of the historic district, created to help residents and visitors discover local landmarks and stories.",
+  alternates: { canonical: 'https://southamptonwalkingtour.com/about' },
+};
 
 export default function AboutPage() {
   return (
