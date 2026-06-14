@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 // Note: Check, Card imports kept for features/DFY sections above
 import { WhoItsForGrid } from '@/components/marketing/WhoItsForGrid';
+import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { TrialCTA } from '@/components/marketing/TrialCTA';
 import { WalkingAnimation } from '@/components/marketing/WalkingAnimation';
 import { PricingSection } from '@/components/marketing/PricingSection';
@@ -271,38 +272,8 @@ export default async function MarketingLandingPage() {
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
     <div className="min-h-screen flex flex-col">
-      {/* Nav */}
-      <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4 flex h-14 items-center justify-between">
-          <Link href="/product" className="flex items-center gap-2">
-            <svg width="28" height="34" viewBox="0 0 28 34" fill="none" aria-hidden="true">
-              <path d="M14 0C8.48 0 4 4.48 4 10c0 7.5 10 18 10 18S24 17.5 24 10c0-5.52-4.48-10-10-10z" fill="#1A6B5F"/>
-              <circle cx="14" cy="10" r="4" fill="white" opacity="0.85"/>
-              <circle cx="4" cy="26" r="1.8" fill="#CA7040"/>
-              <circle cx="9" cy="29" r="1.8" fill="#CA7040"/>
-              <circle cx="14" cy="31" r="1.8" fill="#CA7040"/>
-              <circle cx="19" cy="29" r="1.8" fill="#CA7040"/>
-              <circle cx="24" cy="26" r="1.8" fill="#CA7040"/>
-            </svg>
-            <span className="font-bold text-base leading-tight">
-              <span className="block text-[#1A6B5F]">Walking Tour</span>
-              <span className="block text-[#CA7040]">Builder</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <a href="https://southamptonwalkingtour.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground">
-              Live Demo
-            </a>
-            <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
-              Pricing
-            </Link>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">Log In</Link>
-            </Button>
-            <TrialCTA label="Get Started" size="sm" />
-          </div>
-        </div>
-      </nav>
+      {/* Nav (responsive — hamburger on mobile) */}
+      <MarketingNav />
 
       {/* Hero */}
       <section className="pt-16 md:pt-24 pb-10 bg-primary text-primary-foreground relative overflow-hidden">
