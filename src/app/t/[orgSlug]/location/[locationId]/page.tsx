@@ -110,9 +110,36 @@ export async function generateMetadata({
   const location = await getLocation(params.locationId, params.orgSlug);
   if (!location) return { title: 'Location Not Found' };
 
+  const slug = location.slug || location.id;
+  const desc = (location.description || `Visit ${location.name} on a self-guided walking tour.`)
+    .replace(/\s+/g, ' ')
+    .slice(0, 200);
+
+  // Use the site's own primary photo as the share/OG image
+  const primary = location.media?.find((m) => m.is_primary) || location.media?.[0];
+  const path = primary?.storage_path;
+  const ogImage = path
+    ? path.startsWith('http') || path.startsWith('/')
+      ? path
+      : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${path}`
+    : undefined;
+
   return {
-    title: `${location.name} | Walking Tour`,
-    description: location.description || `Visit ${location.name} on your walking tour`,
+    title: { absolute: `${location.name} — ${location.tour_name ?? 'Walking Tour'}` },
+    description: desc,
+    alternates: { canonical: `/t/${params.orgSlug}/location/${slug}` },
+    openGraph: {
+      type: 'article',
+      title: location.name,
+      description: desc,
+      images: ogImage ? [ogImage] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: location.name,
+      description: desc,
+      images: ogImage ? [ogImage] : undefined,
+    },
   };
 }
 
