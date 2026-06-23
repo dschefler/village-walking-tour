@@ -26,7 +26,7 @@ export function TourCompleteOverlay({
 }: TourCompleteOverlayProps) {
   const [phase, setPhase] = useState<'celebrate' | 'thankyou'>('celebrate');
   const tenant = useTenantOptional();
-  const primaryColor = tenant?.organization.primary_color ?? '#A40000';
+  const primaryColor = tenant?.organization.primary_color ?? '#035297';
   const secondaryColor = tenant?.organization.secondary_color ?? '#014487';
   const orgName = tenant?.organization.name ?? 'our historic village';
 

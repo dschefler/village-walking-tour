@@ -49,7 +49,7 @@ export function TourRouteMap({
   const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
 
   const tenant = useTenantOptional();
-  const primaryColor = tenant?.organization?.primary_color || '#A40000';
+  const primaryColor = tenant?.organization?.primary_color || '#035297';
 
   // Don't render if no sites
   if (sites.length === 0) {

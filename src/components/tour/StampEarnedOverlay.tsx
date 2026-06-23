@@ -25,7 +25,7 @@ export function StampEarnedOverlay({
   onDismiss,
 }: StampEarnedOverlayProps) {
   const tenant = useTenantOptional();
-  const primary = tenant?.organization.primary_color ?? '#A40000';
+  const primary = tenant?.organization.primary_color ?? '#035297';
   const secondary = tenant?.organization.secondary_color ?? '#014487';
   const colors = [primary, secondary, '#FFD700', '#22C55E'];
 

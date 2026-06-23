@@ -501,22 +501,22 @@ export default function CreateYourTourPage() {
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Browse mode selector */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="flex flex-col items-center gap-2 p-4 bg-[#A40000] rounded-xl border-2 border-[#A40000] shadow-sm text-center text-white">
+          <div className="flex flex-col items-center gap-2 p-4 bg-[#035297] rounded-xl border-2 border-[#035297] shadow-sm text-center text-white">
             <List className="w-6 h-6" />
             <span className="text-xs font-semibold">Select Sites</span>
           </div>
           <Link
             href="/historic-sites"
-            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#A40000] transition-all text-center"
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#035297] transition-all text-center"
           >
-            <Map className="w-6 h-6 text-[#A40000]" />
+            <Map className="w-6 h-6 text-[#035297]" />
             <span className="text-xs font-semibold text-gray-700">View by Map</span>
           </Link>
           <button
             onClick={() => setShowCuratedModal(true)}
-            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#A40000] transition-all text-center"
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border-2 border-transparent shadow-sm hover:border-[#035297] transition-all text-center"
           >
-            <Bookmark className="w-6 h-6 text-[#A40000]" />
+            <Bookmark className="w-6 h-6 text-[#035297]" />
             <span className="text-xs font-semibold text-gray-700">Curated Tours</span>
           </button>
         </div>
@@ -550,7 +550,7 @@ export default function CreateYourTourPage() {
                       <div className="min-w-0">
                         <p className="font-semibold text-sm text-gray-900 leading-snug">{tour.name}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{tour.tagline}</p>
-                        <p className="text-xs text-[#A40000] font-medium mt-1">{matchCount} site{matchCount !== 1 ? 's' : ''}</p>
+                        <p className="text-xs text-[#035297] font-medium mt-1">{matchCount} site{matchCount !== 1 ? 's' : ''}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     </button>
@@ -593,7 +593,7 @@ export default function CreateYourTourPage() {
                     onMouseLeave={() => setHoveredSiteId(null)}
                     className={`
                       bg-white rounded-lg shadow-sm border-2 transition-all duration-200 overflow-hidden cursor-pointer
-                      ${isSelected ? 'border-[#A40000] shadow-lg' : 'border-transparent hover:border-gray-300'}
+                      ${isSelected ? 'border-[#035297] shadow-lg' : 'border-transparent hover:border-gray-300'}
                     `}
                   >
                     <div className="flex items-center">
@@ -605,7 +605,7 @@ export default function CreateYourTourPage() {
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => toggleSite(site.id)}
-                          className="data-[state=checked]:bg-[#A40000] data-[state=checked]:border-[#A40000]"
+                          className="data-[state=checked]:bg-[#035297] data-[state=checked]:border-[#035297]"
                         />
                       </div>
 
@@ -642,7 +642,7 @@ export default function CreateYourTourPage() {
                       {/* Selected indicator */}
                       {isSelected && (
                         <div className="pr-4">
-                          <div className="w-6 h-6 rounded-full bg-[#A40000] flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-[#035297] flex items-center justify-center">
                             <Check className="w-4 h-4 text-white" />
                           </div>
                         </div>
@@ -668,7 +668,7 @@ export default function CreateYourTourPage() {
               </div>
             ) : !tourCreated ? (
               <div className="bg-white rounded-lg shadow-lg p-8 h-full min-h-[400px] flex flex-col items-center justify-center text-center">
-                <Route className="w-16 h-16 text-[#A40000] mb-4" />
+                <Route className="w-16 h-16 text-[#035297] mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
                   {selectedIds.size} Site{selectedIds.size !== 1 ? 's' : ''} Selected
                 </h3>
@@ -682,7 +682,7 @@ export default function CreateYourTourPage() {
                 <Button
                   size="lg"
                   onClick={createTour}
-                  className="bg-[#A40000] hover:bg-[#8a0000] text-white gap-2"
+                  className="bg-[#035297] hover:bg-[#024480] text-white gap-2"
                 >
                   <Navigation className="w-5 h-5" />
                   Start Walking
@@ -694,7 +694,7 @@ export default function CreateYourTourPage() {
                 <div className="bg-white rounded-lg shadow-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <Navigation className="w-5 h-5 text-[#A40000]" />
+                      <Navigation className="w-5 h-5 text-[#035297]" />
                       Your Optimized Route
                     </h3>
                     <Button variant="outline" size="sm" onClick={resetTour}>
@@ -738,7 +738,7 @@ export default function CreateYourTourPage() {
                           key={site.id}
                           className="inline-flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1 text-sm"
                         >
-                          <span className="w-5 h-5 rounded-full bg-[#A40000] text-white text-xs flex items-center justify-center">
+                          <span className="w-5 h-5 rounded-full bg-[#035297] text-white text-xs flex items-center justify-center">
                             {index + 1}
                           </span>
                           <span className="max-w-[120px] truncate">{site.name}</span>
@@ -767,11 +767,11 @@ export default function CreateYourTourPage() {
                       className="flex items-center gap-2 text-sm w-full"
                     >
                       {notificationsEnabled ? (
-                        <Bell className="w-4 h-4 text-[#A40000]" />
+                        <Bell className="w-4 h-4 text-[#035297]" />
                       ) : (
                         <BellOff className="w-4 h-4 text-gray-400" />
                       )}
-                      <span className={notificationsEnabled ? 'text-[#A40000] font-medium' : 'text-gray-500'}>
+                      <span className={notificationsEnabled ? 'text-[#035297] font-medium' : 'text-gray-500'}>
                         {notificationsEnabled ? 'Arrival alerts ON' : 'Arrival alerts OFF'}
                       </span>
                       <span className="text-xs text-gray-400 ml-auto">
@@ -790,9 +790,9 @@ export default function CreateYourTourPage() {
                       {isMuted ? (
                         <VolumeX className="w-4 h-4 text-gray-400" />
                       ) : (
-                        <Volume2 className="w-4 h-4 text-[#A40000]" />
+                        <Volume2 className="w-4 h-4 text-[#035297]" />
                       )}
-                      <span className={isMuted ? 'text-gray-500' : 'text-[#A40000] font-medium'}>
+                      <span className={isMuted ? 'text-gray-500' : 'text-[#035297] font-medium'}>
                         {isMuted ? 'Voice OFF' : 'Voice ON'}
                       </span>
                       <span className="text-xs text-gray-400 ml-auto">
@@ -838,7 +838,7 @@ export default function CreateYourTourPage() {
                           href={googleMapsUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="w-full inline-flex items-center justify-center gap-2 bg-[#A40000] hover:bg-[#8a0000] text-white rounded-md px-4 h-11 text-sm font-medium"
+                          className="w-full inline-flex items-center justify-center gap-2 bg-[#035297] hover:bg-[#024480] text-white rounded-md px-4 h-11 text-sm font-medium"
                         >
                           <Car className="w-5 h-5" />
                           Open Driving Directions
@@ -874,7 +874,7 @@ export default function CreateYourTourPage() {
                 {/* Walking: nearest stop indicator */}
                 {travelMode === 'walking' && nextStop && (
                   <div className="bg-gray-900 text-white rounded-xl p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#A40000] flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#035297] flex items-center justify-center text-sm font-bold flex-shrink-0">
                       {nextStop.index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -927,7 +927,7 @@ export default function CreateYourTourPage() {
                     <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm border-t">
                       {navSteps.map((step, i) => (
                         <div key={i} className={`flex items-start gap-3 px-4 py-2.5 ${i === activeStepIndex && userLocation ? 'bg-blue-50' : ''}`}>
-                          <span className="w-5 h-5 flex-shrink-0 rounded-full bg-[#A40000]/10 text-[#A40000] text-xs flex items-center justify-center font-semibold mt-0.5">
+                          <span className="w-5 h-5 flex-shrink-0 rounded-full bg-[#035297]/10 text-[#035297] text-xs flex items-center justify-center font-semibold mt-0.5">
                             {i + 1}
                           </span>
                           <div className="flex-1 min-w-0">
@@ -956,7 +956,7 @@ export default function CreateYourTourPage() {
         <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden">
           <button
             onClick={createTour}
-            className="w-full flex items-center justify-center gap-2 bg-[#A40000] text-white rounded-xl py-4 text-base font-semibold shadow-2xl"
+            className="w-full flex items-center justify-center gap-2 bg-[#035297] text-white rounded-xl py-4 text-base font-semibold shadow-2xl"
           >
             <Navigation className="w-5 h-5" />
             Start Walking · {selectedIds.size} site{selectedIds.size !== 1 ? 's' : ''}
