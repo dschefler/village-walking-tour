@@ -160,7 +160,7 @@ export function DirectionsButton({
               <Marker longitude={longitude} latitude={latitude} anchor="bottom">
                 <div
                   className="w-9 h-9 rounded-full border-2 border-white shadow-lg flex items-center justify-center"
-                  style={{ backgroundColor: 'var(--primary, #035297)' }}
+                  style={{ backgroundColor: 'var(--primary, #0064b0)' }}
                 >
                   <Navigation className="w-4 h-4 text-white" />
                 </div>
@@ -172,7 +172,7 @@ export function DirectionsButton({
           {summary && (
             <div
               className="px-4 py-3 flex items-center justify-between text-white text-sm"
-              style={{ backgroundColor: 'var(--primary, #035297)' }}
+              style={{ backgroundColor: 'var(--primary, #0064b0)' }}
             >
               <span className="font-semibold truncate mr-3">{name}</span>
               <span className="flex-shrink-0 opacity-90">

@@ -80,7 +80,7 @@ export default async function HomePage() {
       type: 'svg',
       width: 200,
       margin: 2,
-      color: { dark: '#035297', light: '#ffffff' },
+      color: { dark: '#0064b0', light: '#ffffff' },
     });
   } catch (e) {
     // QR generation failed, section will be hidden
@@ -196,7 +196,7 @@ export default async function HomePage() {
       <HideWhenInstalled>
         <section className="bg-white py-16">
           <div className="container mx-auto px-4 text-center">
-            <Smartphone className="w-10 h-10 mx-auto mb-4 text-[#035297]" />
+            <Smartphone className="w-10 h-10 mx-auto mb-4 text-[#0064b0]" />
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900">
               Get the App on Your Phone
             </h2>

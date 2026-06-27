@@ -18,7 +18,7 @@ export function ShareAppButton() {
       : `https://walkingtourbuilder.com/t/${org.slug}`
     : SOUTHAMPTON_URL;
   const appTitle = org ? org.app_name || org.name : 'Southampton Village Historical Walking Tours';
-  const primaryColor = org?.primary_color || '#035297';
+  const primaryColor = org?.primary_color || '#0064b0';
 
   const [open, setOpen] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState('');

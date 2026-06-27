@@ -20,7 +20,7 @@ export default function PublicCuratedToursPage() {
       <NavigationHeader />
       <Breadcrumb items={[{ label: 'Curated Theme Tours' }]} />
 
-      <header className="bg-gradient-to-br from-[#035297] to-[#024480] text-white py-12">
+      <header className="bg-gradient-to-br from-[#0064b0] to-[#005499] text-white py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
             <Bookmark className="w-8 h-8" />
@@ -41,19 +41,19 @@ export default function PublicCuratedToursPage() {
           >
             <div className="p-6">
               <h2 className="text-xl font-bold text-foreground mb-1">{tour.name}</h2>
-              <p className="text-sm text-[#035297] font-medium mb-3">{tour.tagline}</p>
+              <p className="text-sm text-[#0064b0] font-medium mb-3">{tour.tagline}</p>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 {tour.description}
               </p>
 
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4 text-[#035297]" />
+                  <MapPin className="w-4 h-4 text-[#0064b0]" />
                   <span>
                     {tour.locations.length} suggested location{tour.locations.length !== 1 ? 's' : ''}
                   </span>
                 </div>
-                <Button asChild className="bg-[#035297] hover:bg-[#024480] text-white gap-2">
+                <Button asChild className="bg-[#0064b0] hover:bg-[#005499] text-white gap-2">
                   <Link href={`/t/southampton/curated-tours/${tour.slug}`}>
                     Start This Tour
                     <ArrowRight className="w-4 h-4" />
@@ -66,7 +66,7 @@ export default function PublicCuratedToursPage() {
               {tour.locations.map((loc) => (
                 <span
                   key={loc}
-                  className="inline-block bg-[#035297]/8 text-[#035297] text-xs font-medium px-2.5 py-1 rounded-full border border-[#035297]/20"
+                  className="inline-block bg-[#0064b0]/8 text-[#0064b0] text-xs font-medium px-2.5 py-1 rounded-full border border-[#0064b0]/20"
                 >
                   {loc}
                 </span>
