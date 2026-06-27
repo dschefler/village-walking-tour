@@ -843,7 +843,6 @@ export default function CreateYourTourPage() {
                           <Car className="w-5 h-5" />
                           Open Driving Directions
                         </a>
-                        <p className="text-xs text-gray-500 text-center">Opens Google Maps with GPS navigation</p>
                       </>
                     ) : (
                       <>
@@ -914,15 +913,6 @@ export default function CreateYourTourPage() {
                   <details className="bg-white rounded-lg shadow-lg overflow-hidden">
                     <summary className="px-4 py-3 flex items-center justify-between cursor-pointer select-none">
                       <span className="text-sm font-semibold text-gray-700">All directions ({navSteps.length} steps)</span>
-                      <a
-                        href={googleMapsUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={e => e.stopPropagation()}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Open in Google Maps
-                      </a>
                     </summary>
                     <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm border-t">
                       {navSteps.map((step, i) => (
