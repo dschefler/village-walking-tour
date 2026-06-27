@@ -111,7 +111,7 @@ export default function HistoricSitesPage() {
 
         <div className="grid lg:grid-cols-2 gap-8 min-w-0">
           {/* Map Section */}
-          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)] min-w-0 w-full">
+          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-260px)] min-w-0 w-full">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full min-h-[400px] relative w-full">
               <HistoricSitesMap
                 sites={sites}
