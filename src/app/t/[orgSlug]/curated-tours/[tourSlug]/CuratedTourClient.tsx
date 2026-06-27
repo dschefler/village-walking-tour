@@ -499,17 +499,6 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
                     {mapboxRoute && !navLoading && (
                       <p className="text-xs font-medium" style={{ color: primaryColor }}>Route loaded — see map below</p>
                     )}
-                    <a
-                      href={googleMapsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 text-white rounded-md px-4 h-11 text-sm font-medium"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {travelMode === 'driving' ? <Car className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
-                      {travelMode === 'driving' ? 'Open Driving Directions' : 'Open Walking Directions'}
-                    </a>
-                    <p className="text-xs text-gray-500 text-center">Opens Google Maps with turn-by-turn directions</p>
                   </div>
                 </div>
 
@@ -531,14 +520,6 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
                   <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div className="px-4 py-2 border-b flex items-center justify-between">
                       <span className="text-sm font-semibold text-gray-700">Turn-by-turn directions</span>
-                      <a
-                        href={googleMapsUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Open in Google Maps
-                      </a>
                     </div>
                     <div className="max-h-52 overflow-y-auto divide-y divide-border text-sm">
                       {navSteps.map((step, i) => (

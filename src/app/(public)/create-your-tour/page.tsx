@@ -832,19 +832,7 @@ export default function CreateYourTourPage() {
                         Loading route…
                       </div>
                     )}
-                    {travelMode === 'driving' ? (
-                      <>
-                        <a
-                          href={googleMapsUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="w-full inline-flex items-center justify-center gap-2 bg-[#0064b0] hover:bg-[#005499] text-white rounded-md px-4 h-11 text-sm font-medium"
-                        >
-                          <Car className="w-5 h-5" />
-                          Open Driving Directions
-                        </a>
-                      </>
-                    ) : (
+                    {travelMode !== 'driving' && (
                       <>
                         {mapboxRoute && !navLoading && (
                           <p className="text-xs text-green-600 flex items-center gap-1">
