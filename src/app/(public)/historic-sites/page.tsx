@@ -69,7 +69,7 @@ export default function HistoricSitesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-black">
+      <div className="min-h-screen flex flex-col bg-[#035297]">
         <NavigationHeader transparent />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-white" />
@@ -84,7 +84,7 @@ export default function HistoricSitesPage() {
       <Breadcrumb items={[{ label: 'Historic Sites' }]} />
 
       {/* Hero */}
-      <header className="bg-black text-white py-8">
+      <header className="bg-gradient-to-br from-[#035297] to-[#024480] text-white py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Historic Sites</h1>
           <p className="text-gray-300">

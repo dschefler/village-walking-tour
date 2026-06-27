@@ -472,7 +472,7 @@ export default function CreateYourTourPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-black">
+      <div className="min-h-screen flex flex-col bg-[#035297]">
         <NavigationHeader transparent />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-white" />
@@ -487,7 +487,7 @@ export default function CreateYourTourPage() {
       <Breadcrumb items={[{ label: 'Create Your Tour' }]} />
 
       {/* Hero */}
-      <header className="bg-black text-white py-6">
+      <header className="bg-gradient-to-br from-[#035297] to-[#024480] text-white py-6">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 flex items-center gap-3">
             <Route className="w-8 h-8" />
