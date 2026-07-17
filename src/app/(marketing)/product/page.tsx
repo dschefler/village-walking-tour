@@ -32,45 +32,41 @@ import { createServiceClient } from '@/lib/supabase/server';
 export const revalidate = 300; // re-fetch content every 5 min
 
 export const metadata: Metadata = {
-  title: 'Walking Tour Builder | Create GPS Walking Tour Apps for Your Community',
+  title: 'Walking Tour Builder — Engage Visitors, Students, Members & Donors',
   description:
-    'Build branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support. Perfect for towns, museums, parks, and historical societies.',
+    'A platform that helps organizations engage visitors, students, members, and donors through branded GPS walking tour apps. Stamp cards, AI audio narration, offline support. No code required.',
   keywords: [
     'walking tour app builder',
-    'self-guided walking tour software',
-    'create walking tour app',
-    'historic district tour app',
+    'visitor engagement platform',
+    'self-guided tour software',
     'GPS walking tour',
-    'no-code tour builder',
-    'walking tour platform',
-    'community tour app',
-    'museum audio tour app',
+    'museum tour app',
+    'nonprofit donor engagement',
+    'student engagement app',
+    'historical society tour',
+    'community tour builder',
+    'no-code tour app',
     'heritage trail app',
+    'campus tour app',
+    'park tour app',
+    'audio tour platform',
+    'membership engagement tool',
   ],
   alternates: {
     canonical: 'https://walkingtourbuilder.com',
   },
   openGraph: {
-    title: 'Walking Tour Builder — GPS Tour Apps for Communities',
+    title: 'Walking Tour Builder — Engage Visitors, Students, Members & Donors',
     description:
-      'Build branded, GPS-guided walking tour apps in minutes. Stamp cards, AI audio narration, offline support. Simple monthly pricing, cancel any time.',
+      'A platform that helps organizations engage visitors, students, members, and donors through branded GPS walking tour apps. Built in minutes, not months.',
     type: 'website',
     url: 'https://walkingtourbuilder.com',
-    siteName: 'Walking Tour Builder',
-    images: [
-      {
-        url: 'https://walkingtourbuilder.com/images/wtb-social.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Walking Tour Builder — Build GPS walking tour apps in minutes',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Walking Tour Builder',
     description:
-      'Build branded GPS walking tour apps for your community. Stamp cards, audio narration, offline support. Simple monthly pricing.',
+      'A platform that helps organizations engage visitors, students, members, and donors through branded GPS walking tour apps.',
     images: ['https://walkingtourbuilder.com/images/wtb-social.jpg'],
   },
 };
@@ -235,7 +231,7 @@ export default async function MarketingLandingPage() {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Walking Tour Builder',
-    description: 'Build branded, GPS-guided walking tour apps with stamp cards, AI audio narration, and offline support. Perfect for towns, museums, parks, and historical societies.',
+    description: 'A platform that helps organizations engage visitors, students, members, and donors through branded GPS walking tour apps. No code required.',
     url: 'https://walkingtourbuilder.com',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web, iOS, Android',
@@ -258,10 +254,14 @@ export default async function MarketingLandingPage() {
       'Arrival alerts',
       'Custom branding',
       'QR code sharing',
+      'Visitor engagement',
+      'Donor engagement',
+      'Student engagement',
+      'Member engagement',
     ],
     audience: {
       '@type': 'Audience',
-      audienceType: 'Towns, museums, parks, historical societies, tourism organizations',
+      audienceType: 'Museums, historical societies, parks, schools, nonprofits, tourism organizations, membership organizations',
     },
   };
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://walkingtourbuilder.com'),
   icons: {
     icon: [
       { url: '/icons/wtb-favicon.svg', type: 'image/svg+xml' },
@@ -10,12 +11,14 @@ export const metadata: Metadata = {
     apple: '/icons/wtb-favicon-180x180.png',
   },
   openGraph: {
+    siteName: 'Walking Tour Builder',
+    type: 'website',
     images: [
       {
         url: 'https://walkingtourbuilder.com/images/wtb-social.jpg',
         width: 1200,
         height: 630,
-        alt: 'Walking Tour Builder — Build GPS walking tour apps in minutes',
+        alt: 'Walking Tour Builder — Engage visitors, students, members, and donors',
       },
     ],
   },
