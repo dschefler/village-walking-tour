@@ -32,7 +32,11 @@ import { createServiceClient } from '@/lib/supabase/server';
 export const revalidate = 300; // re-fetch content every 5 min
 
 export const metadata: Metadata = {
-  title: 'Walking Tour Builder — Engage Visitors, Students, Members & Donors',
+  // `absolute` bypasses the marketing layout's own '%s | Walking Tour
+  // Builder' template — this string already ends with the brand name, so
+  // without `absolute` it would get duplicated the same way the Southampton
+  // homepage's title was.
+  title: { absolute: 'Walking Tour Builder — Engage Visitors, Students, Members & Donors' },
   description:
     'A platform that helps organizations engage visitors, students, members, and donors through branded GPS walking tour apps. Stamp cards, AI audio narration, offline support. No code required.',
   keywords: [

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Privacy Policy — Walking Tour Builder',
+  // Marketing layout's template already appends "| Walking Tour Builder".
+  title: 'Privacy Policy',
   description: 'Privacy Policy for Walking Tour Builder.',
 };
 

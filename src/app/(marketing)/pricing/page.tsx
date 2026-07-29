@@ -1,7 +1,16 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+// This page previously had no metadata at all, so it fell back to the ROOT
+// layout's default title ("Southampton Village Walking Tour") — the wrong
+// product's name showing on a Walking Tour Builder pricing page.
+export const metadata: Metadata = {
+  title: 'Pricing',
+  description: 'Simple, transparent pricing for Walking Tour Builder — branded GPS walking tour apps for your organization.',
+};
 
 const tiers = [
   {

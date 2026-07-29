@@ -2,6 +2,16 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://walkingtourbuilder.com'),
+  // Without its own template, this whole route group (product/pricing/
+  // signup/terms/privacy) was inheriting the ROOT layout's title template
+  // ('%s | Southampton Village Walking Tour') meant for the separate
+  // Southampton tour app — every Walking Tour Builder marketing page was
+  // showing that unrelated brand name at the end of its title in Google
+  // search results.
+  title: {
+    template: '%s | Walking Tour Builder',
+    default: 'Walking Tour Builder',
+  },
   icons: {
     icon: [
       { url: '/icons/wtb-favicon.svg', type: 'image/svg+xml' },
