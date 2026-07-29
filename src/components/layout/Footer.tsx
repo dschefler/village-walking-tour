@@ -55,22 +55,21 @@ export function Footer() {
             <p className="text-sm text-white">
               &copy; {currentYear} {org ? org.name : 'Southampton Village Walking Tour'}. All rights reserved.
             </p>
+            {!org && (
+              <p className="text-xs text-white/75">
+                Designed and Developed by Thorn Creative Marketing
+              </p>
+            )}
             <p className="text-xs text-white/75">
-              {org ? (
-                <>
-                  Powered by{' '}
-                  <a
-                    href="https://walkingtourbuilder.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-white transition-colors"
-                  >
-                    Walking Tour Builder
-                  </a>
-                </>
-              ) : (
-                'Designed and Developed by Thorn Creative Marketing'
-              )}
+              Powered by{' '}
+              <a
+                href="https://walkingtourbuilder.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white transition-colors"
+              >
+                Walking Tour Builder
+              </a>
             </p>
           </div>
         </div>
