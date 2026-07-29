@@ -63,23 +63,12 @@ export function Footer() {
                   href="https://thorncreativemarketing.us/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors"
+                  className="underline hover:text-white transition-colors"
                 >
                   Thorn Creative Marketing
                 </a>
               </p>
             )}
-            <p className="text-xs text-white/75">
-              Powered by{' '}
-              <a
-                href="https://walkingtourbuilder.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-white transition-colors"
-              >
-                Walking Tour Builder
-              </a>
-            </p>
           </div>
         </div>
       </div>
