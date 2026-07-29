@@ -25,7 +25,9 @@ import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { Footer } from '@/components/layout/Footer';
 
 export const metadata = {
-  title: 'How to Use | Southampton Village Walking Tour',
+  // Root layout's title template already appends "| Southampton Village
+  // Walking Tour" — this was duplicating it verbatim.
+  title: 'How to Use',
   description: 'Learn how to install the app, enable GPS, build a custom tour, listen to audio guides, collect stamps, and get the most from the Southampton Village Walking Tour.',
 };
 

@@ -12,7 +12,12 @@ import type { Tour } from '@/types';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Southampton Village Walking Tour | Free Self-Guided Historic District App',
+  // `absolute` bypasses the root layout's `%s | Southampton Village Walking
+  // Tour` title template — without it, the site name was appended a second
+  // time (this string already ends with it), producing a duplicated
+  // "... | Southampton Village Walking Tour | Southampton Village Walking
+  // Tour" title in Google search results.
+  title: { absolute: 'Southampton Village Walking Tour | Free Self-Guided Historic District App' },
   description:
     "Explore Southampton Village's historic district on a free self-guided GPS walking tour. Discover landmark buildings, hidden history, and local stories with audio narration, fun facts, and a digital stamp card.",
   keywords: [

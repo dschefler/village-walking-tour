@@ -5,7 +5,12 @@ import { Footer } from '@/components/layout/Footer';
 import { ContactForm } from '@/components/contact/ContactForm';
 
 export const metadata = {
-  title: 'Contact | Village Walking Tours',
+  // Root layout already appends "| Southampton Village Walking Tour" via
+  // its title template — a plain 'Contact' here matches how About/Curated
+  // Tours are set up (this page previously duplicated + varied the site
+  // name, producing "Contact | Village Walking Tours | Southampton Village
+  // Walking Tour").
+  title: 'Contact',
   description: 'Get in touch with us with questions, feedback, or suggestions.',
 };
 
