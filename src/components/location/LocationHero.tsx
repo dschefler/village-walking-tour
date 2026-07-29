@@ -45,7 +45,7 @@ export function LocationHero({ name, primaryImage, address }: LocationHeroProps)
 
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
         <div className="container mx-auto">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
             {name}
           </h1>
           {address && (
