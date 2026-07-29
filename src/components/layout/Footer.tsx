@@ -56,7 +56,21 @@ export function Footer() {
               &copy; {currentYear} {org ? org.name : 'Southampton Village Walking Tour'}. All rights reserved.
             </p>
             <p className="text-xs text-white/75">
-              {org ? 'Powered by Walking Tour Builder' : 'Designed and Developed by Thorn Creative Marketing'}
+              {org ? (
+                <>
+                  Powered by{' '}
+                  <a
+                    href="https://walkingtourbuilder.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-white transition-colors"
+                  >
+                    Walking Tour Builder
+                  </a>
+                </>
+              ) : (
+                'Designed and Developed by Thorn Creative Marketing'
+              )}
             </p>
           </div>
         </div>
