@@ -51,13 +51,21 @@ export function Footer() {
 
       <div className="bg-primary">
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex flex-col items-center md:items-start gap-0.5">
-            <p className="text-sm text-white">
+          <div className="flex flex-col items-center gap-0.5">
+            <p className="text-sm text-white whitespace-nowrap">
               &copy; {currentYear} {org ? org.name : 'Southampton Village Walking Tour'}. All rights reserved.
             </p>
             {!org && (
               <p className="text-xs text-white/75">
-                Designed and Developed by Thorn Creative Marketing
+                Designed and Developed by{' '}
+                <a
+                  href="https://thorncreativemarketing.us/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  Thorn Creative Marketing
+                </a>
               </p>
             )}
             <p className="text-xs text-white/75">
