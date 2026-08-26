@@ -63,6 +63,13 @@ const nextConfig = {
     NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_GIT_COMMIT_SHA || 'dev',
   },
   images: {
+    // Vercel's Image Optimization has hit its monthly quota on this plan
+    // (returns 402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED), which blocks
+    // every image site-wide regardless of URL correctness. Serving images
+    // unoptimized bypasses that quota entirely — remove this once the plan
+    // is upgraded or the quota resets, to get resizing/format conversion
+    // back.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
