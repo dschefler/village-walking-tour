@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Route, Check, Loader2, Navigation, Bell, BellOff, MapPinned, Car, Footprints, X, Map, List, Bookmark, Volume2, VolumeX, ChevronRight } from 'lucide-react';
 import { warmUpSpeech, setSpeechMuted, isSpeechMuted, speak } from '@/lib/speech';
-import { cn } from '@/lib/utils';
+import { cn, getStorageMediaUrl } from '@/lib/utils';
 import { CURATED_TOURS, matchesLocation, type CuratedTour } from '@/lib/curated-tours';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
@@ -463,12 +463,7 @@ export default function CreateYourTourPage() {
     setCreatedRoute([]);
   };
 
-  const getImageUrl = (storagePath: string) => {
-    if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-      return storagePath;
-    }
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-  };
+  const getImageUrl = getStorageMediaUrl;
 
   if (loading) {
     return (

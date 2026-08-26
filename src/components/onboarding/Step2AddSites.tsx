@@ -12,17 +12,13 @@ import { MediaUploader } from '@/components/admin/MediaUploader';
 import { TTSGenerator } from '@/components/admin/TTSGenerator';
 import { toast } from '@/hooks/use-toast';
 import type { Organization, Site, SiteMedia, Media } from '@/types';
+import { getStorageMediaUrl } from '@/lib/utils';
 
 type SiteWithMedia = Site & {
   site_media?: (SiteMedia & { media: Media })[];
 };
 
-function getMediaUrl(storagePath: string): string {
-  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-    return storagePath;
-  }
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-}
+const getMediaUrl = getStorageMediaUrl;
 
 interface Step2Props {
   org: Organization;

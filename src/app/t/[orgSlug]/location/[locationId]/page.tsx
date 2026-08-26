@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { MapPin, Route, Lightbulb } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { getStorageMediaUrl } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -118,11 +119,7 @@ export async function generateMetadata({
   // Use the site's own primary photo as the share/OG image
   const primary = location.media?.find((m) => m.is_primary) || location.media?.[0];
   const path = primary?.storage_path;
-  const ogImage = path
-    ? path.startsWith('http') || path.startsWith('/')
-      ? path
-      : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${path}`
-    : undefined;
+  const ogImage = path ? getStorageMediaUrl(path) : undefined;
 
   return {
     title: { absolute: `${location.name} — ${location.tour_name ?? 'Walking Tour'}` },

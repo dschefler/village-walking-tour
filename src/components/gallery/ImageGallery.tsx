@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getStorageMediaUrl } from '@/lib/utils';
 import type { Media } from '@/types';
 
 interface ImageGalleryProps {
@@ -37,12 +37,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
     return 0;
   });
 
-  const getImageUrl = (image: Media) => {
-    if (image.storage_path.startsWith('http') || image.storage_path.startsWith('/')) {
-      return image.storage_path;
-    }
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${image.storage_path}`;
-  };
+  const getImageUrl = (image: Media) => getStorageMediaUrl(image.storage_path);
 
   const goToPrevious = () => {
     if (selectedIndex === null) return;

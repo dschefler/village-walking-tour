@@ -6,6 +6,7 @@ import Map, { Marker, NavigationControl, Source, Layer, Popup, type MapRef } fro
 import { MapPin } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useTenantOptional } from '@/lib/context/tenant-context';
+import { getStorageMediaUrl } from '@/lib/utils';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -144,12 +145,7 @@ export function TourRouteMap({
         zoom: MAPBOX_CONFIG.defaultZoom,
       };
 
-  const getImageUrl = (storagePath: string) => {
-    if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-      return storagePath;
-    }
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-  };
+  const getImageUrl = getStorageMediaUrl;
 
   return (
     <Map

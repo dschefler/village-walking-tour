@@ -15,7 +15,7 @@ import { useNotificationStore } from '@/stores/notification-store';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { ProximityNotificationContainer } from '@/components/pwa/ProximityNotification';
 import { TourCompletePromptContainer } from '@/components/pwa/TourCompletePrompt';
-import { cn } from '@/lib/utils';
+import { cn, getStorageMediaUrl } from '@/lib/utils';
 import { matchesLocation } from '@/lib/curated-tours';
 import type { OrgCuratedTour } from '@/types';
 
@@ -265,10 +265,7 @@ export function CuratedTourClient({ orgSlug, tour }: CuratedTourClientProps) {
   };
 
 
-  const getImageUrl = (storagePath: string) => {
-    if (storagePath.startsWith('http') || storagePath.startsWith('/')) return storagePath;
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-  };
+  const getImageUrl = getStorageMediaUrl;
 
   if (loading) {
     return (

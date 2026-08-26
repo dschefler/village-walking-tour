@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 import type { Media } from '@/types';
+import { getStorageMediaUrl } from '@/lib/utils';
 
 interface LocationHeroProps {
   name: string;
@@ -10,12 +11,7 @@ interface LocationHeroProps {
   address?: string | null;
 }
 
-function getImageUrl(storagePath: string) {
-  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-    return storagePath;
-  }
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-}
+const getImageUrl = getStorageMediaUrl;
 
 export function LocationHero({ name, primaryImage, address }: LocationHeroProps) {
   return (

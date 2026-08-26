@@ -12,6 +12,7 @@ import { HistoricSitesMap } from '@/components/map/HistoricSitesMap';
 import { useTourBuilderStore } from '@/stores/tour-builder-store';
 import { AudioPlayer } from '@/components/audio/AudioPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { getStorageMediaUrl } from '@/lib/utils';
 
 interface SiteItem {
   id: string;
@@ -57,10 +58,7 @@ export default function HistoricSitesPage() {
 
   const selectedIds = new Set(pendingIds);
 
-  const getImageUrl = (storagePath: string) => {
-    if (storagePath.startsWith('http') || storagePath.startsWith('/')) return storagePath;
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-  };
+  const getImageUrl = getStorageMediaUrl;
 
   const handleMapClick = (site: { id: string; name: string; slug: string | null; latitude: number; longitude: number }) => {
     const full = sites.find(s => s.id === site.id) ?? null;

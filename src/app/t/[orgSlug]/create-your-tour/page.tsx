@@ -18,7 +18,7 @@ import { useTenantOptional } from '@/lib/context/tenant-context';
 import { ProximityNotification } from '@/components/pwa/ProximityNotification';
 import type { ProximityAlert } from '@/types';
 import { TourCompletePromptContainer } from '@/components/pwa/TourCompletePrompt';
-import { cn } from '@/lib/utils';
+import { cn, getStorageMediaUrl } from '@/lib/utils';
 
 interface SiteItem {
   id: string;
@@ -370,10 +370,7 @@ export default function TenantCreateYourTourPage() {
   };
 
 
-  const getImageUrl = (storagePath: string) => {
-    if (storagePath.startsWith('http') || storagePath.startsWith('/')) return storagePath;
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-  };
+  const getImageUrl = getStorageMediaUrl;
 
   if (loading) {
     return (

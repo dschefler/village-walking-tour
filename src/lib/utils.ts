@@ -82,6 +82,19 @@ export function generateId(): string {
   return crypto.randomUUID();
 }
 
+// NEXT_PUBLIC_SUPABASE_URL has a trailing newline in the Vercel production
+// env var (pasted in with one) — without .trim() the concatenated storage
+// URL gets a %0A baked into the middle of it, which Next/Image and <img>
+// both silently fail to load. Always build storage URLs through this
+// helper rather than concatenating the env var directly.
+export function getStorageMediaUrl(storagePath: string): string {
+  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
+    return storagePath.trim();
+  }
+  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim();
+  return `${base}/storage/v1/object/public/tour-media/${storagePath}`;
+}
+
 /**
  * Calculate estimated walking time from distance in meters
  * Average walking speed: 5 km/h = 83.3 m/min

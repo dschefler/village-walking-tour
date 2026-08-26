@@ -4,7 +4,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useGeolocation } from './use-geolocation';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useTourStore } from '@/stores/tour-store';
-import { calculateDistance } from '@/lib/utils';
+import { calculateDistance, getStorageMediaUrl } from '@/lib/utils';
 import { speakSequence } from '@/lib/speech';
 import type { Site, ProximityAlert } from '@/types';
 
@@ -66,9 +66,7 @@ export function useProximityNotifications({
         const siteWithMedia = site as Site & { media?: { storage_path: string; is_primary: boolean }[] };
         const primaryMedia = siteWithMedia.media?.find(m => m.is_primary) ?? siteWithMedia.media?.[0];
         const imageUrl = primaryMedia?.storage_path
-          ? primaryMedia.storage_path.startsWith('http') || primaryMedia.storage_path.startsWith('/')
-            ? primaryMedia.storage_path
-            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${primaryMedia.storage_path}`
+          ? getStorageMediaUrl(primaryMedia.storage_path)
           : null;
 
         const alert: ProximityAlert = {

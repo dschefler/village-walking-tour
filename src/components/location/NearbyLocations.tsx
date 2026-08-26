@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { MapPin, Navigation } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useGeolocation } from '@/hooks/use-geolocation';
-import { calculateDistance, formatDistance } from '@/lib/utils';
+import { calculateDistance, formatDistance, getStorageMediaUrl } from '@/lib/utils';
 import type { Site, Media } from '@/types';
 
 interface LocationWithMedia extends Site {
@@ -21,12 +21,7 @@ interface NearbyLocationsProps {
   limit?: number;
 }
 
-function getImageUrl(storagePath: string) {
-  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-    return storagePath;
-  }
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-}
+const getImageUrl = getStorageMediaUrl;
 
 export function NearbyLocations({
   currentLocationId,

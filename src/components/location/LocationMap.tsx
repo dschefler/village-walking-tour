@@ -6,16 +6,11 @@ import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useGeolocation } from '@/hooks/use-geolocation';
-import { calculateDistance, formatDistance } from '@/lib/utils';
+import { calculateDistance, formatDistance, getStorageMediaUrl } from '@/lib/utils';
 import type { Media } from '@/types';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-function getImageUrl(storagePath: string) {
-  if (storagePath.startsWith('http') || storagePath.startsWith('/')) {
-    return storagePath;
-  }
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${storagePath}`;
-}
+const getImageUrl = getStorageMediaUrl;
 
 interface LocationMapProps {
   latitude: number;

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Image as ImageIcon } from 'lucide-react';
+import { getStorageMediaUrl } from '@/lib/utils';
 
 export default async function DashboardMediaPage() {
   const supabase = createClient();
@@ -43,9 +44,7 @@ export default async function DashboardMediaPage() {
       ) : (
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
           {media.map((item) => {
-            const url = item.storage_path.startsWith('http')
-              ? item.storage_path
-              : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${item.storage_path}`;
+            const url = getStorageMediaUrl(item.storage_path);
 
             return (
               <Card key={item.id} className="overflow-hidden">

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { MediaUploader } from '@/components/admin/MediaUploader';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { cn, getStorageMediaUrl } from '@/lib/utils';
 import type { Media } from '@/types';
 
 type FilterType = 'all' | 'image' | 'audio';
@@ -105,12 +105,7 @@ export default function MediaLibraryPage() {
     }
   };
 
-  const getMediaUrl = (item: Media) => {
-    if (item.storage_path.startsWith('http')) {
-      return item.storage_path;
-    }
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tour-media/${item.storage_path}`;
-  };
+  const getMediaUrl = (item: Media) => getStorageMediaUrl(item.storage_path);
 
   const formatFileSize = (bytes: number | null) => {
     if (!bytes) return 'Unknown size';
