@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LeadfeederTracker } from '@/components/analytics/LeadfeederTracker';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://walkingtourbuilder.com'),
@@ -59,6 +60,7 @@ export default function MarketingLayout({
         }}
       />
       <div className="wtb-theme">{children}</div>
+      <LeadfeederTracker />
     </>
   );
 }

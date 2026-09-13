@@ -116,6 +116,7 @@ export default function PrivacyPage() {
               <li>Collect anonymized analytics on Service usage.</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-3">You can control cookies through your browser settings. Disabling cookies may affect your ability to log in and use certain features of the Service. We do not use cookies to serve third-party advertising.</p>
+            <p className="text-muted-foreground leading-relaxed mt-3">We also use a website visitor identification service (Leadfeeder/Dealfront) on our marketing pages, which matches visitor IP addresses to the organizations they belong to. This tells us which companies are browsing our site so we can follow up with relevant information — it does not identify individual people, and no personal information is collected through this service.</p>
           </section>
 
           <section>
