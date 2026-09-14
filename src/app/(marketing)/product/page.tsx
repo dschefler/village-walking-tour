@@ -508,6 +508,17 @@ export default async function MarketingLandingPage() {
             <Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link>
             <Link href="/login" className="hover:text-foreground">Log In</Link>
           </div>
+          {/* Smol Launch verification badge — their dofollow backlink only
+              activates once this is live on the site. */}
+          <a href="https://smollaunch.com" target="_blank" rel="noopener">
+            <img
+              src="https://smollaunch.com/badges/featured.svg"
+              alt="Walking Tour Builder — Featured on Smol Launch"
+              loading="lazy"
+              width={250}
+              height={60}
+            />
+          </a>
         </div>
       </footer>
     </div>
