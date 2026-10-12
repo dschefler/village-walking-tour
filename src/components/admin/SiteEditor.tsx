@@ -404,7 +404,8 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             hours: hoursPayload,
             ...(organizationId ? { organization_id: organizationId } : {}),
           })
-          .eq('id', site.id);
+          .eq('id', site.id)
+          .eq('organization_id', organizationId ?? '');
 
         if (error) throw error;
 
@@ -494,7 +495,11 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     setDeleting(true);
 
     try {
-      const { error } = await supabase.from('sites').delete().eq('id', site.id);
+      const { error } = await supabase
+        .from('sites')
+        .delete()
+        .eq('id', site.id)
+        .eq('organization_id', organizationId ?? '');
 
       if (error) throw error;
 

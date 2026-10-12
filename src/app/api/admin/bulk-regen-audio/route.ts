@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getRequesterMembership } from '@/lib/auth/membership';
 
 const CHUCK_NEWSWORTHY_VOICE_ID = '2RSrGXhRlTEUFC0nwaNn';
 const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel — fallback for tenants with no default set
@@ -19,10 +20,17 @@ export async function GET(request: NextRequest) {
   const tourId = new URL(request.url).searchParams.get('tourId');
   if (!tourId) return NextResponse.json({ error: 'tourId required' }, { status: 400 });
 
+  // Previously returned any tour's sites (including cross-org, unpublished
+  // ones with full description text) to anyone merely logged in. Verify
+  // the tour actually belongs to the caller's own org first.
+  const membership = await getRequesterMembership(supabase, user.id);
+  if (!membership) return NextResponse.json({ error: 'No organization' }, { status: 403 });
+
   const { data, error } = await supabase
     .from('sites')
     .select('id, name, description, organization_id, audio_url')
     .eq('tour_id', tourId)
+    .eq('organization_id', membership.organization_id)
     .order('display_order');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -38,44 +46,42 @@ export async function POST(request: NextRequest) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 503 });
 
-  const { siteId, text, orgId, voiceId: requestedVoiceId } = await request.json();
+  const { siteId, text, voiceId: requestedVoiceId } = await request.json();
   if (!siteId || !text?.trim()) return NextResponse.json({ error: 'siteId and text required' }, { status: 400 });
 
-  // Resolve org subscription tier and default voice
-  let subscriptionTier = 'starter';
-  let orgVoiceId: string | null = null;
-  let resolvedOrgId = orgId;
-  let isSouthampton = false;
+  // Previously trusted a client-supplied `orgId` for billing/quota/voice
+  // selection, and updated `sites` by siteId alone — a logged-in user of
+  // Org A could pass Org B's siteId with Org A's own orgId, bill the
+  // narration to Org A's quota while overwriting Org B's live site audio
+  // with attacker-chosen text. Always re-derive the org from the site's
+  // own row and require the caller to actually be a member of it.
+  const membership = await getRequesterMembership(supabase, user.id);
+  if (!membership) return NextResponse.json({ error: 'No organization' }, { status: 403 });
 
-  if (resolvedOrgId) {
-    const { data: org } = await supabase
-      .from('organizations')
-      .select('subscription_tier, default_tts_voice, slug')
-      .eq('id', resolvedOrgId)
-      .single();
+  const { data: siteRow, error: siteError } = await supabase
+    .from('sites')
+    .select('id, organization_id')
+    .eq('id', siteId)
+    .single();
 
-    if (org) {
-      subscriptionTier = org.subscription_tier;
-      orgVoiceId = org.default_tts_voice;
-      isSouthampton = org.slug === 'southampton';
-    }
-  } else {
-    // Fall back to first org the user belongs to
-    const { data: membership } = await supabase
-      .from('organization_members')
-      .select('organization_id, organizations(subscription_tier, default_tts_voice, slug)')
-      .eq('user_id', user.id)
-      .limit(1)
-      .single();
-
-    if (membership) {
-      resolvedOrgId = membership.organization_id;
-      const org = membership.organizations as any;
-      subscriptionTier = org?.subscription_tier ?? 'starter';
-      orgVoiceId = org?.default_tts_voice ?? null;
-      isSouthampton = org?.slug === 'southampton';
-    }
+  if (siteError || !siteRow) {
+    return NextResponse.json({ error: 'Site not found' }, { status: 404 });
   }
+  if (siteRow.organization_id !== membership.organization_id) {
+    return NextResponse.json({ error: 'Not authorized for this site' }, { status: 403 });
+  }
+
+  const resolvedOrgId = membership.organization_id;
+
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('subscription_tier, default_tts_voice, slug')
+    .eq('id', resolvedOrgId)
+    .single();
+
+  const subscriptionTier = org?.subscription_tier ?? 'starter';
+  const orgVoiceId = org?.default_tts_voice ?? null;
+  const isSouthampton = org?.slug === 'southampton';
 
   // Check monthly usage limit
   if (resolvedOrgId) {
@@ -140,7 +146,8 @@ export async function POST(request: NextRequest) {
   const { error: updateError } = await supabase
     .from('sites')
     .update({ audio_url: urlData.publicUrl })
-    .eq('id', siteId);
+    .eq('id', siteId)
+    .eq('organization_id', resolvedOrgId);
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 

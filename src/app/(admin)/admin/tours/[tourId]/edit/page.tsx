@@ -88,6 +88,35 @@ export default function EditTourPage() {
       return;
     }
 
+    // RLS already blocks saving/deleting another org's tour, but this
+    // page is now reachable by ordinary customers (not just the platform
+    // operator) — check ownership up front too, both for a clean message
+    // instead of a confusing save failure, and so a published tour
+    // belonging to another org (visible under tours_select_public) never
+    // renders in someone else's edit screen.
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = user
+      ? await supabase.from('user_profiles').select('platform_role').eq('id', user.id).single()
+      : { data: null };
+    const isSuperAdmin = profile?.platform_role === 'super_admin';
+
+    if (!isSuperAdmin) {
+      const { data: membership } = user
+        ? await supabase
+            .from('organization_members')
+            .select('organization_id')
+            .eq('user_id', user.id)
+            .limit(1)
+            .single()
+        : { data: null };
+
+      if (!membership || membership.organization_id !== tourData.organization_id) {
+        setError('Tour not found');
+        setLoading(false);
+        return;
+      }
+    }
+
     setTour(tourData);
 
     // Load org for QR URL construction
@@ -144,7 +173,8 @@ export default function EditTourPage() {
         is_published: formData.is_published,
         cover_image_url: formData.cover_image_url || null,
       })
-      .eq('id', tourId);
+      .eq('id', tourId)
+      .eq('organization_id', tour?.organization_id ?? '');
 
     setSaving(false);
 
@@ -167,7 +197,8 @@ export default function EditTourPage() {
     const { error: deleteError } = await supabase
       .from('tours')
       .delete()
-      .eq('id', tourId);
+      .eq('id', tourId)
+      .eq('organization_id', tour?.organization_id ?? '');
 
     if (deleteError) {
       toast({
@@ -201,7 +232,8 @@ export default function EditTourPage() {
       await supabase
         .from('sites')
         .update({ display_order: site.display_order })
-        .eq('id', site.id);
+        .eq('id', site.id)
+        .eq('organization_id', tour?.organization_id ?? '');
     }
   };
 
@@ -279,7 +311,8 @@ export default function EditTourPage() {
       const { error } = await supabase
         .from('sites')
         .update({ audio_url: null })
-        .eq('tour_id', tourId);
+        .eq('tour_id', tourId)
+        .eq('organization_id', tour?.organization_id ?? '');
       if (error) throw error;
       await loadTour();
       setRegenStatus({ running: false, message: 'All audio cleared. You can now regenerate with the new voice.' });

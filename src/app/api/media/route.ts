@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { getRequesterMembership } from '@/lib/auth/membership';
 
 export async function GET(request: NextRequest) {
   const supabase = createClient();
@@ -8,19 +9,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Previously trusted a client-supplied ?organizationId= and ran the
+  // query through the service client (bypassing RLS) — any logged-in user
+  // could list another org's media by passing its id. Always derive the
+  // org from the caller's own membership instead.
+  const membership = await getRequesterMembership(supabase, user.id);
+  if (!membership) {
+    return NextResponse.json({ error: 'No organization' }, { status: 403 });
+  }
+
   const { searchParams } = new URL(request.url);
-  const organizationId = searchParams.get('organizationId');
   const fileType = searchParams.get('fileType');
 
   const serviceClient = createServiceClient();
   let query = serviceClient
     .from('media')
     .select('id, filename, storage_path, file_type, created_at')
+    .eq('organization_id', membership.organization_id)
     .order('created_at', { ascending: false });
-
-  if (organizationId) {
-    query = query.eq('organization_id', organizationId);
-  }
 
   if (fileType) {
     query = query.eq('file_type', fileType);
@@ -42,6 +48,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Previously took organization_id straight from the request body with
+  // no verification — any logged-in user could tag an upload to any org's
+  // id. Always derive it from the caller's own membership instead.
+  const membership = await getRequesterMembership(supabase, user.id);
+  if (!membership) {
+    return NextResponse.json({ error: 'No organization' }, { status: 403 });
+  }
+
   const body = await request.json();
 
   const serviceClient = createServiceClient();
@@ -52,7 +66,7 @@ export async function POST(request: NextRequest) {
       storage_path: body.storage_path,
       file_type: body.file_type,
       file_size: body.file_size,
-      ...(body.organization_id ? { organization_id: body.organization_id } : {}),
+      organization_id: membership.organization_id,
     })
     .select()
     .single();

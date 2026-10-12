@@ -68,6 +68,27 @@ export async function GET(
   { params }: { params: { orgId: string } }
 ) {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Previously had no auth check at all — `select('*')` returns
+  // contact_email/phone/address and stripe_customer_id, so anyone could
+  // pull any org's full row with no login. This endpoint is unused by any
+  // page in this app (every known caller does PATCH), so require real
+  // membership rather than leaving it open.
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { data: membership } = await supabase
+    .from('organization_members')
+    .select('role')
+    .eq('organization_id', params.orgId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (!membership) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const { data, error } = await supabase
     .from('organizations')

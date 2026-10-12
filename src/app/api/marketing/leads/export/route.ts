@@ -2,11 +2,24 @@ import { NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 export async function GET() {
-  // Require admin auth
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Previously "logged in" was the entire check — any paying customer of
+  // the platform could download the full prospective-customer lead list
+  // for the whole business, not just their own org's data. This is
+  // platform-owner-only data, so require platform_role = 'super_admin'.
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('platform_role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.platform_role !== 'super_admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const serviceClient = createServiceClient();

@@ -77,8 +77,14 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.rewrite(new URL('/product', request.url));
   }
 
-  // --- /admin is Southampton-only; redirect to /dashboard on WTB domain ---
-  if (isWTBDomain && pathname.startsWith('/admin')) {
+  // --- /admin/tours/[id]/edit is the per-tour editor (cover image, sites,
+  // audio) — real customers need it too, on walkingtourbuilder.com, not
+  // just the Southampton operator. The rest of /admin (marketing, media
+  // library, usage, tours list/new) stays operator-only. Ownership of the
+  // *specific* tour is checked by the page/API itself via organization_id.
+  const isAdminTourEditor = /^\/admin\/tours\/[^/]+\/edit/.test(pathname);
+
+  if (isWTBDomain && pathname.startsWith('/admin') && !isAdminTourEditor) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
@@ -90,14 +96,36 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    if (isAdminTourEditor) {
+      // Any org member may reach the editor — which tour they can
+      // actually load/save is enforced downstream, not here.
+      const { data: membership } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single();
 
-    if (!profile || !['admin', 'editor'].includes(profile.role)) {
-      return NextResponse.redirect(new URL('/', request.url));
+      if (!membership) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (!profile || !['admin', 'editor'].includes(profile.role)) {
+          return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+      }
+    } else {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile || !['admin', 'editor'].includes(profile.role)) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
     }
   }
 

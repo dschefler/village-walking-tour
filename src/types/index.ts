@@ -44,6 +44,7 @@ export interface Site {
 
 export interface Media {
   id: string;
+  organization_id: string | null;
   filename: string;
   storage_path: string;
   file_type: 'image' | 'audio';

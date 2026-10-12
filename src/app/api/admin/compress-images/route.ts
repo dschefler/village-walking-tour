@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getRequesterMembership } from '@/lib/auth/membership';
 import sharp from 'sharp';
 
-// GET: list all uncompressed images for an org
+// GET: list all uncompressed images for the caller's own org
 export async function GET(request: NextRequest) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const orgId = new URL(request.url).searchParams.get('orgId');
+  // Previously trusted a client-supplied ?orgId= — always derive from
+  // the caller's own membership instead.
+  const membership = await getRequesterMembership(supabase, user.id);
+  if (!membership) return NextResponse.json({ error: 'No organization' }, { status: 403 });
 
-  let query = supabase
+  const { data, error } = await supabase
     .from('media')
     .select('id, filename, storage_path, file_size, file_type')
     .eq('file_type', 'image')
+    .eq('organization_id', membership.organization_id)
     .order('created_at', { ascending: false });
 
-  if (orgId) query = query.eq('organization_id', orgId);
-
-  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data ?? []);
 }
@@ -29,8 +31,35 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { mediaId, storagePath } = await request.json();
-  if (!mediaId || !storagePath) return NextResponse.json({ error: 'mediaId and storagePath required' }, { status: 400 });
+  const membership = await getRequesterMembership(supabase, user.id);
+  if (!membership) return NextResponse.json({ error: 'No organization' }, { status: 403 });
+
+  const { mediaId, storagePath: requestedStoragePath } = await request.json();
+  if (!mediaId || !requestedStoragePath) {
+    return NextResponse.json({ error: 'mediaId and storagePath required' }, { status: 400 });
+  }
+
+  // Previously downloaded/overwrote/deleted whatever storagePath the
+  // client sent, keyed only on mediaId, with no check that either
+  // belonged to the caller's org — a logged-in user of any org could
+  // corrupt or delete another org's actual image file in shared storage,
+  // regardless of what the final DB update below would have allowed.
+  // Look the media row up ourselves and use its own storage_path, rather
+  // than trusting the client's copy of it.
+  const { data: mediaRow, error: mediaError } = await supabase
+    .from('media')
+    .select('id, storage_path, organization_id')
+    .eq('id', mediaId)
+    .single();
+
+  if (mediaError || !mediaRow) {
+    return NextResponse.json({ error: 'Media not found' }, { status: 404 });
+  }
+  if (mediaRow.organization_id !== membership.organization_id) {
+    return NextResponse.json({ error: 'Not authorized for this file' }, { status: 403 });
+  }
+
+  const storagePath = mediaRow.storage_path;
 
   // Download original from Supabase storage
   const { data: fileData, error: downloadError } = await supabase.storage
@@ -82,7 +111,11 @@ export async function POST(request: NextRequest) {
     await supabase.storage.from('tour-media').remove([storagePath]);
   }
 
-  const { error: updateError } = await supabase.from('media').update(updates).eq('id', mediaId);
+  const { error: updateError } = await supabase
+    .from('media')
+    .update(updates)
+    .eq('id', mediaId)
+    .eq('organization_id', membership.organization_id);
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
   return NextResponse.json({

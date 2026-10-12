@@ -33,11 +33,35 @@ export default function MediaLibraryPage() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  // This page previously queried `media` with no organization filter at
+  // all, which — combined with the media table's wide-open RLS policy —
+  // showed every org's files side by side to any logged-in user. Scope
+  // everything to the caller's own org.
+  const [orgId, setOrgId] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: membership } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single();
+      setOrgId(membership?.organization_id ?? null);
+    })();
+  }, [supabase]);
 
   const loadMedia = useCallback(async () => {
+    if (!orgId) return;
     setLoading(true);
 
-    let query = supabase.from('media').select('*').order('created_at', { ascending: false });
+    let query = supabase
+      .from('media')
+      .select('*')
+      .eq('organization_id', orgId)
+      .order('created_at', { ascending: false });
 
     if (filterType !== 'all') {
       query = query.eq('file_type', filterType);
@@ -60,7 +84,7 @@ export default function MediaLibraryPage() {
 
     setMedia(data || []);
     setLoading(false);
-  }, [supabase, filterType, searchQuery, toast]);
+  }, [supabase, orgId, filterType, searchQuery, toast]);
 
   useEffect(() => {
     loadMedia();
@@ -78,14 +102,25 @@ export default function MediaLibraryPage() {
   const handleDelete = async () => {
     if (!selectedMedia) return;
 
-    try {
-      // Delete from storage
-      await supabase.storage.from('tour-media').remove([selectedMedia.storage_path]);
+    // Belt-and-suspenders: never touch storage for a row we didn't load
+    // as our own org's media in the first place.
+    if (!orgId || selectedMedia.organization_id !== orgId) {
+      toast({ title: 'Error', description: 'Not authorized to delete this file', variant: 'destructive' });
+      return;
+    }
 
-      // Delete from database
-      const { error } = await supabase.from('media').delete().eq('id', selectedMedia.id);
+    try {
+      // Delete the database row first — if this is rejected (RLS, or the
+      // row isn't actually ours), we never touch the file in storage.
+      const { error } = await supabase
+        .from('media')
+        .delete()
+        .eq('id', selectedMedia.id)
+        .eq('organization_id', orgId);
 
       if (error) throw error;
+
+      await supabase.storage.from('tour-media').remove([selectedMedia.storage_path]);
 
       setShowDeleteDialog(false);
       setSelectedMedia(null);
