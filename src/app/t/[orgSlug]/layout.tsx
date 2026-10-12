@@ -29,7 +29,10 @@ export async function generateMetadata({ params }: { params: { orgSlug: string }
   const ogImage = org.logo_url ? [{ url: org.logo_url, alt: org.name }] : undefined;
 
   return {
-    title,
+    // `absolute` bypasses the root layout's title template
+    // ('%s | Southampton Village Walking Tour') — without it, every
+    // tenant's title silently got Southampton's name appended.
+    title: { absolute: title },
     description,
     keywords: org.seo_keywords || undefined,
     manifest: `/api/manifest/${org.slug}`,
