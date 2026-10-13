@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { MediaUploader } from '@/components/admin/MediaUploader';
 import { useToast } from '@/hooks/use-toast';
-import type { Organization } from '@/types';
+import type { Organization, Sponsor } from '@/types';
 
 interface VoiceOption {
   id: string;
@@ -116,6 +116,10 @@ export default function SettingsPage() {
   const [donationAmounts, setDonationAmounts] = useState<number[]>([5, 10, 20, 50]);
   const [newAmount, setNewAmount] = useState('');
 
+  // Sponsor acknowledgement list — shown in the right column of the
+  // public Contact page
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+
   // Theme fields
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [fontFamily, setFontFamily] = useState('Open Sans');
@@ -157,6 +161,7 @@ export default function SettingsPage() {
             setCuratedToursEnabled(o.curated_tours_enabled ?? true);
             setDonationsEnabled(o.donations_enabled ?? false);
             setDonationAmounts(o.donation_amounts ?? [5, 10, 20, 50]);
+            setSponsors(o.sponsors ?? []);
             setThemeMode(o.theme_mode || 'light');
             setFontFamily(o.font_family || 'Inter');
             setBackgroundColor(o.background_color || '#FFFFFF');
@@ -204,6 +209,18 @@ export default function SettingsPage() {
     }
   };
 
+  const addSponsor = () => {
+    setSponsors((prev) => [...prev, { name: '', logo_url: null, url: null }]);
+  };
+
+  const updateSponsor = (index: number, patch: Partial<Sponsor>) => {
+    setSponsors((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+  };
+
+  const removeSponsor = (index: number) => {
+    setSponsors((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleThemeModeToggle = (mode: 'light' | 'dark') => {
     setThemeMode(mode);
     if (mode === 'dark') {
@@ -239,6 +256,7 @@ export default function SettingsPage() {
           curated_tours_enabled: curatedToursEnabled,
           donations_enabled: donationsEnabled,
           donation_amounts: donationAmounts.length > 0 ? donationAmounts : [5, 10, 20, 50],
+          sponsors: sponsors.filter((s) => s.name.trim()),
           theme_mode: themeMode,
           font_family: fontFamily,
           background_color: backgroundColor,
@@ -770,6 +788,75 @@ export default function SettingsPage() {
                 <code className="bg-background px-1 rounded border">/api/donations/webhook</code>.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Sponsors */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Sponsors</CardTitle>
+            <CardDescription>
+              Acknowledge businesses or donors who underwrite this tour. Shown on your Contact page.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {sponsors.map((sponsor, i) => (
+              <div key={i} className="flex gap-3 p-3 border rounded-lg items-start">
+                <div className="flex-shrink-0">
+                  {sponsor.logo_url ? (
+                    <div className="relative w-16 h-16 rounded border overflow-hidden bg-muted">
+                      <Image src={sponsor.logo_url} alt={sponsor.name || 'Sponsor logo'} fill className="object-contain" sizes="64px" />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16">
+                      <MediaUploader
+                        accept="image/*"
+                        path={`${org.slug}/sponsors`}
+                        organizationId={org.id}
+                        onUpload={(url) => updateSponsor(i, { logo_url: url })}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Input
+                    placeholder="Sponsor name"
+                    value={sponsor.name}
+                    onChange={(e) => updateSponsor(i, { name: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Website URL (optional)"
+                    value={sponsor.url ?? ''}
+                    onChange={(e) => updateSponsor(i, { url: e.target.value || null })}
+                  />
+                  {sponsor.logo_url && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => updateSponsor(i, { logo_url: null })}
+                    >
+                      <X className="w-3 h-3" />
+                      Remove logo
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeSponsor(i)}
+                  aria-label="Remove sponsor"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addSponsor}>
+              <Plus className="w-3 h-3" />
+              Add Sponsor
+            </Button>
           </CardContent>
         </Card>
 

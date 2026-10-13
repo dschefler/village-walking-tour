@@ -196,6 +196,12 @@ export interface OrgCuratedTour {
 }
 
 // Organization / multi-tenant types
+export interface Sponsor {
+  name: string;
+  logo_url: string | null;
+  url: string | null;
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -219,6 +225,7 @@ export interface Organization {
   contact_address: string | null;
   donations_enabled: boolean;
   donation_amounts: number[] | null;
+  sponsors: Sponsor[] | null;
   seo_title: string | null;
   seo_description: string | null;
   seo_keywords: string | null;

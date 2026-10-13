@@ -5,13 +5,14 @@ import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { DonationSection } from '@/components/contact/DonationSection';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Sponsor } from '@/types';
 
 async function getOrg(slug: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from('organizations')
-    .select('name, logo_url, contact_email, contact_phone, contact_address, donations_enabled, donation_amounts')
+    .select('name, logo_url, contact_email, contact_phone, contact_address, donations_enabled, donation_amounts, sponsors')
     .eq('slug', slug)
     .eq('is_active', true)
     .single();
@@ -84,6 +85,17 @@ export default async function TenantContactPage({
                 <p className="text-sm text-muted-foreground">{org.contact_address}</p>
               </div>
             </div>
+          ) : org?.donations_enabled ? (
+            // Previously rendered as a plain, non-interactive div even
+            // when donations were enabled — "Support Us" with nothing to
+            // click. Now links down to the real donation section below.
+            <a href="#donate" className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
+              <Heart className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Support Us</p>
+                <p className="text-sm text-muted-foreground">Donate to keep tours free</p>
+              </div>
+            </a>
           ) : (
             <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
               <Heart className="w-5 h-5 text-red-500" />
@@ -143,6 +155,46 @@ export default async function TenantContactPage({
             )}
             {org?.donations_enabled && (
               <DonationSection amounts={org.donation_amounts ?? undefined} />
+            )}
+            {org?.sponsors && (org.sponsors as Sponsor[]).filter((s) => s.name?.trim()).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Our Sponsors</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {(org.sponsors as Sponsor[]).filter((s) => s.name?.trim()).map((sponsor, i) => {
+                    const content = (
+                      <>
+                        {sponsor.logo_url ? (
+                          <div className="relative w-14 h-14 rounded border bg-muted flex-shrink-0 overflow-hidden">
+                            <Image src={sponsor.logo_url} alt={sponsor.name} fill className="object-contain" sizes="56px" />
+                          </div>
+                        ) : (
+                          <div className="w-14 h-14 rounded border bg-muted flex items-center justify-center flex-shrink-0">
+                            <Heart className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className="font-medium">{sponsor.name}</span>
+                      </>
+                    );
+                    return sponsor.url ? (
+                      <a
+                        key={i}
+                        href={sponsor.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                      >
+                        {content}
+                      </a>
+                    ) : (
+                      <div key={i} className="flex items-center gap-3">
+                        {content}
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
