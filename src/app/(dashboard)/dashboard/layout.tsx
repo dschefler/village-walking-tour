@@ -11,6 +11,30 @@ async function signOut() {
   redirect('/login');
 }
 
+// This route had no title metadata at all, so every customer's dashboard
+// fell through to the root layout's hardcoded default — literally
+// "Southampton Village Walking Tour" in the browser tab, regardless of
+// which org's dashboard they were actually looking at. `absolute`
+// bypasses the root layout's title template rather than being wrapped by
+// it (same fix as the /t/[orgSlug] tenant pages).
+export async function generateMetadata() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return {};
+
+  const { data: membership } = await supabase
+    .from('organization_members')
+    .select('organization:organizations(name)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single();
+
+  const orgName = (membership?.organization as unknown as { name: string } | null)?.name;
+  if (!orgName) return {};
+
+  return { title: { absolute: `${orgName} — Dashboard` } };
+}
+
 export default async function DashboardLayout({
   children,
 }: {

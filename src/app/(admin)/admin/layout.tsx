@@ -11,6 +11,26 @@ async function signOut() {
   redirect('/login');
 }
 
+// Same bug as the dashboard layout: no title metadata here meant every
+// page under /admin — including /admin/tours/[id]/edit, which ordinary
+// customers now reach too — fell through to the root layout's hardcoded
+// "Southampton Village Walking Tour" default.
+export async function generateMetadata() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return {};
+
+  const { data: membership } = await supabase
+    .from('organization_members')
+    .select('organization:organizations(name)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single();
+
+  const orgName = (membership?.organization as unknown as { name: string } | null)?.name;
+  return { title: { absolute: orgName ? `${orgName} — Admin` : 'Tour Admin' } };
+}
+
 export default async function AdminLayout({
   children,
 }: {
