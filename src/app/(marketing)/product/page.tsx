@@ -170,7 +170,7 @@ const buildPackages = [
   {
     name: 'Essential Build',
     price: '$799',
-    period: 'one-time setup fee',
+    period: 'one-time setup fee — no additional monthly fee',
     pairsWith: 'Best with Starter plan',
     timeline: '7–10 business days',
     scope: '1 tour · up to 10 sites',
@@ -186,11 +186,11 @@ const buildPackages = [
   },
   {
     name: 'Professional Build',
-    price: '$1,799',
-    period: 'one-time setup fee',
+    price: '$4,000',
+    period: 'one-time setup fee — no additional monthly fee',
     pairsWith: 'Best with Pro plan',
     timeline: '10–15 business days',
-    scope: 'Up to 3 tours · up to 25 sites each',
+    scope: '1 tour · up to 25 sites',
     priceKey: 'professional_build' as const,
     features: [
       'Everything in Essential Build',
@@ -204,11 +204,11 @@ const buildPackages = [
   },
   {
     name: 'Enterprise Build',
-    price: '$3,499',
-    period: 'one-time setup fee',
+    price: '$5,500',
+    period: 'one-time setup fee — no additional monthly fee',
     pairsWith: 'Best with Enterprise plan',
     timeline: '15–21 business days',
-    scope: 'Up to 8 tours · up to 40 sites each',
+    scope: '1 tour · up to 50 sites',
     priceKey: 'enterprise_build' as const,
     features: [
       'Everything in Professional Build',
@@ -240,8 +240,9 @@ export default async function MarketingLandingPage() {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web, iOS, Android',
     offers: [
-      { '@type': 'Offer', price: '49', priceCurrency: 'USD', name: 'Starter', description: 'Starter plan — monthly subscription' },
-      { '@type': 'Offer', price: '99', priceCurrency: 'USD', name: 'Pro', description: 'Pro plan — monthly subscription' },
+      { '@type': 'Offer', price: '99', priceCurrency: 'USD', name: 'Starter', description: 'Starter plan — monthly subscription' },
+      { '@type': 'Offer', price: '179', priceCurrency: 'USD', name: 'Pro', description: 'Pro plan — monthly subscription' },
+      { '@type': 'Offer', price: '349', priceCurrency: 'USD', name: 'Enterprise', description: 'Enterprise plan — monthly subscription' },
     ],
     provider: {
       '@type': 'Organization',

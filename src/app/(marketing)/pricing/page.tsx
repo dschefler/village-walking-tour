@@ -12,28 +12,41 @@ export const metadata: Metadata = {
   description: 'Simple, transparent pricing for Walking Tour Builder — branded GPS walking tour apps for your organization.',
 };
 
+// Kept in sync by hand with src/components/marketing/PricingSection.tsx —
+// these were previously drifted (showing the *annual* per-month rate as
+// the plain monthly price, and a completely different Enterprise feature
+// list: "Unlimited tours/sites" here vs. "Up to 15/50" on the home page).
+// Worth consolidating onto one source of truth later.
 const tiers = [
   {
     name: 'Starter',
-    price: '$79',
+    price: '$99',
     period: '/mo',
     description: 'Perfect for a single walking tour',
     features: ['1 tour', '10 sites', '5 media per site', 'Stamp card', 'GPS navigation', 'Offline support', 'PWA install'],
   },
   {
     name: 'Pro',
-    price: '$149',
+    price: '$179',
     period: '/mo',
     description: 'For organizations with multiple tours',
-    features: ['5 tours', '25 sites per tour', 'Unlimited media', 'Custom domain', 'Analytics dashboard', 'Audio narration', 'Priority support'],
+    features: ['3 tours', '25 sites per tour', 'Unlimited media', 'Custom domain', 'Analytics dashboard', 'Audio narration', 'Priority support'],
     popular: true,
   },
   {
     name: 'Enterprise',
-    price: '$299',
+    price: '$349',
     period: '/mo',
     description: 'For large organizations and destinations',
-    features: ['Unlimited tours', 'Unlimited sites', 'White-label mode', 'Team members', 'API access', 'Custom integrations', 'Dedicated support'],
+    features: [
+      'Up to 3 tours',
+      'Up to 40 sites per tour',
+      'White-label mode',
+      'Team members',
+      'API access',
+      'Priority support',
+      'Custom coding and curated tours available at additional cost',
+    ],
   },
 ];
 

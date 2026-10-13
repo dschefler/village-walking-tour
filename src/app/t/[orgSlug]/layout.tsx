@@ -20,6 +20,29 @@ async function getOrganization(slug: string): Promise<Organization | null> {
   return data;
 }
 
+// Nothing previously read subscription_status/trial_ends_at anywhere in
+// the app — the Stripe webhook already kept subscription_status current
+// in real time (trialing/active/past_due/canceled/unpaid), but no page
+// ever acted on it, so a lapsed subscription never actually took the
+// public tour down. Two independent expiry paths to cover:
+//  1. A paid subscription whose payment failed or was canceled.
+//  2. A self-serve signup that never went through Stripe at all — those
+//     orgs start as subscription_status='trialing' with trial_ends_at
+//     defaulting to 14 days out (see migration 005), and nothing ever
+//     flips their status once that clock runs out.
+// Checking trial_ends_at against the current time on every request means
+// this needs no cron job and no manual monitoring — it's current by
+// definition on each page load.
+function isAccessExpired(org: Organization): boolean {
+  if (['canceled', 'past_due', 'unpaid'].includes(org.subscription_status)) {
+    return true;
+  }
+  if (org.subscription_status === 'trialing' && org.trial_ends_at) {
+    return new Date(org.trial_ends_at).getTime() < Date.now();
+  }
+  return false;
+}
+
 export async function generateMetadata({ params }: { params: { orgSlug: string } }) {
   const org = await getOrganization(params.orgSlug);
   if (!org) return {};
@@ -121,6 +144,31 @@ export default async function TenantLayout({
 
   if (!org) {
     notFound();
+  }
+
+  if (isAccessExpired(org)) {
+    return (
+      <div
+        style={{
+          minHeight: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '2rem',
+          fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+        }}
+      >
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+          This tour is currently unavailable
+        </h1>
+        <p style={{ color: '#6b7280', maxWidth: '28rem' }}>
+          {org.name} isn&apos;t active right now. If you&apos;re the owner, sign in to your
+          dashboard to reactivate it.
+        </p>
+      </div>
+    );
   }
 
   const themeCSS = buildThemeCSS(org);

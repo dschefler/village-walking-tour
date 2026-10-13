@@ -80,6 +80,12 @@ export async function POST(request: NextRequest) {
   }
 
   // Create org
+  // trial_ends_at is set explicitly here rather than left to the column
+  // default, which is still 14 days (migration 005) — the pricing page
+  // promises a 7-day trial, and there's no direct DB connection available
+  // to this environment to alter the live column default itself.
+  const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
   const { data: org, error: orgError } = await supabase
     .from('organizations')
     .insert({
@@ -92,6 +98,7 @@ export async function POST(request: NextRequest) {
       app_description: app_description || null,
       default_lat: default_lat || 40.884300,
       default_lng: default_lng || -72.389600,
+      trial_ends_at: trialEndsAt,
     })
     .select()
     .single();
