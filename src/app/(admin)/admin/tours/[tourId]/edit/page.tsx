@@ -61,7 +61,7 @@ export default function EditTourPage() {
     cover_image_url: '',
   });
 
-  const [org, setOrg] = useState<{ slug: string; custom_domain: string | null; primary_color: string; default_tts_voice: string | null } | null>(null);
+  const [org, setOrg] = useState<{ slug: string; custom_domain: string | null; primary_color: string; default_tts_voice: string | null; default_lat: number | null; default_lng: number | null } | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSiteEditor, setShowSiteEditor] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
@@ -123,7 +123,7 @@ export default function EditTourPage() {
     if (tourData.organization_id) {
       const { data: orgData } = await supabase
         .from('organizations')
-        .select('slug, custom_domain, primary_color, default_tts_voice')
+        .select('slug, custom_domain, primary_color, default_tts_voice, default_lat, default_lng')
         .eq('id', tourData.organization_id)
         .single();
       setOrg(orgData ?? null);
@@ -740,6 +740,11 @@ export default function EditTourPage() {
             organizationId={tour?.organization_id ?? undefined}
             lockedVoiceId={org?.slug === 'southampton' ? '2RSrGXhRlTEUFC0nwaNn' : undefined}
             defaultVoiceId={org?.default_tts_voice ?? undefined}
+            orgDefaultLocation={
+              org?.default_lat != null && org?.default_lng != null
+                ? { latitude: org.default_lat, longitude: org.default_lng }
+                : undefined
+            }
           />
         </DialogContent>
       </Dialog>

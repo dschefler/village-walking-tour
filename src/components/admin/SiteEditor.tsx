@@ -57,9 +57,12 @@ interface SiteEditorProps {
   organizationId?: string;
   lockedVoiceId?: string;
   defaultVoiceId?: string;
+  /** Org's default_lat/default_lng — biases address geocoding toward the
+   *  org's own city instead of the hardcoded Southampton, NY default. */
+  orgDefaultLocation?: { latitude: number; longitude: number };
 }
 
-export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId, lockedVoiceId, defaultVoiceId }: SiteEditorProps) {
+export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId, lockedVoiceId, defaultVoiceId, orgDefaultLocation }: SiteEditorProps) {
   const { toast } = useToast();
   const mapRef = useRef<MapRef>(null);
   const supabase = createClient();
@@ -569,6 +572,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
           onChange={(address) => setFormData((prev) => ({ ...prev, address }))}
           onGeocode={handleGeocode}
           placeholder="Enter street address to auto-fill coordinates..."
+          proximity={orgDefaultLocation}
         />
       </div>
 

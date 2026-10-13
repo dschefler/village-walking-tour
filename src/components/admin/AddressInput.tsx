@@ -13,6 +13,9 @@ interface AddressInputProps {
   onGeocode: (result: GeocodingResult) => void;
   placeholder?: string;
   disabled?: boolean;
+  /** Biases geocoding results toward this org's own city instead of the
+   *  Southampton, NY default — pass the org's default_lat/default_lng. */
+  proximity?: { latitude: number; longitude: number };
 }
 
 export function AddressInput({
@@ -22,6 +25,7 @@ export function AddressInput({
   onGeocode,
   placeholder = 'Enter street address...',
   disabled = false,
+  proximity,
 }: AddressInputProps) {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState<string | null>(null);
@@ -38,7 +42,7 @@ export function AddressInput({
     setGeocodeSuccess(false);
 
     try {
-      const result = await geocodeAddress(value);
+      const result = await geocodeAddress(value, proximity);
 
       if (result) {
         onGeocode(result);
@@ -52,7 +56,7 @@ export function AddressInput({
     } finally {
       setIsGeocoding(false);
     }
-  }, [value, onGeocode]);
+  }, [value, onGeocode, proximity]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {

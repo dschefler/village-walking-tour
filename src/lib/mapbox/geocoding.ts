@@ -23,9 +23,18 @@ export interface GeocodingError {
 /**
  * Geocode an address string to coordinates
  * @param address - Address string to geocode
+ * @param proximity - Coordinates to bias results toward (the org's own
+ *   default location). Every caller previously hardcoded a bias toward
+ *   Southampton, NY regardless of which org's address was being entered
+ *   — a real problem for any other tenant (e.g. Santa Barbara addresses
+ *   could resolve against the wrong "State St", or otherwise skew toward
+ *   NY matches). Falls back to Southampton only if nothing is passed in.
  * @returns Promise with geocoding result or null if not found
  */
-export async function geocodeAddress(address: string): Promise<GeocodingResult | null> {
+export async function geocodeAddress(
+  address: string,
+  proximity: { latitude: number; longitude: number } = SOUTHAMPTON_COORDS
+): Promise<GeocodingResult | null> {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   if (!token) {
@@ -39,8 +48,7 @@ export async function geocodeAddress(address: string): Promise<GeocodingResult |
 
   try {
     const encodedAddress = encodeURIComponent(address.trim());
-    // Bias results toward Southampton Village, NY
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${token}&limit=1&proximity=${SOUTHAMPTON_COORDS.longitude},${SOUTHAMPTON_COORDS.latitude}`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${token}&limit=1&proximity=${proximity.longitude},${proximity.latitude}`;
 
     const response = await fetch(url);
 
