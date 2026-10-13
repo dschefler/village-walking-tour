@@ -119,6 +119,7 @@ export default function SettingsPage() {
   // Sponsor acknowledgement list — shown in the right column of the
   // public Contact page
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [sponsorMessage, setSponsorMessage] = useState('');
 
   // Theme fields
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
@@ -162,6 +163,7 @@ export default function SettingsPage() {
             setDonationsEnabled(o.donations_enabled ?? false);
             setDonationAmounts(o.donation_amounts ?? [5, 10, 20, 50]);
             setSponsors(o.sponsors ?? []);
+            setSponsorMessage(o.sponsor_message ?? '');
             setThemeMode(o.theme_mode || 'light');
             setFontFamily(o.font_family || 'Inter');
             setBackgroundColor(o.background_color || '#FFFFFF');
@@ -257,6 +259,7 @@ export default function SettingsPage() {
           donations_enabled: donationsEnabled,
           donation_amounts: donationAmounts.length > 0 ? donationAmounts : [5, 10, 20, 50],
           sponsors: sponsors.filter((s) => s.name.trim()),
+          sponsor_message: sponsorMessage.trim() || null,
           theme_mode: themeMode,
           font_family: fontFamily,
           background_color: backgroundColor,
@@ -800,6 +803,19 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="sponsor-message" className="text-sm font-medium">
+                Acknowledgement message (optional)
+              </Label>
+              <Textarea
+                id="sponsor-message"
+                placeholder="We gratefully acknowledge our donors for their generous support..."
+                value={sponsorMessage}
+                onChange={(e) => setSponsorMessage(e.target.value)}
+                rows={2}
+              />
+              <p className="text-xs text-muted-foreground">Shown above your sponsor list on the Contact page.</p>
+            </div>
             {sponsors.map((sponsor, i) => (
               <div key={i} className="p-3 border rounded-lg space-y-3">
                 <div className="flex items-start gap-2">

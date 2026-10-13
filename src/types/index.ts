@@ -226,6 +226,7 @@ export interface Organization {
   donations_enabled: boolean;
   donation_amounts: number[] | null;
   sponsors: Sponsor[] | null;
+  sponsor_message: string | null;
   seo_title: string | null;
   seo_description: string | null;
   seo_keywords: string | null;

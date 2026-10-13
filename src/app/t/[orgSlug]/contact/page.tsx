@@ -12,7 +12,7 @@ async function getOrg(slug: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from('organizations')
-    .select('name, logo_url, contact_email, contact_phone, contact_address, donations_enabled, donation_amounts, sponsors')
+    .select('name, logo_url, contact_email, contact_phone, contact_address, donations_enabled, donation_amounts, sponsors, sponsor_message')
     .eq('slug', slug)
     .eq('is_active', true)
     .single();
@@ -160,6 +160,9 @@ export default async function TenantContactPage({
               <Card>
                 <CardHeader>
                   <CardTitle>Our Sponsors</CardTitle>
+                  {org.sponsor_message && (
+                    <p className="text-sm text-muted-foreground">{org.sponsor_message}</p>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {(org.sponsors as Sponsor[]).filter((s) => s.name?.trim()).map((sponsor, i) => {
