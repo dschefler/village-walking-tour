@@ -801,35 +801,35 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {sponsors.map((sponsor, i) => (
-              <div key={i} className="flex gap-3 p-3 border rounded-lg items-start">
-                <div className="flex-shrink-0">
-                  {sponsor.logo_url ? (
-                    <div className="relative w-16 h-16 rounded border overflow-hidden bg-muted">
+              <div key={i} className="p-3 border rounded-lg space-y-3">
+                <div className="flex items-start gap-2">
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      placeholder="Sponsor name"
+                      value={sponsor.name}
+                      onChange={(e) => updateSponsor(i, { name: e.target.value })}
+                    />
+                    <Input
+                      placeholder="Website URL (optional)"
+                      value={sponsor.url ?? ''}
+                      onChange={(e) => updateSponsor(i, { url: e.target.value || null })}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeSponsor(i)}
+                    aria-label="Remove sponsor"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                {sponsor.logo_url ? (
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-16 h-16 rounded border overflow-hidden bg-muted flex-shrink-0">
                       <Image src={sponsor.logo_url} alt={sponsor.name || 'Sponsor logo'} fill className="object-contain" sizes="64px" />
                     </div>
-                  ) : (
-                    <div className="w-16 h-16">
-                      <MediaUploader
-                        accept="image/*"
-                        path={`${org.slug}/sponsors`}
-                        organizationId={org.id}
-                        onUpload={(url) => updateSponsor(i, { logo_url: url })}
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Input
-                    placeholder="Sponsor name"
-                    value={sponsor.name}
-                    onChange={(e) => updateSponsor(i, { name: e.target.value })}
-                  />
-                  <Input
-                    placeholder="Website URL (optional)"
-                    value={sponsor.url ?? ''}
-                    onChange={(e) => updateSponsor(i, { url: e.target.value || null })}
-                  />
-                  {sponsor.logo_url && (
                     <Button
                       type="button"
                       variant="outline"
@@ -840,17 +840,15 @@ export default function SettingsPage() {
                       <X className="w-3 h-3" />
                       Remove logo
                     </Button>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeSponsor(i)}
-                  aria-label="Remove sponsor"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+                  </div>
+                ) : (
+                  <MediaUploader
+                    accept="image/*"
+                    path={`${org.slug}/sponsors`}
+                    organizationId={org.id}
+                    onUpload={(url) => updateSponsor(i, { logo_url: url })}
+                  />
+                )}
               </div>
             ))}
             <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addSponsor}>
