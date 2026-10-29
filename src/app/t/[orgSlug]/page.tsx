@@ -90,7 +90,7 @@ export default async function TenantHomePage({
 
           {curatedToursEnabled ? (
             /* 4 cards: 2×2 grid */
-            <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto w-full mt-2">
+            <div className="grid grid-cols-2 auto-rows-fr gap-2 max-w-sm mx-auto w-full mt-2">
               <Link href={`/t/${params.orgSlug}/how-to-use`} className={cardClass}>
                 <HelpCircle className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm font-semibold leading-tight">How to Use</span>
