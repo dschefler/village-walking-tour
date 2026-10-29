@@ -93,9 +93,13 @@ function buildThemeCSS(org: Organization): string {
   const mutedHsl = isDark
     ? hexToHsl('#27273a')
     : hexToHsl('#f1f5f9');
+  // Light themes with a dark primary use it for secondary text too; the
+  // default slate grey read as too faint on tour pages.
+  const darkPrimary = getContrastColor(org.primary_color) === '#FFFFFF';
+  const useDarkText = !isDark && darkPrimary;
   const mutedFgHsl = isDark
     ? hexToHsl('#94a3b8')
-    : hexToHsl('#64748b');
+    : useDarkText ? primaryHsl : hexToHsl('#64748b');
   const borderHsl = isDark
     ? hexToHsl('#334155')
     : hexToHsl('#e2e8f0');
@@ -121,9 +125,16 @@ function buildThemeCSS(org: Organization): string {
       --accent: ${mutedHsl};
       --accent-foreground: ${fgHsl};`;
 
+  // Pages also hard-code Tailwind greys for secondary text; recolor those
+  // (text only; placeholder icons keep their light grey).
+  const greyText = useDarkText
+    ? `.tenant-theme :is(.text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700):not(svg) { color: hsl(${primaryHsl}); }`
+    : '';
+
   return `
     .tenant-theme { ${vars} }
     [data-radix-portal] { ${vars} }
+    ${greyText}
   `;
 }
 
