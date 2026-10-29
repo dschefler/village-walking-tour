@@ -24,7 +24,8 @@ async function getTours() {
     .from('tours')
     .select(`
       *,
-      sites:sites(count)
+      sites:sites(count),
+      organization:organizations(slug)
     `)
     .eq('organization_id', membership.organization_id)
     .order('updated_at', { ascending: false });
@@ -133,7 +134,7 @@ export default async function ToursPage() {
                     </Button>
                     {tour.is_published && (
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/tour/${tour.slug}`} target="_blank">
+                        <Link href={`/t/${tour.organization?.slug}/tour/${tour.slug}`} target="_blank">
                           <Eye className="w-4 h-4" />
                         </Link>
                       </Button>

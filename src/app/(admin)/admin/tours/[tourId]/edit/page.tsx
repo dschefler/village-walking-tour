@@ -394,14 +394,14 @@ export default function EditTourPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {formData.is_published && (
+          {formData.is_published && org?.slug && (
             <>
               <Button variant="outline" onClick={() => setShowQRCode(true)}>
                 <QrCode className="w-4 h-4 mr-2" />
                 QR Code
               </Button>
               <Button variant="outline" asChild>
-                <Link href={`/tour/${formData.slug}`} target="_blank">
+                <Link href={`/t/${org.slug}/tour/${formData.slug}`} target="_blank">
                   <Eye className="w-4 h-4 mr-2" />
                   Preview
                 </Link>
