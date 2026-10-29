@@ -37,7 +37,7 @@ export default async function TenantAboutPage({
         <section className="container mx-auto px-4 pt-10 pb-6 max-w-3xl text-center">
           {org?.logo_url && (
             <div className="flex justify-center mb-6">
-              <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden ring-4 ring-primary/25 shadow-xl">
+              <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden">
                 <Image
                   src={org.logo_url}
                   alt={displayName}
