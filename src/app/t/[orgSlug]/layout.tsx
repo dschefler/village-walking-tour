@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { TenantProvider } from '@/lib/context/tenant-context';
 import { hexToHsl, getContrastColor } from '@/lib/color-utils';
+import { AccessibilityMenu, A11Y_CSS, A11Y_INIT_SCRIPT } from '@/components/a11y/AccessibilityMenu';
 import { ContentVersionChecker } from '@/components/pwa/ContentVersionChecker';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { UpdatePrompt } from '@/components/pwa/UpdatePrompt';
@@ -209,6 +210,8 @@ export default async function TenantLayout({
       <style
         dangerouslySetInnerHTML={{ __html: themeCSS }}
       />
+      <style dangerouslySetInnerHTML={{ __html: A11Y_CSS }} />
+      <script dangerouslySetInnerHTML={{ __html: A11Y_INIT_SCRIPT }} />
       <ContentVersionChecker orgSlug={params.orgSlug} />
       <UpdatePrompt />
       <div
@@ -221,6 +224,7 @@ export default async function TenantLayout({
         }}
       >
         {children}
+        <AccessibilityMenu />
       </div>
     </TenantProvider>
   );
