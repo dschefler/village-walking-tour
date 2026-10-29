@@ -174,6 +174,8 @@ export default async function TenantLayout({
   const themeCSS = buildThemeCSS(org);
   const fontUrl = getGoogleFontUrl(org.font_family);
   const fontFamily = org.font_family || 'Inter';
+  const headingFont = org.heading_font_family && org.heading_font_family !== fontFamily ? org.heading_font_family : null;
+  const headingFontUrl = headingFont ? getGoogleFontUrl(headingFont) : null;
   const isDark = (org.theme_mode || 'light') === 'dark';
 
   return (
@@ -181,6 +183,17 @@ export default async function TenantLayout({
       {fontUrl && (
         // eslint-disable-next-line @next/next/no-page-custom-font
         <link rel="stylesheet" href={fontUrl} />
+      )}
+      {headingFontUrl && (
+        // eslint-disable-next-line @next/next/no-page-custom-font
+        <link rel="stylesheet" href={headingFontUrl} />
+      )}
+      {headingFont && (
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `.tenant-theme :is(h1, h2, h3, h4, h5, h6) { font-family: "${headingFont.replace(/[^\w\s-]/g, '')}", Georgia, serif; }`,
+          }}
+        />
       )}
       <style
         dangerouslySetInnerHTML={{ __html: themeCSS }}

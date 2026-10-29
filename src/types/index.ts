@@ -212,6 +212,7 @@ export interface Organization {
   secondary_color: string;
   theme_mode: 'light' | 'dark';
   font_family: string;
+  heading_font_family: string | null;
   background_color: string;
   text_color: string;
   app_name: string | null;

@@ -124,6 +124,7 @@ export default function SettingsPage() {
   // Theme fields
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [fontFamily, setFontFamily] = useState('Open Sans');
+  const [headingFont, setHeadingFont] = useState(''); // '' = same as body font
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [textColor, setTextColor] = useState('#111827');
 
@@ -166,6 +167,7 @@ export default function SettingsPage() {
             setSponsorMessage(o.sponsor_message ?? '');
             setThemeMode(o.theme_mode || 'light');
             setFontFamily(o.font_family || 'Inter');
+            setHeadingFont(o.heading_font_family || '');
             setBackgroundColor(o.background_color || '#FFFFFF');
             setTextColor(o.text_color || '#111827');
             setDefaultTtsVoice(o.default_tts_voice || '');
@@ -262,6 +264,7 @@ export default function SettingsPage() {
           sponsor_message: sponsorMessage.trim() || null,
           theme_mode: themeMode,
           font_family: fontFamily,
+          heading_font_family: headingFont || null,
           background_color: backgroundColor,
           text_color: textColor,
           default_tts_voice: defaultTtsVoice || null,
@@ -456,6 +459,24 @@ export default function SettingsPage() {
               </select>
             </div>
 
+            {/* Heading Font */}
+            <div>
+              <Label htmlFor="heading-font">Heading Font</Label>
+              <select
+                id="heading-font"
+                value={headingFont}
+                onChange={(e) => setHeadingFont(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Same as font family</option>
+                {FONT_OPTIONS.map((font) => (
+                  <option key={font} value={font}>
+                    {font}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Background & Text Color */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -508,7 +529,12 @@ export default function SettingsPage() {
                     className="w-4 h-4 rounded-full"
                     style={{ backgroundColor: primaryColor }}
                   />
-                  <span className="font-semibold text-sm">Sample Heading</span>
+                  <span
+                    className="font-semibold text-sm"
+                    style={headingFont ? { fontFamily: `"${headingFont}", serif` } : undefined}
+                  >
+                    Sample Heading
+                  </span>
                 </div>
                 <p className="text-sm opacity-80">
                   This is how your tour pages will look with the selected background, text color, and font.

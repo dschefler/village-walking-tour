@@ -33,7 +33,7 @@ export async function PATCH(
     'default_lat', 'default_lng', 'default_zoom',
     'contact_email', 'contact_phone', 'contact_address',
     'onboarding_step', 'onboarding_completed',
-    'theme_mode', 'font_family', 'background_color', 'text_color',
+    'theme_mode', 'font_family', 'heading_font_family', 'background_color', 'text_color',
     'donations_enabled', 'donation_amounts', 'sponsors', 'sponsor_message',
     'seo_title', 'seo_description', 'seo_keywords',
   ];
