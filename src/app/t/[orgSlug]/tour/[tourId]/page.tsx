@@ -389,6 +389,7 @@ export default function TenantTourPage() {
           sites={tour.sites}
           visitedSiteIds={progress?.visitedSites || []}
           justStampedSiteId={justStampedSiteId}
+          accent
         />
 
         {/* Navigation bar */}
@@ -533,7 +534,7 @@ export default function TenantTourPage() {
                       <CardHeader className="p-4 pb-2">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-medium">
                               {site.display_order}
                             </span>
                             <CardTitle className="text-base">{site.name}</CardTitle>
@@ -542,7 +543,7 @@ export default function TenantTourPage() {
                             className={cn(
                               'flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300',
                               isVisited
-                                ? 'bg-primary text-primary-foreground'
+                                ? 'bg-secondary text-secondary-foreground'
                                 : 'border-2 border-dashed border-muted-foreground/40 text-muted-foreground'
                             )}
                           >

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { MapPin, ChevronDown, Loader2, Map } from 'lucide-react';
 import {
   DropdownMenu,
@@ -28,6 +29,8 @@ export function HistoricSitesDropdown({ transparent = false, orgSlug }: Historic
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const prefix = orgSlug ? `/t/${orgSlug}` : '';
+  const pathname = usePathname();
+  const isActive = !!orgSlug && !!pathname?.startsWith(`${prefix}/historic-sites`);
 
   useEffect(() => {
     async function fetchLocations() {
@@ -54,8 +57,8 @@ export function HistoricSitesDropdown({ transparent = false, orgSlug }: Historic
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className={`flex items-center gap-1 ${buttonClass}`}>
-          <MapPin className="w-4 h-4" />
+        <Button variant="ghost" className={`flex items-center gap-1 ${buttonClass} ${isActive ? 'rounded-b-none shadow-[inset_0_-2px_0_0_hsl(var(--secondary))]' : ''}`}>
+          <MapPin className={`w-4 h-4 ${orgSlug ? 'text-secondary' : ''}`} />
           Historic Sites
           <ChevronDown className="w-4 h-4" />
         </Button>

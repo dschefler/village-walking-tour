@@ -54,7 +54,7 @@ export default async function TenantHomePage({
   }
 
   const cardClass =
-    'flex items-center gap-2.5 px-4 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg shadow transition-colors';
+    'flex items-center gap-2.5 px-4 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg shadow transition-colors border border-transparent hover:border-secondary';
 
   return (
     <div className="min-h-screen flex flex-col bg-black">
@@ -92,19 +92,19 @@ export default async function TenantHomePage({
             /* 4 cards: 2×2 grid */
             <div className="grid grid-cols-2 auto-rows-fr gap-2 max-w-sm mx-auto w-full mt-2">
               <Link href={`/t/${params.orgSlug}/how-to-use`} className={cardClass}>
-                <HelpCircle className="w-4 h-4 flex-shrink-0" />
+                <HelpCircle className="w-4 h-4 flex-shrink-0 text-secondary" />
                 <span className="text-sm font-semibold leading-tight">How to Use</span>
               </Link>
               <Link href={`/t/${params.orgSlug}/historic-sites`} className={cardClass}>
-                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <MapPin className="w-4 h-4 flex-shrink-0 text-secondary" />
                 <span className="text-sm font-semibold leading-tight">Historic Sites</span>
               </Link>
               <Link href={`/t/${params.orgSlug}/create-your-tour`} className={cardClass}>
-                <Route className="w-4 h-4 flex-shrink-0" />
+                <Route className="w-4 h-4 flex-shrink-0 text-secondary" />
                 <span className="text-sm font-semibold leading-tight">Create Your Tour</span>
               </Link>
               <Link href={`/t/${params.orgSlug}/curated-tours`} className={cardClass}>
-                <Bookmark className="w-4 h-4 flex-shrink-0" />
+                <Bookmark className="w-4 h-4 flex-shrink-0 text-secondary" />
                 <span className="text-sm font-semibold leading-tight">Curated Tours</span>
               </Link>
             </div>
@@ -112,15 +112,15 @@ export default async function TenantHomePage({
             /* 3 cards: centered flex row */
             <div className="flex flex-wrap justify-center gap-2 mt-2">
               <Link href={`/t/${params.orgSlug}/how-to-use`} className={cardClass}>
-                <HelpCircle className="w-4 h-4 flex-shrink-0" />
+                <HelpCircle className="w-4 h-4 flex-shrink-0 text-secondary" />
                 <span className="text-sm font-semibold leading-tight">How to Use</span>
               </Link>
               <Link href={`/t/${params.orgSlug}/historic-sites`} className={cardClass}>
-                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <MapPin className="w-4 h-4 flex-shrink-0 text-secondary" />
                 <span className="text-sm font-semibold leading-tight">Historic Sites</span>
               </Link>
               <Link href={`/t/${params.orgSlug}/create-your-tour`} className={cardClass}>
-                <Route className="w-4 h-4 flex-shrink-0" />
+                <Route className="w-4 h-4 flex-shrink-0 text-secondary" />
                 <span className="text-sm font-semibold leading-tight">Create Your Tour</span>
               </Link>
             </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { OrgCuratedTour } from '@/types';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,14 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
   const textClass = transparent ? 'text-white' : '';
   const hoverClass = transparent ? 'hover:text-primary hover:bg-white/60' : 'hover:text-primary hover:bg-gray-100';
 
+  // Tenant tours show their secondary (accent) color on menu icons and under the current page.
+  const pathname = usePathname();
+  const iconAccent = isTenant ? 'text-secondary' : '';
+  const activeClass = (path: string) =>
+    isTenant && pathname?.startsWith(`${prefix}${path}`)
+      ? 'rounded-b-none shadow-[inset_0_-2px_0_0_hsl(var(--secondary))]'
+      : '';
+
   return (
     <header className={headerClass}>
       <div className="container mx-auto px-4">
@@ -74,29 +83,29 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
 
           {/* Desktop Navigation */}
           <nav className={`hidden md:flex items-center gap-1 ${textClass}`}>
-            <Button variant="ghost" asChild className={hoverClass}>
+            <Button variant="ghost" asChild className={`${hoverClass} ${activeClass('/about')}`}>
               <Link href={`${prefix}/about`} className={`flex items-center gap-2 ${textClass}`}>
-                <Info className="w-4 h-4" />
+                <Info className={`w-4 h-4 ${iconAccent}`} />
                 About
               </Link>
             </Button>
-            <Button variant="ghost" asChild className={hoverClass}>
+            <Button variant="ghost" asChild className={`${hoverClass} ${activeClass('/how-to-use')}`}>
               <Link href={`${prefix}/how-to-use`} className={`flex items-center gap-2 ${textClass}`}>
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle className={`w-4 h-4 ${iconAccent}`} />
                 How to Use
               </Link>
             </Button>
             <HistoricSitesDropdown transparent={transparent} orgSlug={orgSlug} />
-            <Button variant="ghost" asChild className={hoverClass}>
+            <Button variant="ghost" asChild className={`${hoverClass} ${activeClass('/create-your-tour')}`}>
               <Link href={`${prefix}/create-your-tour`} className={`flex items-center gap-2 ${textClass}`}>
-                <Route className="w-4 h-4" />
+                <Route className={`w-4 h-4 ${iconAccent}`} />
                 Create Your Tour
               </Link>
             </Button>
             <CuratedToursDropdown transparent={transparent} orgSlug={orgSlug} tours={curatedTours} />
-            <Button variant="ghost" asChild className={hoverClass}>
+            <Button variant="ghost" asChild className={`${hoverClass} ${activeClass('/contact')}`}>
               <Link href={`${prefix}/contact`} className={`flex items-center gap-2 ${textClass}`}>
-                <Mail className="w-4 h-4" />
+                <Mail className={`w-4 h-4 ${iconAccent}`} />
                 Contact
               </Link>
             </Button>
@@ -144,7 +153,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Info className="w-5 h-5" />
+              <Info className={`w-5 h-5 ${iconAccent}`} />
               <span>About</span>
             </Link>
             <Link
@@ -152,7 +161,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <HelpCircle className="w-5 h-5" />
+              <HelpCircle className={`w-5 h-5 ${iconAccent}`} />
               <span>How to Use</span>
             </Link>
             <Link
@@ -160,7 +169,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <MapPin className="w-5 h-5" />
+              <MapPin className={`w-5 h-5 ${iconAccent}`} />
               <span>Historic Sites</span>
             </Link>
             <Link
@@ -168,7 +177,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Route className="w-5 h-5" />
+              <Route className={`w-5 h-5 ${iconAccent}`} />
               <span>Create Your Tour</span>
             </Link>
             {curatedTours.length > 0 && (
@@ -177,7 +186,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
                 className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Bookmark className="w-5 h-5" />
+                <Bookmark className={`w-5 h-5 ${iconAccent}`} />
                 <span>Curated Tours</span>
               </Link>
             )}
@@ -186,7 +195,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Mail className="w-5 h-5" />
+              <Mail className={`w-5 h-5 ${iconAccent}`} />
               <span>Contact</span>
             </Link>
             <button

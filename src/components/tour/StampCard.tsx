@@ -9,6 +9,8 @@ interface StampCardProps {
   visitedSiteIds: string[];
   justStampedSiteId?: string | null;
   className?: string;
+  /** Use the org's secondary color for collected stamps (tenant tours only) */
+  accent?: boolean;
 }
 
 export function StampCard({
@@ -16,6 +18,7 @@ export function StampCard({
   visitedSiteIds,
   justStampedSiteId,
   className,
+  accent = false,
 }: StampCardProps) {
   const sorted = [...sites].sort((a, b) => a.display_order - b.display_order);
   const visitedCount = visitedSiteIds.length;
@@ -37,7 +40,7 @@ export function StampCard({
                   className={cn(
                     'h-0.5 w-4 sm:w-6 transition-colors duration-500',
                     prevVisited && isVisited
-                      ? 'bg-primary'
+                      ? accent ? 'bg-secondary' : 'bg-primary'
                       : 'bg-muted-foreground/20'
                   )}
                 />
@@ -48,7 +51,9 @@ export function StampCard({
                 className={cn(
                   'relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-xs font-bold transition-all duration-300',
                   isVisited
-                    ? 'bg-primary text-primary-foreground shadow-md'
+                    ? accent
+                      ? 'bg-secondary text-secondary-foreground shadow-md'
+                      : 'bg-primary text-primary-foreground shadow-md'
                     : 'border-2 border-dashed border-muted-foreground/40 text-muted-foreground',
                   isJustStamped && 'animate-stamp-bounce'
                 )}

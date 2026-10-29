@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Bookmark, ChevronDown, LayoutList } from 'lucide-react';
 import {
   DropdownMenu,
@@ -22,6 +23,8 @@ export function CuratedToursDropdown({ transparent = false, orgSlug, tours }: Cu
   if (tours.length === 0) return null;
 
   const prefix = orgSlug ? `/t/${orgSlug}` : '';
+  const pathname = usePathname();
+  const isActive = !!orgSlug && !!pathname?.startsWith(`${prefix}/curated-tours`);
   const buttonClass = transparent
     ? 'text-white hover:text-primary hover:bg-white/60'
     : 'hover:text-primary hover:bg-gray-100';
@@ -29,8 +32,8 @@ export function CuratedToursDropdown({ transparent = false, orgSlug, tours }: Cu
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className={`flex items-center gap-1 ${buttonClass}`}>
-          <Bookmark className="w-4 h-4" />
+        <Button variant="ghost" className={`flex items-center gap-1 ${buttonClass} ${isActive ? 'rounded-b-none shadow-[inset_0_-2px_0_0_hsl(var(--secondary))]' : ''}`}>
+          <Bookmark className={`w-4 h-4 ${orgSlug ? 'text-secondary' : ''}`} />
           Curated Tours
           <ChevronDown className="w-4 h-4" />
         </Button>
