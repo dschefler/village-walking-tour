@@ -194,7 +194,7 @@ const buildPackages = [
     priceKey: 'professional_build' as const,
     features: [
       'Everything in Essential Build',
-      'Multi-tour navigation & structure',
+      'Tour navigation & structure',
       'Custom descriptions from your notes',
       'Advanced image editing & layout',
       'Dedicated project coordinator',

@@ -29,8 +29,8 @@ const tiers = [
     name: 'Pro',
     price: '$179',
     period: '/mo',
-    description: 'For organizations with multiple tours',
-    features: ['3 tours', '25 sites per tour', 'Unlimited media', 'Custom domain', 'Analytics dashboard', 'Audio narration', 'Priority support'],
+    description: 'For larger tours with more features',
+    features: ['1 tour', 'Up to 25 sites', 'Unlimited media', 'Custom domain', 'Analytics dashboard', 'Audio narration', 'Priority support'],
     popular: true,
   },
   {
@@ -39,8 +39,8 @@ const tiers = [
     period: '/mo',
     description: 'For large organizations and destinations',
     features: [
-      'Up to 3 tours',
-      'Up to 40 sites per tour',
+      '1 tour',
+      'Up to 50 sites',
       'White-label mode',
       'Team members',
       'API access',
