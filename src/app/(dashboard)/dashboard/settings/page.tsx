@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { MediaUploader } from '@/components/admin/MediaUploader';
 import { useToast } from '@/hooks/use-toast';
-import type { AboutPhoto, Organization, Sponsor } from '@/types';
+import type { AboutGalleryLayout, AboutPhoto, Organization, Sponsor } from '@/types';
 
 interface VoiceOption {
   id: string;
@@ -20,6 +20,13 @@ interface VoiceOption {
 }
 
 const ABOUT_PHOTO_LIMIT = 12;
+
+const ABOUT_LAYOUTS: { value: AboutGalleryLayout; label: string; hint: string }[] = [
+  { value: 'original', label: 'Original', hint: 'Whole image, no cropping' },
+  { value: 'landscape', label: '4 × 3', hint: 'Wide, cropped to fit' },
+  { value: 'portrait', label: '3 × 4', hint: 'Tall, cropped to fit' },
+  { value: 'square', label: '1 × 1', hint: 'Square, cropped to fit' },
+];
 
 function moveItem<T>(list: T[], from: number, to: number): T[] {
   const next = [...list];
@@ -133,6 +140,7 @@ export default function SettingsPage() {
   // Photo grid on the public About page (max ABOUT_PHOTO_LIMIT)
   const [aboutPhotos, setAboutPhotos] = useState<AboutPhoto[]>([]);
   const [aboutGalleryTitle, setAboutGalleryTitle] = useState('');
+  const [aboutGalleryLayout, setAboutGalleryLayout] = useState<AboutGalleryLayout>('original');
 
   // Theme fields
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
@@ -179,6 +187,7 @@ export default function SettingsPage() {
             setSponsors(o.sponsors ?? []);
             setAboutPhotos(o.about_gallery ?? []);
             setAboutGalleryTitle(o.about_gallery_title || '');
+            setAboutGalleryLayout(o.about_gallery_layout || 'original');
             setSponsorMessage(o.sponsor_message ?? '');
             setThemeMode(o.theme_mode || 'light');
             setFontFamily(o.font_family || 'Inter');
@@ -279,6 +288,7 @@ export default function SettingsPage() {
           sponsor_message: sponsorMessage.trim() || null,
           about_gallery: aboutPhotos.map((p) => ({ url: p.url, caption: p.caption?.trim() || null })),
           about_gallery_title: aboutGalleryTitle.trim() || null,
+          about_gallery_layout: aboutGalleryLayout,
           theme_mode: themeMode,
           font_family: fontFamily,
           heading_font_family: headingFont || null,
@@ -400,6 +410,23 @@ export default function SettingsPage() {
                 onChange={(e) => setAboutGalleryTitle(e.target.value)}
                 placeholder="e.g. Historic Spots"
               />
+            </div>
+            <div>
+              <Label>Photo Shape</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
+                {ABOUT_LAYOUTS.map((l) => (
+                  <button
+                    key={l.value}
+                    type="button"
+                    onClick={() => setAboutGalleryLayout(l.value)}
+                    aria-pressed={aboutGalleryLayout === l.value}
+                    className={`rounded-md border px-3 py-2 text-left text-sm ${aboutGalleryLayout === l.value ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                  >
+                    <span className="block font-medium">{l.label}</span>
+                    <span className="block text-xs opacity-80">{l.hint}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             {aboutPhotos.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

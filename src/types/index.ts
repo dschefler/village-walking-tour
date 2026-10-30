@@ -196,6 +196,8 @@ export interface OrgCuratedTour {
 }
 
 // Organization / multi-tenant types
+export type AboutGalleryLayout = 'landscape' | 'portrait' | 'square' | 'original';
+
 export interface AboutPhoto {
   url: string;
   caption: string | null;
@@ -220,6 +222,7 @@ export interface Organization {
   heading_font_family: string | null;
   about_gallery: AboutPhoto[];
   about_gallery_title: string | null;
+  about_gallery_layout: AboutGalleryLayout;
   background_color: string;
   text_color: string;
   app_name: string | null;

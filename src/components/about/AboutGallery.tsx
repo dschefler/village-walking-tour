@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import type { AboutPhoto } from '@/types';
+import type { AboutGalleryLayout, AboutPhoto } from '@/types';
+
+const ASPECT: Record<Exclude<AboutGalleryLayout, 'original'>, string> = {
+  landscape: 'aspect-[4/3]',
+  portrait: 'aspect-[3/4]',
+  square: 'aspect-square',
+};
 
 // Column count follows the photo count so the grid has no ragged last row
 // where possible: 4 and 8 sit in rows of 4, 12 in rows of 4 on wide screens.
@@ -15,7 +21,15 @@ function gridCols(count: number): string {
   return 'grid-cols-2 md:grid-cols-3';
 }
 
-export function AboutGallery({ photos, title }: { photos: AboutPhoto[]; title?: string | null }) {
+export function AboutGallery({
+  photos,
+  title,
+  layout = 'original',
+}: {
+  photos: AboutPhoto[];
+  title?: string | null;
+  layout?: AboutGalleryLayout;
+}) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const isOpen = openIndex !== null;
 
@@ -40,22 +54,33 @@ export function AboutGallery({ photos, title }: { photos: AboutPhoto[]; title?: 
   return (
     <section className="container mx-auto px-4 pb-12 max-w-5xl">
       {title && <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">{title}</h2>}
-      <div className={`grid gap-3 md:gap-4 ${gridCols(photos.length)}`}>
+      <div className={`grid gap-2 md:gap-3 items-start ${gridCols(photos.length)}`}>
         {photos.map((photo, i) => (
           <figure key={photo.url + i}>
             <button
               type="button"
               onClick={() => setOpenIndex(i)}
-              className="group relative block w-full aspect-[4/3] overflow-hidden rounded-lg bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className={`group relative block w-full overflow-hidden rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${layout === 'original' ? '' : `${ASPECT[layout]} bg-muted`}`}
               aria-label={`View larger: ${photo.caption || `photo ${i + 1}`}`}
             >
-              <Image
-                src={photo.url}
-                alt={photo.caption || ''}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, 33vw"
-              />
+              {layout === 'original' ? (
+                <Image
+                  src={photo.url}
+                  alt={photo.caption || ''}
+                  width={0}
+                  height={0}
+                  className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.03]"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+              ) : (
+                <Image
+                  src={photo.url}
+                  alt={photo.caption || ''}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+              )}
             </button>
             {photo.caption && (
               <figcaption className="mt-1.5 text-sm text-center text-muted-foreground">{photo.caption}</figcaption>
