@@ -36,6 +36,7 @@ export async function PATCH(
     'theme_mode', 'font_family', 'heading_font_family', 'background_color', 'text_color',
     'donations_enabled', 'donation_amounts', 'sponsors', 'sponsor_message',
     'seo_title', 'seo_description', 'seo_keywords',
+    'about_gallery', 'about_gallery_title',
   ];
 
   const updates: Record<string, unknown> = {};

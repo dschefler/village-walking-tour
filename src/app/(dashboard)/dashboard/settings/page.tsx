@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, Save, X, Sun, Moon, Mic, Heart, Plus, ExternalLink, Play, Square, CreditCard } from 'lucide-react';
+import { Loader2, Save, X, Sun, Moon, Mic, Heart, Plus, ExternalLink, Play, Square, CreditCard, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,12 +11,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { MediaUploader } from '@/components/admin/MediaUploader';
 import { useToast } from '@/hooks/use-toast';
-import type { Organization, Sponsor } from '@/types';
+import type { AboutPhoto, Organization, Sponsor } from '@/types';
 
 interface VoiceOption {
   id: string;
   name: string;
   description: string;
+}
+
+const ABOUT_PHOTO_LIMIT = 12;
+
+function moveItem<T>(list: T[], from: number, to: number): T[] {
+  const next = [...list];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
 }
 
 const FONT_OPTIONS = [
@@ -121,6 +130,10 @@ export default function SettingsPage() {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [sponsorMessage, setSponsorMessage] = useState('');
 
+  // Photo grid on the public About page (max ABOUT_PHOTO_LIMIT)
+  const [aboutPhotos, setAboutPhotos] = useState<AboutPhoto[]>([]);
+  const [aboutGalleryTitle, setAboutGalleryTitle] = useState('');
+
   // Theme fields
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [fontFamily, setFontFamily] = useState('Open Sans');
@@ -164,6 +177,8 @@ export default function SettingsPage() {
             setDonationsEnabled(o.donations_enabled ?? false);
             setDonationAmounts(o.donation_amounts ?? [5, 10, 20, 50]);
             setSponsors(o.sponsors ?? []);
+            setAboutPhotos(o.about_gallery ?? []);
+            setAboutGalleryTitle(o.about_gallery_title || '');
             setSponsorMessage(o.sponsor_message ?? '');
             setThemeMode(o.theme_mode || 'light');
             setFontFamily(o.font_family || 'Inter');
@@ -262,6 +277,8 @@ export default function SettingsPage() {
           donation_amounts: donationAmounts.length > 0 ? donationAmounts : [5, 10, 20, 50],
           sponsors: sponsors.filter((s) => s.name.trim()),
           sponsor_message: sponsorMessage.trim() || null,
+          about_gallery: aboutPhotos.map((p) => ({ url: p.url, caption: p.caption?.trim() || null })),
+          about_gallery_title: aboutGalleryTitle.trim() || null,
           theme_mode: themeMode,
           font_family: fontFamily,
           heading_font_family: headingFont || null,
@@ -363,6 +380,79 @@ export default function SettingsPage() {
                 organizationId={org.id}
                 onUpload={(url) => setLogoUrl(url)}
               />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>About Page Photos</CardTitle>
+            <CardDescription>
+              Optional grid of up to {ABOUT_PHOTO_LIMIT} photos shown on your About page. Visitors can tap a photo to see it larger.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="about-gallery-title">Section Title (optional)</Label>
+              <Input
+                id="about-gallery-title"
+                value={aboutGalleryTitle}
+                onChange={(e) => setAboutGalleryTitle(e.target.value)}
+                placeholder="e.g. Historic Spots"
+              />
+            </div>
+            {aboutPhotos.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {aboutPhotos.map((photo, i) => (
+                  <div key={photo.url + i} className="rounded-lg border overflow-hidden">
+                    <div className="relative aspect-[4/3] bg-muted">
+                      <Image src={photo.url} alt={photo.caption || `Photo ${i + 1}`} fill className="object-cover" sizes="200px" />
+                      <button
+                        type="button"
+                        onClick={() => setAboutPhotos((prev) => prev.filter((_, j) => j !== i))}
+                        className="absolute top-1 right-1 rounded-full bg-black/60 text-white p-1"
+                        aria-label="Remove photo"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div className="p-2 space-y-2">
+                      <Input
+                        value={photo.caption || ''}
+                        onChange={(e) =>
+                          setAboutPhotos((prev) => prev.map((p, j) => (j === i ? { ...p, caption: e.target.value } : p)))
+                        }
+                        placeholder="Caption (optional)"
+                        className="h-8 text-xs"
+                      />
+                      <div className="flex justify-between">
+                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2" disabled={i === 0}
+                          onClick={() => setAboutPhotos((prev) => moveItem(prev, i, i - 1))} aria-label="Move earlier">
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <span className="text-xs text-muted-foreground self-center">{i + 1}</span>
+                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2" disabled={i === aboutPhotos.length - 1}
+                          onClick={() => setAboutPhotos((prev) => moveItem(prev, i, i + 1))} aria-label="Move later">
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {aboutPhotos.length < ABOUT_PHOTO_LIMIT ? (
+              <MediaUploader
+                accept="image/*"
+                multiple
+                path={`${org.slug}/about`}
+                organizationId={org.id}
+                onUpload={(url) =>
+                  setAboutPhotos((prev) => (prev.length < ABOUT_PHOTO_LIMIT ? [...prev, { url, caption: null }] : prev))
+                }
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">You&apos;ve reached the {ABOUT_PHOTO_LIMIT}-photo limit. Remove one to add another.</p>
             )}
           </CardContent>
         </Card>

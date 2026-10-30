@@ -196,6 +196,11 @@ export interface OrgCuratedTour {
 }
 
 // Organization / multi-tenant types
+export interface AboutPhoto {
+  url: string;
+  caption: string | null;
+}
+
 export interface Sponsor {
   name: string;
   logo_url: string | null;
@@ -213,6 +218,8 @@ export interface Organization {
   theme_mode: 'light' | 'dark';
   font_family: string;
   heading_font_family: string | null;
+  about_gallery: AboutPhoto[];
+  about_gallery_title: string | null;
   background_color: string;
   text_color: string;
   app_name: string | null;

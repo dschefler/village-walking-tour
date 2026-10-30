@@ -2,12 +2,14 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
+import { AboutGallery } from '@/components/about/AboutGallery';
+import type { AboutPhoto } from '@/types';
 
 async function getOrg(slug: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from('organizations')
-    .select('name, logo_url, app_name, app_description, contact_address')
+    .select('name, logo_url, app_name, app_description, contact_address, about_gallery, about_gallery_title')
     .eq('slug', slug)
     .eq('is_active', true)
     .single();
@@ -70,6 +72,11 @@ export default async function TenantAboutPage({
             </p>
           )}
         </div>
+
+        <AboutGallery
+          photos={((org?.about_gallery as AboutPhoto[] | null) ?? []).slice(0, 12)}
+          title={org?.about_gallery_title}
+        />
       </main>
 
       <Footer />
