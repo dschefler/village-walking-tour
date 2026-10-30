@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Volume2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AudioPlayer } from './AudioPlayer';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ export function ListenToAudioButton({
   siteName,
   className = '',
 }: ListenToAudioButtonProps) {
+  const accent = !!useTenantOptional();
   const [isOpen, setIsOpen] = useState(false);
 
   const hasAudio = !!audioUrl;
@@ -32,7 +34,7 @@ export function ListenToAudioButton({
     <>
       <Button
         onClick={() => hasAudio && setIsOpen(true)}
-        className={`w-full bg-primary hover:bg-primary/80 text-primary-foreground font-semibold ${className}`}
+        className={`w-full font-semibold ${accent ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80' : 'bg-primary hover:bg-primary/80 text-primary-foreground'} ${className}`}
         size="lg"
         disabled={!hasAudio}
       >

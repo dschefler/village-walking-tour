@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
 import { cn } from '@/lib/utils';
+import { useTenantOptional } from '@/lib/context/tenant-context';
+
+// Tenant tour sites show audio controls in their secondary (accent) color.
+const ACCENT_BUTTON = 'bg-secondary text-secondary-foreground hover:bg-secondary/80';
 
 interface AudioPlayerProps {
   audioUrl: string;
@@ -28,6 +32,7 @@ export function AudioPlayer({
   className,
   autoPlay = false,
 }: AudioPlayerProps) {
+  const accent = !!useTenantOptional();
   const {
     isPlaying,
     currentSiteId,
@@ -115,7 +120,7 @@ export function AudioPlayer({
         <Button
           variant="default"
           size="icon"
-          className="w-12 h-12"
+          className={cn('w-12 h-12', accent && ACCENT_BUTTON)}
           onClick={toggle}
           disabled={isLoading}
           aria-label={isPlaying ? 'Pause' : 'Play'}
@@ -146,6 +151,7 @@ export function AudioPlayer({
 // Mini player for persistent display
 export function MiniAudioPlayer({ className }: { className?: string }) {
   const { isPlaying, currentSiteId, progressPercent, isLoading, toggle } = useAudioPlayer();
+  const accent = !!useTenantOptional();
 
   if (!currentSiteId) return null;
 
@@ -154,7 +160,7 @@ export function MiniAudioPlayer({ className }: { className?: string }) {
       <Button
         variant="ghost"
         size="icon"
-        className="w-8 h-8"
+        className={cn('w-8 h-8', accent && `rounded-full ${ACCENT_BUTTON}`)}
         onClick={toggle}
         disabled={isLoading}
       >

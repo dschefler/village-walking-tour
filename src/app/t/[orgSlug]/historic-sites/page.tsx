@@ -221,7 +221,7 @@ export default function TenantHistoricSitesPage() {
                             {site.audio_url && (
                               <button
                                 onClick={() => setAudioDialogSite(site)}
-                                className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-[#014487] text-[#014487] hover:bg-[#014487]/10 transition-colors"
+                                className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                               >
                                 <Volume2 className="w-3 h-3" />
                                 Audio
