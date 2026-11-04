@@ -95,7 +95,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     audio_url: '',
     address: '',
     address_formatted: '',
-    is_published: false,
+    is_published: true,
     slug: '',
   });
 
