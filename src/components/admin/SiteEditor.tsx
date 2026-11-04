@@ -13,11 +13,19 @@ import { Switch } from '@/components/ui/switch';
 import { MediaUploader } from './MediaUploader';
 import { TTSGenerator } from './TTSGenerator';
 import { AddressInput } from './AddressInput';
+import { AreaCircles } from '@/components/map/AreaCircles';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import { reverseGeocode, type GeocodingResult } from '@/lib/mapbox/geocoding';
 import type { Site, SiteHours } from '@/types';
+
+const AREA_SIZES = [
+  { radius: 100, label: 'Small (1 block)' },
+  { radius: 150, label: 'Medium (2 blocks)' },
+  { radius: 250, label: 'Large (3–4 blocks)' },
+  { radius: 400, label: 'Extra large' },
+];
 
 const HOUR_DAYS = [
   { key: 'monday',    label: 'Mon' },
@@ -97,6 +105,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     address_formatted: '',
     is_published: true,
     slug: '',
+    is_area: false,
+    area_radius_m: 150,
+    start_point: '',
   });
 
 
@@ -112,6 +123,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         address_formatted: site.address_formatted || '',
         is_published: site.is_published,
         slug: site.slug || '',
+        is_area: site.is_area ?? false,
+        area_radius_m: site.area_radius_m ?? 150,
+        start_point: site.start_point || '',
       });
 
       // Load hours
@@ -404,6 +418,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             address_formatted: formData.address_formatted || null,
             is_published: formData.is_published,
             slug: formData.slug || null,
+            is_area: formData.is_area,
+            area_radius_m: formData.area_radius_m,
+            start_point: formData.is_area ? formData.start_point.trim() || null : null,
             hours: hoursPayload,
             ...(organizationId ? { organization_id: organizationId } : {}),
           })
@@ -441,6 +458,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             address_formatted: formData.address_formatted || null,
             is_published: formData.is_published,
             slug: formData.slug || null,
+            is_area: formData.is_area,
+            area_radius_m: formData.area_radius_m,
+            start_point: formData.is_area ? formData.start_point.trim() || null : null,
             display_order: displayOrder,
             hours: hoursPayload,
           })
@@ -576,6 +596,56 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         />
       </div>
 
+      {/* Area / neighborhood */}
+      <div className="space-y-3 rounded-lg border p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="is-area">This stop is an area</Label>
+            <p className="text-xs text-muted-foreground">
+              For neighborhoods or districts without one address. Visitors see a &quot;Neighborhood&quot; tag, a shaded
+              circle on the map, and the stop counts as reached anywhere inside the circle.
+            </p>
+          </div>
+          <Switch
+            id="is-area"
+            checked={formData.is_area}
+            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_area: checked }))}
+          />
+        </div>
+        {formData.is_area && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="start-point">Where to start</Label>
+              <Input
+                id="start-point"
+                value={formData.start_point}
+                onChange={(e) => setFormData((prev) => ({ ...prev, start_point: e.target.value }))}
+                placeholder="e.g. Corner of Canon Perdido & Santa Barbara Streets"
+              />
+              <p className="text-xs text-muted-foreground">
+                Shown as &quot;Start here: …&quot; in place of the address. Put the map pin at this spot.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Area size</Label>
+              <div className="flex flex-wrap gap-2">
+                {AREA_SIZES.map(({ radius, label }) => (
+                  <Button
+                    key={radius}
+                    type="button"
+                    size="sm"
+                    variant={formData.area_radius_m === radius ? 'default' : 'outline'}
+                    onClick={() => setFormData((prev) => ({ ...prev, area_radius_m: radius }))}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Location Picker */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -597,6 +667,10 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             mapStyle={MAPBOX_CONFIG.style}
             onClick={handleMapClick}
           >
+            <AreaCircles
+              idSuffix="-editor"
+              sites={[{ id: 'editing', latitude: formData.latitude, longitude: formData.longitude, is_area: formData.is_area, area_radius_m: formData.area_radius_m }]}
+            />
             <Marker
               longitude={formData.longitude}
               latitude={formData.latitude}

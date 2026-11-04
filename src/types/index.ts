@@ -38,6 +38,11 @@ export interface Site {
   is_published: boolean;
   slug: string | null;
   hours?: SiteHours | null;
+  /** A neighborhood or area rather than one building (see migration 017) */
+  is_area?: boolean;
+  area_radius_m?: number;
+  /** Where visitors should begin exploring an area, e.g. "Corner of State & Haley" */
+  start_point?: string | null;
   created_at: string;
   updated_at: string;
 }

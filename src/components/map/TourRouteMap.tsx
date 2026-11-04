@@ -6,7 +6,8 @@ import Map, { Marker, NavigationControl, Source, Layer, Popup, type MapRef } fro
 import { MapPin } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useTenantOptional } from '@/lib/context/tenant-context';
-import { getStorageMediaUrl } from '@/lib/utils';
+import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
+import { AreaCircles } from './AreaCircles';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -16,6 +17,10 @@ interface SiteItem {
   latitude: number;
   longitude: number;
   address: string | null;
+  address_formatted?: string | null;
+  is_area?: boolean;
+  area_radius_m?: number;
+  start_point?: string | null;
   media?: {
     id: string;
     storage_path: string;
@@ -193,6 +198,8 @@ export function TourRouteMap({
         </Source>
       )}
 
+      <AreaCircles sites={sites} />
+
       {/* Site Markers */}
       {sites.map((site, index) => {
         const isHovered = site.id === hoveredSiteId;
@@ -279,10 +286,10 @@ export function TourRouteMap({
               <h4 className="font-semibold text-gray-900 text-sm mb-1">
                 {popupSite.name}
               </h4>
-              {popupSite.address && (
+              {siteAddressLabel(popupSite, true) && (
                 <p className="text-xs text-[#014487] flex items-center gap-1">
                   <MapPin className="w-3 h-3 flex-shrink-0" />
-                  <span className="line-clamp-1">{popupSite.address}</span>
+                  <span className="line-clamp-1">{siteAddressLabel(popupSite, true)}</span>
                 </p>
               )}
             </div>

@@ -12,7 +12,8 @@ import { useTourBuilderStore } from '@/stores/tour-builder-store';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { AudioPlayer } from '@/components/audio/AudioPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { getStorageMediaUrl } from '@/lib/utils';
+import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
+import { AreaBadge } from '@/components/location/AreaBadge';
 
 interface SiteItem {
   id: string;
@@ -20,6 +21,10 @@ interface SiteItem {
   slug: string | null;
   description: string | null;
   address: string | null;
+  address_formatted?: string | null;
+  is_area?: boolean;
+  area_radius_m?: number;
+  start_point?: string | null;
   latitude: number;
   longitude: number;
   audio_url: string | null;
@@ -134,7 +139,8 @@ export default function TenantHistoricSitesPage() {
                     })()}
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-900 leading-snug">{popupSite.name}</p>
-                      {popupSite.address && <p className="text-xs text-gray-500 mt-0.5">{popupSite.address}</p>}
+                      {popupSite.is_area && <AreaBadge className="mt-1" />}
+                      {siteAddressLabel(popupSite, true) && <p className="text-xs text-gray-500 mt-0.5">{siteAddressLabel(popupSite, true)}</p>}
                       {popupSite.description && <p className="text-xs text-gray-600 mt-1 line-clamp-2">{popupSite.description}</p>}
                     </div>
                     <button onClick={() => { setPopupSite(null); setHoveredSiteId(null); }} className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600">
@@ -196,10 +202,11 @@ export default function TenantHistoricSitesPage() {
                       <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
                         <div>
                           <h3 className="font-semibold text-gray-900 text-sm leading-snug">{site.name}</h3>
-                          {site.address && (
+                          {site.is_area && <AreaBadge className="mt-1" />}
+                          {siteAddressLabel(site, true) && (
                             <p className="text-xs text-[#014487] flex items-center gap-1 mt-0.5">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{site.address}</span>
+                              <span className="truncate">{siteAddressLabel(site, true)}</span>
                             </p>
                           )}
                           {site.description && (

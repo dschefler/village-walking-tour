@@ -4,6 +4,7 @@ import { useRef, useCallback, useEffect, useState } from 'react';
 import Map, { Marker, NavigationControl, type MapRef } from 'react-map-gl';
 import { MapPin, Check } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
+import { AreaCircles } from './AreaCircles';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -12,6 +13,8 @@ interface SiteItem {
   slug: string | null;
   latitude: number;
   longitude: number;
+  is_area?: boolean;
+  area_radius_m?: number;
 }
 
 interface HistoricSitesMapProps {
@@ -101,6 +104,8 @@ export function HistoricSitesMap({
       reuseMaps
     >
       <NavigationControl position="top-right" />
+
+      <AreaCircles sites={sites} />
 
       {sites.map((site) => {
         const isHovered = site.id === hoveredSiteId;

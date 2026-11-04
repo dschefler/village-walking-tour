@@ -61,7 +61,9 @@ export function useProximityNotifications({
         site.longitude
       );
 
-      if (distance <= radiusMeters && canAlertForSite(site.id)) {
+      // Areas alert anywhere inside their circle, not just near the pin
+      const alertRadius = site.is_area ? Math.max(radiusMeters, site.area_radius_m || 150) : radiusMeters;
+      if (distance <= alertRadius && canAlertForSite(site.id)) {
         // Extract primary image URL from site media if present (SiteItem passes media[])
         const siteWithMedia = site as Site & { media?: { storage_path: string; is_primary: boolean }[] };
         const primaryMedia = siteWithMedia.media?.find(m => m.is_primary) ?? siteWithMedia.media?.[0];

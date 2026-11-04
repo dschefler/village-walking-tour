@@ -10,6 +10,8 @@ interface LocationArrivalTrackerProps {
   locationName: string;
   latitude: number;
   longitude: number;
+  isArea?: boolean;
+  areaRadiusM?: number;
 }
 
 export function LocationArrivalTracker({
@@ -17,6 +19,8 @@ export function LocationArrivalTracker({
   locationName,
   latitude,
   longitude,
+  isArea,
+  areaRadiusM,
 }: LocationArrivalTrackerProps) {
   const { enabled } = useNotificationStore();
 
@@ -26,6 +30,8 @@ export function LocationArrivalTracker({
     name: locationName,
     latitude,
     longitude,
+    is_area: isArea,
+    area_radius_m: areaRadiusM,
   }];
 
   // Track arrival at this single location

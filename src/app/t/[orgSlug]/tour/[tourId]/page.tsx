@@ -30,7 +30,8 @@ import { FeedbackModal } from '@/components/tour/FeedbackModal';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
-import { cn, formatDistance, calculateDistance, calculateWalkingTime, formatWalkingTime, calculateSteps, formatSteps, calculateDrivingTime, formatDrivingTime } from '@/lib/utils';
+import { AreaBadge } from '@/components/location/AreaBadge';
+import { cn, arrivalRadius, formatDistance, calculateDistance, calculateWalkingTime, formatWalkingTime, calculateSteps, formatSteps, calculateDrivingTime, formatDrivingTime } from '@/lib/utils';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { TourWithSites, Site, SiteWithMedia, FunFact } from '@/types';
 
@@ -264,6 +265,7 @@ export default function TenantTourPage() {
   };
 
   // Auto-arrival detection: stamp + advance to next stop when within 50m
+  // (anywhere inside the circle for an area stop)
   useEffect(() => {
     if (!navigatingToSite || !userLocation || !tour) return;
 
@@ -274,7 +276,7 @@ export default function TenantTourPage() {
       navigatingToSite.longitude
     );
 
-    if (dist <= 50) {
+    if (dist <= arrivalRadius(navigatingToSite)) {
       triggerStampCelebration(navigatingToSite.id);
 
       setTimeout(() => {
@@ -533,11 +535,12 @@ export default function TenantTourPage() {
                     >
                       <CardHeader className="p-4 pb-2">
                         <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-medium">
                               {site.display_order}
                             </span>
                             <CardTitle className="text-base">{site.name}</CardTitle>
+                            {site.is_area && <AreaBadge />}
                           </div>
                           <div
                             className={cn(
@@ -563,7 +566,9 @@ export default function TenantTourPage() {
                         )}
                         {distance !== null && (
                           <p className="text-xs text-muted-foreground">
-                            {formatDistance(distance)} away
+                            {site.is_area && distance <= arrivalRadius(site)
+                              ? "You're in this neighborhood"
+                              : `${formatDistance(distance)} away`}
                           </p>
                         )}
                       </CardContent>
@@ -578,7 +583,15 @@ export default function TenantTourPage() {
           <div className="fixed inset-x-0 bottom-0 md:absolute md:inset-auto md:bottom-4 md:left-4 md:right-auto md:w-96 bg-background border-t md:border md:rounded-lg shadow-lg max-h-[60vh] overflow-y-auto safe-area-inset-bottom z-10">
             <div className="p-4">
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-semibold text-lg">{selectedSiteWithMedia.name}</h3>
+                <div>
+                  <h3 className="font-semibold text-lg">{selectedSiteWithMedia.name}</h3>
+                  {selectedSiteWithMedia.is_area && (
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      <AreaBadge className="mr-2" />
+                      {selectedSiteWithMedia.start_point?.trim() ? `Start: ${selectedSiteWithMedia.start_point.trim()}` : 'Explore the surrounding blocks'}
+                    </p>
+                  )}
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"

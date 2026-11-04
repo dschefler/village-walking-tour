@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { MapPin, Route, Lightbulb } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import { getStorageMediaUrl } from '@/lib/utils';
+import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -32,6 +32,9 @@ interface LocationWithMedia {
   is_published: boolean;
   slug: string | null;
   hours: SiteHours | null;
+  is_area?: boolean;
+  area_radius_m?: number;
+  start_point?: string | null;
   created_at: string;
   updated_at: string;
   tour_name?: string;
@@ -162,7 +165,8 @@ export default async function TenantLocationPage({
       <LocationHero
         name={location.name}
         primaryImage={primaryImage}
-        address={location.address_formatted || location.address}
+        address={siteAddressLabel(location)}
+        isArea={location.is_area}
       />
 
       <main className="container mx-auto px-4 py-8">
@@ -237,20 +241,29 @@ export default async function TenantLocationPage({
                   longitude={location.longitude}
                   name={location.name}
                   primaryImage={primaryImage}
+                  isArea={location.is_area}
+                  areaRadiusM={location.area_radius_m}
                 />
               </CardContent>
             </Card>
 
-            {(location.address_formatted || location.address) && (
+            {siteAddressLabel(location) && (
               <Card>
                 <CardContent className="py-4">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="font-medium">Address</p>
+                      <p className="font-medium">{location.is_area ? 'Where to start' : 'Address'}</p>
                       <p className="text-sm text-muted-foreground">
-                        {location.address_formatted || location.address}
+                        {location.is_area
+                          ? location.start_point?.trim() || location.address_formatted || location.address
+                          : location.address_formatted || location.address}
                       </p>
+                      {location.is_area && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          This stop is a neighborhood. Start at this spot and explore the surrounding blocks.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -312,6 +325,8 @@ export default async function TenantLocationPage({
         locationName={location.name}
         latitude={location.latitude}
         longitude={location.longitude}
+        isArea={location.is_area}
+        areaRadiusM={location.area_radius_m}
       />
     </div>
   );

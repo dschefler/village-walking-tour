@@ -151,3 +151,44 @@ export function formatWalkingTime(minutes: number): string {
   }
   return `${hours}h ${mins}m walk`;
 }
+
+/** Distance within which a visitor counts as having arrived at a stop */
+export const ARRIVAL_RADIUS_M = 50;
+
+type AreaSite = {
+  is_area?: boolean;
+  area_radius_m?: number;
+  start_point?: string | null;
+  address?: string | null;
+  address_formatted?: string | null;
+};
+
+/** Arrival radius for a stop: the whole circle for an area, 50m for a single place */
+export function arrivalRadius(site: AreaSite): number {
+  return site.is_area ? Math.max(site.area_radius_m || 150, ARRIVAL_RADIUS_M) : ARRIVAL_RADIUS_M;
+}
+
+/**
+ * Address line for a stop; areas show where to start instead of a street address.
+ * Compact lists pass short = true to show the address as typed rather than the
+ * longer geocoded one.
+ */
+export function siteAddressLabel(site: AreaSite, short = false): string | null {
+  if (site.is_area) {
+    const start = site.start_point?.trim() || site.address_formatted || site.address;
+    return start ? `Start here: ${start}` : null;
+  }
+  return (short ? site.address : site.address_formatted || site.address) || null;
+}
+
+/** Ring of [lng, lat] points approximating a circle, for a GeoJSON polygon */
+export function circleRing(latitude: number, longitude: number, radiusM: number, steps = 48): number[][] {
+  const dLat = radiusM / 111320;
+  const dLng = radiusM / (111320 * Math.cos((latitude * Math.PI) / 180));
+  const ring: number[][] = [];
+  for (let i = 0; i <= steps; i++) {
+    const a = (i / steps) * 2 * Math.PI;
+    ring.push([longitude + dLng * Math.cos(a), latitude + dLat * Math.sin(a)]);
+  }
+  return ring;
+}

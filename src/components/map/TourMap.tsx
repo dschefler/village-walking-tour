@@ -5,6 +5,7 @@ import Map, { Marker, Popup, Source, Layer, NavigationControl, GeolocateControl,
 import Image from 'next/image';
 import { MapPin, Navigation, User } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
+import { AreaCircles } from './AreaCircles';
 import { useTourStore } from '@/stores/tour-store';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { cn, calculateDistance, formatDistance } from '@/lib/utils';
@@ -139,6 +140,8 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
           }}
         />
 
+        <AreaCircles sites={sites} />
+
         {/* Route line */}
         {routeGeoJSON && (
           <Source id="route" type="geojson" data={routeGeoJSON}>
@@ -209,6 +212,7 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
               )}
               <div className="p-2">
                 <h4 className="font-semibold text-sm line-clamp-1">{hoveredSite.name}</h4>
+                {hoveredSite.is_area && <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Neighborhood</p>}
                 {userLocation && (
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {formatDistance(getDistanceToSite(hoveredSite, userLocation))} away

@@ -5,6 +5,7 @@ import Map, { Marker, Popup, NavigationControl, GeolocateControl, type MapRef } 
 import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
+import { AreaCircles } from '@/components/map/AreaCircles';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { calculateDistance, formatDistance, getStorageMediaUrl } from '@/lib/utils';
 import type { Media } from '@/types';
@@ -18,6 +19,8 @@ interface LocationMapProps {
   name: string;
   primaryImage?: Media;
   className?: string;
+  isArea?: boolean;
+  areaRadiusM?: number;
 }
 
 export function LocationMap({
@@ -26,6 +29,8 @@ export function LocationMap({
   name,
   primaryImage,
   className = '',
+  isArea,
+  areaRadiusM,
 }: LocationMapProps) {
   const mapRef = useRef<MapRef>(null);
   const { userLocation } = useGeolocation();
@@ -52,13 +57,16 @@ export function LocationMap({
         initialViewState={{
           longitude,
           latitude,
-          zoom: 16,
+          // Zoom out a step for large areas so the whole circle fits
+          zoom: isArea && (areaRadiusM ?? 150) >= 250 ? 15 : 16,
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle={MAPBOX_CONFIG.style}
       >
         <NavigationControl position="top-right" />
         <GeolocateControl position="top-right" trackUserLocation showUserHeading />
+
+        <AreaCircles sites={[{ id: 'location', latitude, longitude, is_area: isArea, area_radius_m: areaRadiusM }]} />
 
         <Marker
           longitude={longitude}
