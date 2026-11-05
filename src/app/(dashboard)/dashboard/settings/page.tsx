@@ -54,6 +54,9 @@ const FONT_OPTIONS = [
   'Crimson Text',
 ];
 
+// Display fonts that suit headings but are too decorative for body text
+const HEADING_FONT_OPTIONS = [...FONT_OPTIONS, 'Italiana'];
+
 function SubscriptionCard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -586,7 +589,7 @@ export default function SettingsPage() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <option value="">Same as font family</option>
-                {FONT_OPTIONS.map((font) => (
+                {HEADING_FONT_OPTIONS.map((font) => (
                   <option key={font} value={font}>
                     {font}
                   </option>

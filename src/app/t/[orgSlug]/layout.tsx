@@ -139,6 +139,10 @@ function buildThemeCSS(org: Organization): string {
   `;
 }
 
+// Fonts published in a single regular weight: headings use that weight
+// instead of letting the browser fake a bold version.
+const SINGLE_WEIGHT_FONTS = ['Italiana'];
+
 function getGoogleFontUrl(fontFamily: string): string | null {
   if (!fontFamily || fontFamily === 'Inter') return null;
   const encoded = fontFamily.replace(/\s+/g, '+');
@@ -203,7 +207,7 @@ export default async function TenantLayout({
       {headingFont && (
         <style
           dangerouslySetInnerHTML={{
-            __html: `.tenant-theme :is(h1, h2, h3, h4, h5, h6) { font-family: "${headingFont.replace(/[^\w\s-]/g, '')}", Georgia, serif; }`,
+            __html: `.tenant-theme :is(h1, h2, h3, h4, h5, h6) { font-family: "${headingFont.replace(/[^\w\s-]/g, '')}", Georgia, serif;${SINGLE_WEIGHT_FONTS.includes(headingFont) ? ' font-weight: 400;' : ''} }`,
           }}
         />
       )}
