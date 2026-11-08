@@ -107,7 +107,7 @@ export function AccessibilityMenu() {
         aria-controls="a11y-panel"
         aria-label="Accessibility options"
         title="Accessibility options"
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-[60] flex items-center justify-center w-11 h-11 rounded-r-lg bg-primary text-primary-foreground shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        className="fixed right-0 top-[calc(80vh-3.5rem)] z-[60] flex items-center justify-center w-11 h-11 rounded-l-lg bg-primary text-primary-foreground shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
       >
         <Accessibility className="w-6 h-6" aria-hidden="true" />
       </button>
@@ -118,7 +118,7 @@ export function AccessibilityMenu() {
           id="a11y-panel"
           role="dialog"
           aria-label="Accessibility options"
-          className="fixed left-12 top-1/2 -translate-y-1/2 z-[60] w-72 max-w-[calc(100vw-4rem)] max-h-[90vh] overflow-y-auto rounded-xl border bg-background text-foreground shadow-2xl p-4"
+          className="fixed right-12 bottom-[calc(20vh+0.75rem)] z-[60] w-72 max-w-[calc(100vw-4rem)] max-h-[calc(80vh-1rem)] overflow-y-auto rounded-xl border bg-background text-foreground shadow-2xl p-4"
         >
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold">Accessibility</h2>
