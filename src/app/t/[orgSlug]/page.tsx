@@ -79,11 +79,11 @@ export default async function TenantHomePage({
         <div className="absolute inset-0 bg-black/30" />
 
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
             {tour?.name || 'Welcome to the Walking Tour'}
           </h1>
           {tour?.description && (
-            <p className="text-lg md:text-xl opacity-90 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl font-semibold mb-8 max-w-2xl mx-auto drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]">
               {tour.description}
             </p>
           )}
