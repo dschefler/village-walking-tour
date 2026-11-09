@@ -2,9 +2,10 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react';
 import Map, { Marker, NavigationControl, type MapRef } from 'react-map-gl';
-import { MapPin, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { AreaCircles } from './AreaCircles';
+import { categoryStyle } from '@/lib/site-categories';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -15,6 +16,7 @@ interface SiteItem {
   longitude: number;
   is_area?: boolean;
   area_radius_m?: number;
+  category?: string | null;
 }
 
 interface HistoricSitesMapProps {
@@ -110,6 +112,7 @@ export function HistoricSitesMap({
       {sites.map((site) => {
         const isHovered = site.id === hoveredSiteId;
         const isSelected = selectedIds?.has(site.id) ?? false;
+        const { color, icon: CategoryIcon } = categoryStyle(site.category);
 
         return (
           <Marker
@@ -128,16 +131,17 @@ export function HistoricSitesMap({
                 ${isHovered ? 'scale-150 z-50' : 'scale-100 z-10'}
               `}
             >
-              {/* Marker pin */}
+              {/* Marker pin — colored and iconed by category; selected stops get a check */}
               <div
                 className={`
-                  flex items-center justify-center w-8 h-8 rounded-full shadow-lg border-2 border-white
-                  ${isSelected ? 'bg-primary' : isHovered ? 'bg-primary' : 'bg-black'}
+                  flex items-center justify-center w-8 h-8 rounded-full shadow-lg border-2
+                  ${isSelected ? 'border-primary ring-2 ring-white' : 'border-white'}
                 `}
+                style={{ backgroundColor: color }}
               >
                 {isSelected
                   ? <Check className="w-4 h-4 text-white" />
-                  : <MapPin className="w-4 h-4 text-white" />
+                  : <CategoryIcon className="w-4 h-4 text-white" />
                 }
               </div>
 
@@ -153,7 +157,7 @@ export function HistoricSitesMap({
               {/* Pulse animation on hover */}
               {isHovered && (
                 <div className="absolute inset-0 -z-10">
-                  <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-50" />
+                  <div className="absolute inset-0 rounded-full animate-ping opacity-50" style={{ backgroundColor: color }} />
                 </div>
               )}
             </div>

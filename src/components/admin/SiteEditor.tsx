@@ -14,6 +14,7 @@ import { MediaUploader } from './MediaUploader';
 import { TTSGenerator } from './TTSGenerator';
 import { AddressInput } from './AddressInput';
 import { AreaCircles } from '@/components/map/AreaCircles';
+import { SITE_CATEGORIES } from '@/lib/site-categories';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
@@ -108,6 +109,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     is_area: false,
     area_radius_m: 150,
     start_point: '',
+    category: '',
   });
 
 
@@ -126,6 +128,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         is_area: site.is_area ?? false,
         area_radius_m: site.area_radius_m ?? 150,
         start_point: site.start_point || '',
+        category: site.category || '',
       });
 
       // Load hours
@@ -421,6 +424,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             is_area: formData.is_area,
             area_radius_m: formData.area_radius_m,
             start_point: formData.is_area ? formData.start_point.trim() || null : null,
+            category: formData.category || null,
             hours: hoursPayload,
             ...(organizationId ? { organization_id: organizationId } : {}),
           })
@@ -461,6 +465,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             is_area: formData.is_area,
             area_radius_m: formData.area_radius_m,
             start_point: formData.is_area ? formData.start_point.trim() || null : null,
+            category: formData.category || null,
             display_order: displayOrder,
             hours: hoursPayload,
           })
@@ -594,6 +599,41 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
           placeholder="Enter street address to auto-fill coordinates..."
           proximity={orgDefaultLocation}
         />
+      </div>
+
+      {/* Category */}
+      <div className="space-y-2">
+        <Label>Category</Label>
+        <p className="text-xs text-muted-foreground">
+          Sets the color and icon of this stop&apos;s map pin and tag, and lets visitors filter by it on the Historic Sites page.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={formData.category === '' ? 'default' : 'outline'}
+            onClick={() => setFormData((prev) => ({ ...prev, category: '' }))}
+          >
+            None
+          </Button>
+          {SITE_CATEGORIES.map(({ key, label, description, color, icon: Icon }) => {
+            const active = formData.category === key;
+            return (
+              <Button
+                key={key}
+                type="button"
+                size="sm"
+                variant="outline"
+                title={description}
+                onClick={() => setFormData((prev) => ({ ...prev, category: key }))}
+                style={active ? { backgroundColor: color, borderColor: color, color: '#fff' } : { borderColor: color, color }}
+              >
+                <Icon className="w-4 h-4 mr-1" aria-hidden="true" />
+                {label}
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Area / neighborhood */}

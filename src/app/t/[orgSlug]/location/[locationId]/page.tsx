@@ -35,6 +35,7 @@ interface LocationWithMedia {
   is_area?: boolean;
   area_radius_m?: number;
   start_point?: string | null;
+  category?: string | null;
   created_at: string;
   updated_at: string;
   tour_name?: string;
@@ -167,6 +168,7 @@ export default async function TenantLocationPage({
         primaryImage={primaryImage}
         address={siteAddressLabel(location)}
         isArea={location.is_area}
+        category={location.category}
       />
 
       <main className="container mx-auto px-4 py-8">

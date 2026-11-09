@@ -8,6 +8,7 @@ import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
 import { AreaCircles } from './AreaCircles';
+import { categoryStyle } from '@/lib/site-categories';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -21,6 +22,7 @@ interface SiteItem {
   is_area?: boolean;
   area_radius_m?: number;
   start_point?: string | null;
+  category?: string | null;
   media?: {
     id: string;
     storage_path: string;
@@ -225,9 +227,9 @@ export function TourRouteMap({
               <div
                 className={`
                   flex items-center justify-center w-8 h-8 rounded-full
-                  ${isHovered ? 'bg-primary' : 'bg-black'}
                   shadow-lg border-2 border-white font-bold text-white text-sm
                 `}
+                style={{ backgroundColor: categoryStyle(site.category).color }}
               >
                 {index + 1}
               </div>

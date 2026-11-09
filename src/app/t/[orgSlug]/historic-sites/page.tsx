@@ -14,6 +14,8 @@ import { AudioPlayer } from '@/components/audio/AudioPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
 import { AreaBadge } from '@/components/location/AreaBadge';
+import { CategoryBadge } from '@/components/location/CategoryBadge';
+import { SITE_CATEGORIES, type SiteCategory } from '@/lib/site-categories';
 
 interface SiteItem {
   id: string;
@@ -25,6 +27,7 @@ interface SiteItem {
   is_area?: boolean;
   area_radius_m?: number;
   start_point?: string | null;
+  category?: string | null;
   latitude: number;
   longitude: number;
   audio_url: string | null;
@@ -46,6 +49,8 @@ export default function TenantHistoricSitesPage() {
   const [hoveredSiteId, setHoveredSiteId] = useState<string | null>(null);
   const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
   const [audioDialogSite, setAudioDialogSite] = useState<SiteItem | null>(null);
+  // Categories the visitor has narrowed to; empty = show everything
+  const [activeCategories, setActiveCategories] = useState<Set<SiteCategory>>(new Set());
   const { pendingIds, toggle, clear } = useTourBuilderStore();
   const tenant = useTenantOptional();
   const orgName = tenant?.organization.app_name || tenant?.organization.name || 'this area';
@@ -67,6 +72,21 @@ export default function TenantHistoricSitesPage() {
   }, [orgSlug]);
 
   const selectedIds = new Set(pendingIds);
+
+  // Only offer chips for categories this tour actually uses
+  const usedCategories = SITE_CATEGORIES.filter((c) => sites.some((s) => s.category === c.key));
+  const visibleSites = activeCategories.size === 0
+    ? sites
+    : sites.filter((s) => activeCategories.has(s.category as SiteCategory));
+
+  const toggleCategory = (key: SiteCategory) => {
+    setActiveCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+    setPopupSite(null);
+  };
 
   const getImageUrl = getStorageMediaUrl;
 
@@ -114,12 +134,41 @@ export default function TenantHistoricSitesPage() {
           </div>
         )}
 
+        {usedCategories.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2" role="group" aria-label="Filter by category">
+            <button
+              onClick={() => { setActiveCategories(new Set()); setPopupSite(null); }}
+              aria-pressed={activeCategories.size === 0}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                activeCategories.size === 0 ? 'bg-gray-900 border-gray-900 text-white' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              All
+            </button>
+            {usedCategories.map(({ key, label, color, icon: Icon }) => {
+              const active = activeCategories.has(key);
+              return (
+                <button
+                  key={key}
+                  onClick={() => toggleCategory(key)}
+                  aria-pressed={active}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border-2 transition-colors"
+                  style={active ? { backgroundColor: color, borderColor: color, color: '#fff' } : { backgroundColor: '#fff', borderColor: color, color }}
+                >
+                  <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-2 gap-8 min-w-0">
           {/* Map Section */}
           <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)] min-w-0 w-full">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full min-h-[400px] relative w-full">
               <HistoricSitesMap
-                sites={sites}
+                sites={visibleSites}
                 hoveredSiteId={hoveredSiteId}
                 selectedIds={selectedIds}
                 onSiteClick={handleMapClick}
@@ -139,7 +188,10 @@ export default function TenantHistoricSitesPage() {
                     })()}
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-900 leading-snug">{popupSite.name}</p>
-                      {popupSite.is_area && <AreaBadge className="mt-1" />}
+                      <div className="flex flex-wrap gap-1 mt-1 empty:hidden">
+                        <CategoryBadge category={popupSite.category} />
+                        {popupSite.is_area && <AreaBadge />}
+                      </div>
                       {siteAddressLabel(popupSite, true) && <p className="text-xs text-gray-500 mt-0.5">{siteAddressLabel(popupSite, true)}</p>}
                       {popupSite.description && <p className="text-xs text-gray-600 mt-1 line-clamp-2">{popupSite.description}</p>}
                     </div>
@@ -175,7 +227,7 @@ export default function TenantHistoricSitesPage() {
           <div className="space-y-4 min-w-0 w-full">
             <h2 className="text-xl font-semibold text-gray-900">All Historic Sites</h2>
             <div className="space-y-3">
-              {sites.map((site) => {
+              {visibleSites.map((site) => {
                 const primaryImage = site.media?.find((m) => m.is_primary) || site.media?.[0];
                 const isSelected = selectedIds.has(site.id);
 
@@ -202,7 +254,10 @@ export default function TenantHistoricSitesPage() {
                       <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
                         <div>
                           <h3 className="font-semibold text-gray-900 text-sm leading-snug">{site.name}</h3>
-                          {site.is_area && <AreaBadge className="mt-1" />}
+                          <div className="flex flex-wrap gap-1 mt-1 empty:hidden">
+                            <CategoryBadge category={site.category} />
+                            {site.is_area && <AreaBadge />}
+                          </div>
                           {siteAddressLabel(site, true) && (
                             <p className="text-xs text-[#014487] flex items-center gap-1 mt-0.5">
                               <MapPin className="w-3 h-3 flex-shrink-0" />

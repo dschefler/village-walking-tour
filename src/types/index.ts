@@ -43,6 +43,8 @@ export interface Site {
   area_radius_m?: number;
   /** Where visitors should begin exploring an area, e.g. "Corner of State & Haley" */
   start_point?: string | null;
+  /** Kind of stop, e.g. 'public_art' — keys in src/lib/site-categories.ts (migration 018) */
+  category?: string | null;
   created_at: string;
   updated_at: string;
 }
