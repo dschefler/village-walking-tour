@@ -7,6 +7,7 @@ import {
   Frame,
   Martini,
   Feather,
+  Columns3,
   SquareParking,
   Signpost,
   MapPin,
@@ -22,6 +23,7 @@ export type SiteCategory =
   | 'coffee_shops'
   | 'music_cocktails'
   | 'indigenous'
+  | 'plaza'
   | 'parking'
   | 'street_names';
 
@@ -42,6 +44,7 @@ export const SITE_CATEGORIES: CategoryDef[] = [
   { key: 'public_art', label: 'Public Art', description: 'Art installations, sculptures, murals and notable public works', color: '#7C3AED', icon: Palette },
   { key: 'family', label: 'Family & Kids', description: 'Family and kid-friendly activities and stores', color: '#16A34A', icon: Smile },
   { key: 'indigenous', label: 'Indigenous Art & Culture', description: 'Indigenous art and cultural history', color: '#8B5A2B', icon: Feather },
+  { key: 'plaza', label: 'Plaza / Arcade', description: 'Plazas, paseos and arcades', color: '#0891B2', icon: Columns3 },
   { key: 'art_galleries', label: 'Art Gallery', description: 'Art galleries', color: '#DB2777', icon: Frame },
   { key: 'coffee_shops', label: 'Coffee Shop', description: 'Coffee shops', color: '#EA580C', icon: Coffee },
   { key: 'music_cocktails', label: 'Music & Cocktails', description: 'Live music and cocktail bars', color: '#CA8A04', icon: Martini },
