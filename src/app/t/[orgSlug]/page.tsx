@@ -100,9 +100,9 @@ export default async function TenantHomePage({
           {usesCategories ? (
             <Link
               href={`/t/${params.orgSlug}/start`}
-              className="inline-flex flex-col items-center gap-1 mt-2 px-6 pt-2 pb-3 bg-primary hover:bg-primary/85 text-white rounded-xl shadow-lg border-2 border-white/30 hover:border-secondary transition-colors"
+              className="inline-flex items-center gap-3 mt-2 pl-6 pr-10 py-1.5 bg-primary hover:bg-primary/85 text-white rounded-xl shadow-lg border-2 border-white/30 hover:border-secondary transition-colors"
             >
-              <WalkingPerson className="h-11 w-auto" />
+              <WalkingPerson className="h-9 w-auto" />
               <span className="text-base md:text-lg font-bold tracking-wide">Start Your Tour</span>
             </Link>
           ) : curatedToursEnabled ? (
