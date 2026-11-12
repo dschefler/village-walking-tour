@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { MapPin, Loader2, Check, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,9 @@ export function AddressInput({
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState<string | null>(null);
   const [geocodeSuccess, setGeocodeSuccess] = useState(false);
+  // Set when the user edits the text, so leaving the box looks up the new
+  // value even if the location already had a resolved address.
+  const editedRef = useRef(false);
 
   const handleGeocode = useCallback(async () => {
     if (!value.trim()) {
@@ -37,6 +40,7 @@ export function AddressInput({
       return;
     }
 
+    editedRef.current = false;
     setIsGeocoding(true);
     setGeocodeError(null);
     setGeocodeSuccess(false);
@@ -76,7 +80,7 @@ export function AddressInput({
   };
 
   const handleBlur = () => {
-    if (value.trim() && !addressFormatted) {
+    if (value.trim() && (editedRef.current || !addressFormatted)) {
       handleGeocode();
     }
   };
@@ -89,6 +93,7 @@ export function AddressInput({
             value={value}
             onChange={(e) => {
               onChange(e.target.value);
+              editedRef.current = true;
               setGeocodeError(null);
               setGeocodeSuccess(false);
             }}

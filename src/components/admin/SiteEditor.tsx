@@ -432,6 +432,11 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
 
     setSaving(true);
 
+    // Coordinates left in the address box without pressing Enter still count.
+    const typedCoords = parseCoordinates(formData.address);
+    const latitude = typedCoords?.latitude ?? formData.latitude;
+    const longitude = typedCoords?.longitude ?? formData.longitude;
+
     const hoursPayload: SiteHours | null = hoursEnabled
       ? {
           ...Object.fromEntries(
@@ -452,8 +457,8 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
           .update({
             name: formData.name,
             description: formData.description || null,
-            latitude: formData.latitude,
-            longitude: formData.longitude,
+            latitude,
+            longitude,
             audio_url: formData.audio_url || null,
             address: formData.address || null,
             address_formatted: formData.address_formatted || null,
@@ -495,8 +500,8 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             organization_id: organizationId ?? null,
             name: formData.name,
             description: formData.description || null,
-            latitude: formData.latitude,
-            longitude: formData.longitude,
+            latitude,
+            longitude,
             audio_url: formData.audio_url || null,
             address: formData.address || null,
             address_formatted: formData.address_formatted || null,
