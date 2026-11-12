@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SITE_CATEGORIES, normalizeCategory } from '@/lib/site-categories';
+import { SITE_CATEGORIES, siteCategoryKeys } from '@/lib/site-categories';
 
 export interface OrgSiteItem {
   id: string;
@@ -9,6 +9,7 @@ export interface OrgSiteItem {
   slug: string | null;
   address: string | null;
   category?: string | null;
+  categories?: string[] | null;
 }
 
 // One request per org per page load, shared by the desktop dropdown and the mobile menu
@@ -44,6 +45,6 @@ export function useOrgSites(orgSlug?: string) {
   }, [orgSlug]);
 
   // Only tenant tours use categories; the un-prefixed Southampton site never does
-  const categories = !orgSlug ? [] : SITE_CATEGORIES.filter((c) => sites.some((s) => normalizeCategory(s.category) === c.key));
+  const categories = !orgSlug ? [] : SITE_CATEGORIES.filter((c) => sites.some((s) => siteCategoryKeys(s).includes(c.key)));
   return { sites, categories, loading };
 }

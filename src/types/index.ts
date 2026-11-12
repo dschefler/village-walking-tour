@@ -45,6 +45,8 @@ export interface Site {
   start_point?: string | null;
   /** Kind of stop, e.g. 'public_art' — keys in src/lib/site-categories.ts (migration 018) */
   category?: string | null;
+  /** Every category the stop belongs to, primary first (migration 019) */
+  categories?: string[] | null;
   created_at: string;
   updated_at: string;
 }

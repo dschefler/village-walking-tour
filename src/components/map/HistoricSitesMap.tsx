@@ -5,7 +5,7 @@ import Map, { Marker, NavigationControl, type MapRef } from 'react-map-gl';
 import { Check } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { AreaCircles } from './AreaCircles';
-import { categoryStyle } from '@/lib/site-categories';
+import { siteMarkerStyle } from '@/lib/site-categories';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -17,6 +17,7 @@ interface SiteItem {
   is_area?: boolean;
   area_radius_m?: number;
   category?: string | null;
+  categories?: string[] | null;
 }
 
 interface HistoricSitesMapProps {
@@ -112,7 +113,7 @@ export function HistoricSitesMap({
       {sites.map((site) => {
         const isHovered = site.id === hoveredSiteId;
         const isSelected = selectedIds?.has(site.id) ?? false;
-        const { color, icon: CategoryIcon } = categoryStyle(site.category);
+        const { color, background, icon: CategoryIcon } = siteMarkerStyle(site);
 
         return (
           <Marker
@@ -137,7 +138,7 @@ export function HistoricSitesMap({
                   flex items-center justify-center w-8 h-8 rounded-full shadow-lg border-2
                   ${isSelected ? 'border-primary ring-2 ring-white' : 'border-white'}
                 `}
-                style={{ backgroundColor: color }}
+                style={{ background }}
               >
                 {isSelected
                   ? <Check className="w-4 h-4 text-white" />

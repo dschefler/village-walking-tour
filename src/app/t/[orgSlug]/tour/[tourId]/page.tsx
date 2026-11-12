@@ -31,7 +31,7 @@ import { useTenantOptional } from '@/lib/context/tenant-context';
 import { useTourStore } from '@/stores/tour-store';
 import { getTourFromCacheOrNetwork, syncTourForOffline } from '@/lib/offline/sync';
 import { AreaBadge } from '@/components/location/AreaBadge';
-import { CategoryBadge } from '@/components/location/CategoryBadge';
+import { CategoryBadges } from '@/components/location/CategoryBadge';
 import { cn, arrivalRadius, formatDistance, calculateDistance, calculateWalkingTime, formatWalkingTime, calculateSteps, formatSteps, calculateDrivingTime, formatDrivingTime } from '@/lib/utils';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import type { TourWithSites, Site, SiteWithMedia, FunFact } from '@/types';
@@ -541,7 +541,7 @@ export default function TenantTourPage() {
                               {site.display_order}
                             </span>
                             <CardTitle className="text-base">{site.name}</CardTitle>
-                            <CategoryBadge category={site.category} />
+                            <CategoryBadges site={site} />
                             {site.is_area && <AreaBadge />}
                           </div>
                           <div
@@ -587,7 +587,7 @@ export default function TenantTourPage() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-lg">{selectedSiteWithMedia.name}</h3>
-                  <CategoryBadge category={selectedSiteWithMedia.category} className="mt-1" />
+                  <CategoryBadges site={selectedSiteWithMedia} className="mt-1" />
                   {selectedSiteWithMedia.is_area && (
                     <p className="text-sm text-muted-foreground mt-0.5">
                       <AreaBadge className="mr-2" />

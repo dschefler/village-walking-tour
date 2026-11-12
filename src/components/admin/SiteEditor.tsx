@@ -14,7 +14,7 @@ import { MediaUploader } from './MediaUploader';
 import { TTSGenerator } from './TTSGenerator';
 import { AddressInput } from './AddressInput';
 import { AreaCircles } from '@/components/map/AreaCircles';
-import { SITE_CATEGORIES, normalizeCategory } from '@/lib/site-categories';
+import { SITE_CATEGORIES, siteCategoryKeys, type SiteCategory } from '@/lib/site-categories';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
@@ -109,7 +109,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
     is_area: false,
     area_radius_m: 150,
     start_point: '',
-    category: '',
+    categories: [] as SiteCategory[],
   });
 
 
@@ -128,7 +128,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         is_area: site.is_area ?? false,
         area_radius_m: site.area_radius_m ?? 150,
         start_point: site.start_point || '',
-        category: normalizeCategory(site.category) || '',
+        categories: siteCategoryKeys(site),
       });
 
       // Load hours
@@ -424,7 +424,8 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             is_area: formData.is_area,
             area_radius_m: formData.area_radius_m,
             start_point: formData.is_area ? formData.start_point.trim() || null : null,
-            category: formData.category || null,
+            category: formData.categories[0] ?? null,
+            categories: formData.categories,
             hours: hoursPayload,
             ...(organizationId ? { organization_id: organizationId } : {}),
           })
@@ -466,7 +467,8 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             is_area: formData.is_area,
             area_radius_m: formData.area_radius_m,
             start_point: formData.is_area ? formData.start_point.trim() || null : null,
-            category: formData.category || null,
+            category: formData.categories[0] ?? null,
+            categories: formData.categories,
             display_order: displayOrder,
             hours: hoursPayload,
           })
@@ -615,21 +617,23 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
 
       {/* Category */}
       <div className="space-y-2">
-        <Label>Category</Label>
+        <Label>Categories</Label>
         <p className="text-xs text-muted-foreground">
-          Sets the color and icon of this stop&apos;s map pin and tag, and lets visitors filter by it on the Historic Sites page.
+          Pick one or more. The first one picked is the main category and sets the map pin&apos;s icon; a second one
+          splits the pin&apos;s color. Visitors find the stop under every category picked.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             size="sm"
-            variant={formData.category === '' ? 'default' : 'outline'}
-            onClick={() => setFormData((prev) => ({ ...prev, category: '' }))}
+            variant={formData.categories.length === 0 ? 'default' : 'outline'}
+            onClick={() => setFormData((prev) => ({ ...prev, categories: [] }))}
           >
             None
           </Button>
           {SITE_CATEGORIES.map(({ key, label, description, color, icon: Icon }) => {
-            const active = formData.category === key;
+            const position = formData.categories.indexOf(key);
+            const active = position !== -1;
             return (
               <Button
                 key={key}
@@ -637,11 +641,20 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
                 size="sm"
                 variant="outline"
                 title={description}
-                onClick={() => setFormData((prev) => ({ ...prev, category: key }))}
+                aria-pressed={active}
+                onClick={() => setFormData((prev) => ({
+                  ...prev,
+                  categories: prev.categories.includes(key)
+                    ? prev.categories.filter((k) => k !== key)
+                    : [...prev.categories, key],
+                }))}
                 style={active ? { backgroundColor: color, borderColor: color, color: '#fff' } : { borderColor: color, color }}
               >
                 <Icon className="w-4 h-4 mr-1" aria-hidden="true" />
                 {label}
+                {position === 0 && formData.categories.length > 1 && (
+                  <span className="ml-1.5 rounded bg-white/25 px-1 text-[10px] font-bold uppercase">Main</span>
+                )}
               </Button>
             );
           })}

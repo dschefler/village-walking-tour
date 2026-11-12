@@ -5,7 +5,7 @@ import { MapPin } from 'lucide-react';
 import type { Media } from '@/types';
 import { getStorageMediaUrl } from '@/lib/utils';
 import { AreaBadge } from './AreaBadge';
-import { CategoryBadge } from './CategoryBadge';
+import { CategoryBadges } from './CategoryBadge';
 
 interface LocationHeroProps {
   name: string;
@@ -13,11 +13,12 @@ interface LocationHeroProps {
   address?: string | null;
   isArea?: boolean;
   category?: string | null;
+  categories?: string[] | null;
 }
 
 const getImageUrl = getStorageMediaUrl;
 
-export function LocationHero({ name, primaryImage, address, isArea, category }: LocationHeroProps) {
+export function LocationHero({ name, primaryImage, address, isArea, category, categories }: LocationHeroProps) {
   return (
     <div className="relative">
       {primaryImage ? (
@@ -45,9 +46,9 @@ export function LocationHero({ name, primaryImage, address, isArea, category }: 
 
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
         <div className="container mx-auto">
-          {(category || isArea) && (
+          {(category || categories?.length || isArea) && (
             <div className="flex flex-wrap gap-2 mb-2">
-              <CategoryBadge category={category} />
+              <CategoryBadges site={{ category, categories }} />
               {isArea && <AreaBadge className="bg-black/40 text-white" />}
             </div>
           )}

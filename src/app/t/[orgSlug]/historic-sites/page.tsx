@@ -14,8 +14,8 @@ import { AudioPlayer } from '@/components/audio/AudioPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
 import { AreaBadge } from '@/components/location/AreaBadge';
-import { CategoryBadge } from '@/components/location/CategoryBadge';
-import { SITE_CATEGORIES, normalizeCategory, type SiteCategory } from '@/lib/site-categories';
+import { CategoryBadges } from '@/components/location/CategoryBadge';
+import { SITE_CATEGORIES, normalizeCategory, siteCategoryKeys, type SiteCategory } from '@/lib/site-categories';
 
 interface SiteItem {
   id: string;
@@ -28,6 +28,7 @@ interface SiteItem {
   area_radius_m?: number;
   start_point?: string | null;
   category?: string | null;
+  categories?: string[] | null;
   latitude: number;
   longitude: number;
   audio_url: string | null;
@@ -84,10 +85,10 @@ export default function TenantHistoricSitesPage() {
   const selectedIds = new Set(pendingIds);
 
   // Only offer chips for categories this tour actually uses
-  const usedCategories = SITE_CATEGORIES.filter((c) => sites.some((s) => normalizeCategory(s.category) === c.key));
+  const usedCategories = SITE_CATEGORIES.filter((c) => sites.some((s) => siteCategoryKeys(s).includes(c.key)));
   const visibleSites = activeCategories.size === 0
     ? sites
-    : sites.filter((s) => { const c = normalizeCategory(s.category); return c !== null && activeCategories.has(c); });
+    : sites.filter((s) => siteCategoryKeys(s).some((c) => activeCategories.has(c)));
 
   const toggleCategory = (key: SiteCategory) => {
     const next = new Set(activeCategories);
@@ -202,7 +203,7 @@ export default function TenantHistoricSitesPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-900 leading-snug">{popupSite.name}</p>
                       <div className="flex flex-wrap gap-1 mt-1 empty:hidden">
-                        <CategoryBadge category={popupSite.category} />
+                        <CategoryBadges site={popupSite} />
                         {popupSite.is_area && <AreaBadge />}
                       </div>
                       {siteAddressLabel(popupSite, true) && <p className="text-xs text-gray-500 mt-0.5">{siteAddressLabel(popupSite, true)}</p>}
@@ -268,7 +269,7 @@ export default function TenantHistoricSitesPage() {
                         <div>
                           <h3 className="font-semibold text-gray-900 text-sm leading-snug">{site.name}</h3>
                           <div className="flex flex-wrap gap-1 mt-1 empty:hidden">
-                            <CategoryBadge category={site.category} />
+                            <CategoryBadges site={site} />
                             {site.is_area && <AreaBadge />}
                           </div>
                           {siteAddressLabel(site, true) && (
