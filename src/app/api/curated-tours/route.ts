@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { withCategorySites } from '@/lib/curated-category';
 
 // GET /api/curated-tours?orgSlug=xxx — public; no orgSlug = auth'd current org
 export async function GET(request: NextRequest) {
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
       .order('display_order', { ascending: true });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data ?? []);
+    return NextResponse.json(await withCategorySites(supabase, org.id, data ?? []));
   }
 
   // Auth path — admin managing their own org's tours
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
   if (!membership) return NextResponse.json({ error: 'No organization' }, { status: 404 });
 
   const body = await request.json();
-  const { name, slug, tagline, description, time_estimate, site_names, display_order } = body;
+  const { name, slug, tagline, description, time_estimate, site_names, display_order, category } = body;
 
   const { data, error } = await supabase
     .from('org_curated_tours')
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
       description: description || '',
       time_estimate: time_estimate || '',
       site_names: site_names || [],
+      category: category || null,
       display_order: display_order ?? 0,
     })
     .select()

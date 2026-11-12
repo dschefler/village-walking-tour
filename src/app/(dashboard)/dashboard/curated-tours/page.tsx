@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import type { OrgCuratedTour } from '@/types';
+import { SITE_CATEGORIES, getSiteCategory } from '@/lib/site-categories';
 
 interface SiteOption {
   id: string;
@@ -41,6 +42,8 @@ function TourForm({
   const [description, setDescription] = useState(initial?.description ?? '');
   const [timeEstimate, setTimeEstimate] = useState(initial?.time_estimate ?? '');
   const [selectedSiteNames, setSelectedSiteNames] = useState<string[]>(initial?.site_names ?? []);
+  // When set, the tour's stops are every location in this category instead of the checklist
+  const [category, setCategory] = useState(initial?.category ?? '');
   const [saving, setSaving] = useState(false);
 
   const toggleSite = (siteName: string) => {
@@ -64,7 +67,8 @@ function TourForm({
         tagline: tagline.trim(),
         description: description.trim(),
         time_estimate: timeEstimate,
-        site_names: selectedSiteNames,
+        site_names: category ? [] : selectedSiteNames,
+        category: category || null,
       });
     } finally {
       setSaving(false);
@@ -110,6 +114,24 @@ function TourForm({
       </div>
 
       <div>
+        <Label className="mb-1 block">Fill from a category</Label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="">— no, pick locations by hand below —</option>
+          {SITE_CATEGORIES.map((c) => (
+            <option key={c.key} value={c.key}>{c.label}</option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground mt-1">
+          The tour then includes every location tagged with that category, and stays up to date as you tag more.
+        </p>
+      </div>
+
+      {!category && (
+      <div>
         <Label className="mb-2 block">
           Select Locations
           <span className="text-muted-foreground font-normal ml-1">
@@ -140,6 +162,7 @@ function TourForm({
           </div>
         )}
       </div>
+      )}
 
       <div className="flex gap-2 pt-2">
         <Button onClick={handleSubmit} disabled={saving || !name.trim() || !slug.trim()} className="gap-2">
@@ -329,7 +352,10 @@ export default function CuratedToursAdminPage() {
                           </span>
                         )}
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <MapPin className="w-3.5 h-3.5" /> {tour.site_names.length} location{tour.site_names.length !== 1 ? 's' : ''}
+                          <MapPin className="w-3.5 h-3.5" />
+                          {tour.category
+                            ? `All locations in ${getSiteCategory(tour.category)?.label ?? tour.category}`
+                            : `${tour.site_names.length} location${tour.site_names.length !== 1 ? 's' : ''}`}
                         </span>
                         <span className="text-xs text-muted-foreground/60">
                           /curated-tours/{tour.slug}

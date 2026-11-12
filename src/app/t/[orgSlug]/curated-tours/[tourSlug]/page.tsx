@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { withCategorySites } from '@/lib/curated-category';
 import { CuratedTourClient } from './CuratedTourClient';
 import { CURATED_TOURS } from '@/lib/curated-tours';
 import type { OrgCuratedTour } from '@/types';
@@ -22,7 +23,7 @@ async function getTour(orgSlug: string, tourSlug: string): Promise<OrgCuratedTou
     .eq('slug', tourSlug)
     .single();
 
-  if (data) return data as OrgCuratedTour;
+  if (data) return (await withCategorySites(supabase, org.id, [data as OrgCuratedTour]))[0];
 
   // Fall back to hardcoded tours (used by Southampton and any org without DB records)
   const hardcoded = CURATED_TOURS.find((t) => t.slug === tourSlug);

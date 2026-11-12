@@ -199,6 +199,8 @@ export interface OrgCuratedTour {
   description: string;
   time_estimate: string; // e.g. "1 hour", "2 hours"
   site_names: string[];  // fuzzy-matched against site names
+  /** When set, stops are every location in this category instead of site_names (migration 020) */
+  category?: string | null;
   display_order: number;
   created_at: string;
   updated_at: string;

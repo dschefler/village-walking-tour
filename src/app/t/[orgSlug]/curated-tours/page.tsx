@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { createClient } from '@/lib/supabase/server';
+import { withCategorySites } from '@/lib/curated-category';
 import type { OrgCuratedTour } from '@/types';
 
 async function getCuratedTours(orgSlug: string) {
@@ -25,7 +26,7 @@ async function getCuratedTours(orgSlug: string) {
     .eq('organization_id', org.id)
     .order('display_order', { ascending: true });
 
-  return (data ?? []) as OrgCuratedTour[];
+  return withCategorySites(supabase, org.id, (data ?? []) as OrgCuratedTour[]);
 }
 
 export default async function CuratedToursListPage({
