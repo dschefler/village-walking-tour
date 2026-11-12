@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { HideWhenInstalled } from '@/components/pwa/HideWhenInstalled';
+import { WalkingPerson } from '@/components/WalkingPerson';
 import type { Tour } from '@/types';
 
 async function getOrgAndTour(orgSlug: string) {
@@ -16,7 +17,7 @@ async function getOrgAndTour(orgSlug: string) {
     .eq('slug', orgSlug)
     .single();
 
-  if (!org) return { org: null, tour: null };
+  if (!org) return { org: null, tour: null, usesCategories: false };
 
   const { data: tour } = await supabase
     .from('tours')
@@ -26,7 +27,15 @@ async function getOrgAndTour(orgSlug: string) {
     .limit(1)
     .single();
 
-  return { org, tour: tour as Tour | null };
+  // Tours whose stops are tagged by category get the single "Start Your Tour" entry point
+  const { count: categorized } = await supabase
+    .from('sites')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', org.id)
+    .eq('is_published', true)
+    .not('category', 'is', null);
+
+  return { org, tour: tour as Tour | null, usesCategories: (categorized ?? 0) > 0 };
 }
 
 export default async function TenantHomePage({
@@ -34,7 +43,7 @@ export default async function TenantHomePage({
 }: {
   params: { orgSlug: string };
 }) {
-  const { org, tour } = await getOrgAndTour(params.orgSlug);
+  const { org, tour, usesCategories } = await getOrgAndTour(params.orgSlug);
   const primaryColor = org?.primary_color || '#0B6E69';
   const curatedToursEnabled = org?.curated_tours_enabled ?? true;
 
@@ -88,7 +97,15 @@ export default async function TenantHomePage({
             </p>
           )}
 
-          {curatedToursEnabled ? (
+          {usesCategories ? (
+            <Link
+              href={`/t/${params.orgSlug}/start`}
+              className="group inline-flex flex-col items-center gap-2 mt-2 px-10 py-5 bg-primary hover:bg-primary/85 text-white rounded-2xl shadow-xl border-2 border-white/30 hover:border-secondary transition-colors"
+            >
+              <WalkingPerson className="w-12 h-14 text-white" />
+              <span className="text-xl md:text-2xl font-bold tracking-wide">Start Your Tour</span>
+            </Link>
+          ) : curatedToursEnabled ? (
             /* 4 cards: 2×2 grid */
             <div className="grid grid-cols-2 auto-rows-fr gap-2 max-w-sm mx-auto w-full mt-2">
               <Link href={`/t/${params.orgSlug}/how-to-use`} className={cardClass}>

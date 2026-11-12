@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Volume2, ChevronRight, Loader2, Plus, Check, Route, X } from 'lucide-react';
@@ -49,8 +49,18 @@ export default function TenantHistoricSitesPage() {
   const [hoveredSiteId, setHoveredSiteId] = useState<string | null>(null);
   const [popupSite, setPopupSite] = useState<SiteItem | null>(null);
   const [audioDialogSite, setAudioDialogSite] = useState<SiteItem | null>(null);
-  // Categories the visitor has narrowed to; empty = show everything
-  const [activeCategories, setActiveCategories] = useState<Set<SiteCategory>>(new Set());
+  // Categories the visitor has narrowed to (?category=a,b in the URL, so the
+  // menu and Start Your Tour page can link straight to one); empty = everything
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category') ?? '';
+  const activeCategories = useMemo(
+    () => new Set(categoryParam.split(',').map((k) => normalizeCategory(k)).filter((k): k is SiteCategory => k !== null)),
+    [categoryParam]
+  );
+  const setActiveCategories = (next: Set<SiteCategory>) => {
+    const query = next.size ? `?category=${Array.from(next).join(',')}` : '';
+    router.replace(`/t/${orgSlug}/historic-sites${query}`, { scroll: false });
+  };
   const { pendingIds, toggle, clear } = useTourBuilderStore();
   const tenant = useTenantOptional();
   const orgName = tenant?.organization.app_name || tenant?.organization.name || 'this area';
@@ -80,13 +90,16 @@ export default function TenantHistoricSitesPage() {
     : sites.filter((s) => { const c = normalizeCategory(s.category); return c !== null && activeCategories.has(c); });
 
   const toggleCategory = (key: SiteCategory) => {
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
+    const next = new Set(activeCategories);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    setActiveCategories(next);
     setPopupSite(null);
   };
+
+  // Tours that tag stops by category aren't all-historic, so drop that word
+  const byCategory = usedCategories.length > 0;
+  const singleCategory = activeCategories.size === 1 ? SITE_CATEGORIES.find((c) => activeCategories.has(c.key)) : undefined;
+  const pageTitle = !byCategory ? 'Historic Sites' : singleCategory ? singleCategory.label : 'All Sites';
 
   const getImageUrl = getStorageMediaUrl;
 
@@ -112,9 +125,9 @@ export default function TenantHistoricSitesPage() {
 
       <header className="bg-black text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Historic Sites</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">{pageTitle}</h1>
           <p className="text-gray-300">
-            Explore {sites.length} historic location{sites.length !== 1 ? 's' : ''} in {orgName}
+            Explore {visibleSites.length}{byCategory ? '' : ' historic'} location{visibleSites.length !== 1 ? 's' : ''} in {orgName}
           </p>
         </div>
       </header>
@@ -225,7 +238,7 @@ export default function TenantHistoricSitesPage() {
 
           {/* Sites Listing */}
           <div className="space-y-4 min-w-0 w-full">
-            <h2 className="text-xl font-semibold text-gray-900">All Historic Sites</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{byCategory ? pageTitle : 'All Historic Sites'}</h2>
             <div className="space-y-3">
               {visibleSites.map((site) => {
                 const primaryImage = site.media?.find((m) => m.is_primary) || site.media?.[0];

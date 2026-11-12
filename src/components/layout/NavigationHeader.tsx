@@ -9,6 +9,7 @@ import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info, Bookmark } f
 import { Button } from '@/components/ui/button';
 import { HistoricSitesDropdown } from './HistoricSitesDropdown';
 import { CuratedToursDropdown } from './CuratedToursDropdown';
+import { useOrgSites } from '@/hooks/use-org-sites';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 
 async function refreshApp() {
@@ -36,6 +37,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
   const prefix = orgSlug ? `/t/${orgSlug}` : '';
   const isTenant = !!orgSlug;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { categories: siteCategories } = useOrgSites(orgSlug);
   const [curatedTours, setCuratedTours] = useState<OrgCuratedTour[]>([]);
 
   useEffect(() => {
@@ -170,8 +172,21 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
               onClick={() => setMobileMenuOpen(false)}
             >
               <MapPin className={`w-5 h-5 ${iconAccent}`} />
-              <span>Historic Sites</span>
+              <span>{siteCategories.length > 0 ? 'All Sites' : 'Historic Sites'}</span>
             </Link>
+            {siteCategories.map(({ key, label, color, icon: Icon }) => (
+              <Link
+                key={key}
+                href={`${prefix}/historic-sites?category=${key}`}
+                className={`flex items-center gap-3 pl-10 pr-2 py-1.5 rounded-lg text-sm ${hoverClass} ${textClass}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="flex items-center justify-center w-5 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: color }}>
+                  <Icon className="w-3 h-3 text-white" aria-hidden="true" />
+                </span>
+                <span>{label}</span>
+              </Link>
+            ))}
             <Link
               href={`${prefix}/create-your-tour`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
