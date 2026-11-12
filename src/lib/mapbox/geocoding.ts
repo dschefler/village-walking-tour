@@ -85,7 +85,13 @@ export async function geocodeAddress(
  * through to normal geocoding).
  */
 export function parseCoordinates(input: string): { latitude: number; longitude: number } | null {
-  const text = input.trim().toUpperCase().replace(/[′’']/g, "'").replace(/[″”"]/g, '"');
+  const text = input
+    .trim()
+    .toUpperCase()
+    .replace(/[\u2212\u2010-\u2015\uFE63\uFF0D]/g, '-') // typographic minus signs and dashes from copied text
+    .replace(/[\uFF0C\u060C]/g, ',')
+    .replace(/[′’']/g, "'")
+    .replace(/[″”"]/g, '"');
   if (!text) return null;
 
   const part = String.raw`(-?\d+(?:\.\d+)?)\s*°?\s*(?:(\d+(?:\.\d+)?)\s*'\s*)?(?:(\d+(?:\.\d+)?)\s*"\s*)?([NSEW])?`;
