@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
 import { AreaBadge } from '@/components/location/AreaBadge';
 import { CategoryBadge } from '@/components/location/CategoryBadge';
-import { SITE_CATEGORIES, type SiteCategory } from '@/lib/site-categories';
+import { SITE_CATEGORIES, normalizeCategory, type SiteCategory } from '@/lib/site-categories';
 
 interface SiteItem {
   id: string;
@@ -74,10 +74,10 @@ export default function TenantHistoricSitesPage() {
   const selectedIds = new Set(pendingIds);
 
   // Only offer chips for categories this tour actually uses
-  const usedCategories = SITE_CATEGORIES.filter((c) => sites.some((s) => s.category === c.key));
+  const usedCategories = SITE_CATEGORIES.filter((c) => sites.some((s) => normalizeCategory(s.category) === c.key));
   const visibleSites = activeCategories.size === 0
     ? sites
-    : sites.filter((s) => activeCategories.has(s.category as SiteCategory));
+    : sites.filter((s) => { const c = normalizeCategory(s.category); return c !== null && activeCategories.has(c); });
 
   const toggleCategory = (key: SiteCategory) => {
     setActiveCategories((prev) => {

@@ -14,7 +14,7 @@ import { MediaUploader } from './MediaUploader';
 import { TTSGenerator } from './TTSGenerator';
 import { AddressInput } from './AddressInput';
 import { AreaCircles } from '@/components/map/AreaCircles';
-import { SITE_CATEGORIES } from '@/lib/site-categories';
+import { SITE_CATEGORIES, normalizeCategory } from '@/lib/site-categories';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
@@ -128,7 +128,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         is_area: site.is_area ?? false,
         area_radius_m: site.area_radius_m ?? 150,
         start_point: site.start_point || '',
-        category: site.category || '',
+        category: normalizeCategory(site.category) || '',
       });
 
       // Load hours

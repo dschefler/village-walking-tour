@@ -1,6 +1,5 @@
 import {
   Landmark,
-  Award,
   Palette,
   Smile,
   Coffee,
@@ -16,7 +15,6 @@ import {
 
 export type SiteCategory =
   | 'historic_building'
-  | 'landmark_plaque'
   | 'public_art'
   | 'family'
   | 'art_galleries'
@@ -39,8 +37,7 @@ interface CategoryDef {
 
 /** Order here is the order of the filter chips and the editor options */
 export const SITE_CATEGORIES: CategoryDef[] = [
-  { key: 'historic_building', label: 'Historic / Cultural', description: 'Historic buildings and cultural sites', color: '#475569', icon: Landmark },
-  { key: 'landmark_plaque', label: 'Landmark Buildings & Plaques', description: 'Landmark buildings and historic landmark status plaques', color: '#B91C1C', icon: Award },
+  { key: 'historic_building', label: 'Historic / Cultural / Landmark', description: 'Historic and cultural sites, landmark buildings and landmark status plaques', color: '#B91C1C', icon: Landmark },
   { key: 'public_art', label: 'Public Art & Murals', description: 'Art installations, sculptures, murals and notable public works', color: '#7C3AED', icon: Palette },
   { key: 'family', label: 'Family & Kids', description: 'Family and kid-friendly activities and stores', color: '#16A34A', icon: Smile },
   { key: 'indigenous', label: 'Indigenous Art & Culture', description: 'Indigenous art and cultural history', color: '#8B5A2B', icon: Feather },
@@ -55,8 +52,20 @@ export const SITE_CATEGORIES: CategoryDef[] = [
 /** Marker color and icon for stops without a category (the previous default look) */
 export const UNCATEGORIZED = { color: '#000000', icon: MapPin };
 
+/** Retired keys still stored on some rows, mapped to the category that replaced them */
+const MERGED_CATEGORIES: Record<string, SiteCategory> = {
+  landmark_plaque: 'historic_building',
+};
+
+/** A stored category key, with retired keys mapped to their replacement */
+export function normalizeCategory(key: string | null | undefined): SiteCategory | null {
+  if (!key) return null;
+  return MERGED_CATEGORIES[key] ?? (SITE_CATEGORIES.some((c) => c.key === key) ? (key as SiteCategory) : null);
+}
+
 export function getSiteCategory(key: string | null | undefined): CategoryDef | null {
-  return SITE_CATEGORIES.find((c) => c.key === key) ?? null;
+  const normalized = normalizeCategory(key);
+  return SITE_CATEGORIES.find((c) => c.key === normalized) ?? null;
 }
 
 /** Color + icon to draw a stop's marker with, falling back to the plain black pin */
