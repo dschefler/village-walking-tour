@@ -18,7 +18,7 @@ import { SITE_CATEGORIES, siteCategoryKeys, type SiteCategory } from '@/lib/site
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
-import { reverseGeocode, type GeocodingResult } from '@/lib/mapbox/geocoding';
+import { parseCoordinates, reverseGeocode, type GeocodingResult } from '@/lib/mapbox/geocoding';
 import type { Site, SiteHours } from '@/types';
 
 const AREA_SIZES = [
@@ -209,6 +209,8 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
       latitude: result.latitude,
       longitude: result.longitude,
       address_formatted: result.addressFormatted,
+      // Coordinates typed into the address box: show the street address instead.
+      address: parseCoordinates(prev.address) ? result.addressFormatted.split(',')[0] : prev.address,
     }));
     mapRef.current?.flyTo({
       center: [result.longitude, result.latitude],
@@ -226,6 +228,42 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
         address_formatted: result.addressFormatted,
       }));
     }
+  };
+
+  // The lat/lng boxes keep their own text so partial input like "-" or
+  // "34." can be typed; the pin only moves once the text is a valid number.
+  const [latText, setLatText] = useState(String(formData.latitude));
+  const [lngText, setLngText] = useState(String(formData.longitude));
+
+  useEffect(() => {
+    setLatText((prev) => (parseFloat(prev) === formData.latitude ? prev : String(formData.latitude)));
+  }, [formData.latitude]);
+
+  useEffect(() => {
+    setLngText((prev) => (parseFloat(prev) === formData.longitude ? prev : String(formData.longitude)));
+  }, [formData.longitude]);
+
+  const handleCoordinateInput = (field: 'latitude' | 'longitude', text: string) => {
+    // A full "lat, lng" pair pasted into either box fills both.
+    const pair = parseCoordinates(text);
+    if (pair) {
+      setFormData((prev) => ({ ...prev, ...pair }));
+      setLatText(String(pair.latitude));
+      setLngText(String(pair.longitude));
+      mapRef.current?.flyTo({ center: [pair.longitude, pair.latitude], zoom: 17 });
+      return;
+    }
+
+    (field === 'latitude' ? setLatText : setLngText)(text);
+    const value = Number(text.trim());
+    const limit = field === 'latitude' ? 90 : 180;
+    if (text.trim() !== '' && isFinite(value) && Math.abs(value) <= limit) {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleCoordinateBlur = () => {
+    mapRef.current?.flyTo({ center: [formData.longitude, formData.latitude], zoom: 17 });
   };
 
   const handleMapClick = (e: MapMouseEvent) => {
@@ -749,6 +787,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             </Marker>
           </Map>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Paste GPS coordinates (e.g. 34.4208, -119.6982) into either box or the address field. West longitudes are negative.
+        </p>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <Label htmlFor="latitude" className="text-xs">
@@ -756,12 +797,11 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             </Label>
             <Input
               id="latitude"
-              type="number"
-              step="any"
-              value={formData.latitude}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, latitude: parseFloat(e.target.value) || 0 }))
-              }
+              type="text"
+              inputMode="decimal"
+              value={latText}
+              onChange={(e) => handleCoordinateInput('latitude', e.target.value)}
+              onBlur={handleCoordinateBlur}
             />
           </div>
           <div className="space-y-1">
@@ -770,12 +810,11 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             </Label>
             <Input
               id="longitude"
-              type="number"
-              step="any"
-              value={formData.longitude}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, longitude: parseFloat(e.target.value) || 0 }))
-              }
+              type="text"
+              inputMode="decimal"
+              value={lngText}
+              onChange={(e) => handleCoordinateInput('longitude', e.target.value)}
+              onBlur={handleCoordinateBlur}
             />
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { MapPin, Loader2, Check, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { geocodeAddress, type GeocodingResult } from '@/lib/mapbox/geocoding';
+import { geocodeAddress, parseCoordinates, reverseGeocode, type GeocodingResult } from '@/lib/mapbox/geocoding';
 
 interface AddressInputProps {
   value: string;
@@ -42,7 +42,17 @@ export function AddressInput({
     setGeocodeSuccess(false);
 
     try {
-      const result = await geocodeAddress(value, proximity);
+      // GPS coordinates pasted in place of an address: use them as-is and
+      // look up the nearest address for display, rather than letting the
+      // address search misread them (Mapbox expects longitude first).
+      const coords = parseCoordinates(value);
+      const result = coords
+        ? (await reverseGeocode(coords.latitude, coords.longitude)) ?? {
+            ...coords,
+            addressFormatted: `${coords.latitude}, ${coords.longitude}`,
+            placeName: value.trim(),
+          }
+        : await geocodeAddress(value, proximity);
 
       if (result) {
         onGeocode(result);

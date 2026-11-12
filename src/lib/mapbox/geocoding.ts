@@ -78,6 +78,44 @@ export async function geocodeAddress(
 }
 
 /**
+ * Parse a pasted "lat, lng" pair into numbers. Accepts what Google Maps and
+ * GPS apps hand out: "34.4208, -119.6982", "34.4208° N, 119.6982° W" and
+ * degrees/minutes/seconds like 34°25'15"N 119°41'54"W. Returns null for
+ * anything that isn't a valid coordinate pair (so ordinary addresses fall
+ * through to normal geocoding).
+ */
+export function parseCoordinates(input: string): { latitude: number; longitude: number } | null {
+  const text = input.trim().toUpperCase().replace(/[′’']/g, "'").replace(/[″”"]/g, '"');
+  if (!text) return null;
+
+  const part = String.raw`(-?\d+(?:\.\d+)?)\s*°?\s*(?:(\d+(?:\.\d+)?)\s*'\s*)?(?:(\d+(?:\.\d+)?)\s*"\s*)?([NSEW])?`;
+  const match = text.match(new RegExp(`^${part}\\s*[,;\\s]\\s*${part}$`));
+  if (!match) return null;
+
+  const toDecimal = (deg: string, min?: string, sec?: string) => {
+    const d = parseFloat(deg);
+    const abs = Math.abs(d) + (min ? parseFloat(min) / 60 : 0) + (sec ? parseFloat(sec) / 3600 : 0);
+    return deg.startsWith('-') ? -abs : abs;
+  };
+
+  let a = toDecimal(match[1], match[2], match[3]);
+  let b = toDecimal(match[5], match[6], match[7]);
+  const hemA = match[4];
+  const hemB = match[8];
+  if (hemA === 'S' || hemA === 'W') a = -Math.abs(a);
+  if (hemB === 'S' || hemB === 'W') b = -Math.abs(b);
+
+  // Normally latitude comes first; honor hemisphere letters if they say otherwise.
+  const swapped = (hemA === 'E' || hemA === 'W') && (hemB === 'N' || hemB === 'S');
+  const latitude = swapped ? b : a;
+  const longitude = swapped ? a : b;
+
+  if (!isFinite(latitude) || !isFinite(longitude)) return null;
+  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null;
+  return { latitude, longitude };
+}
+
+/**
  * Reverse geocode coordinates to an address
  * @param latitude - Latitude coordinate
  * @param longitude - Longitude coordinate
