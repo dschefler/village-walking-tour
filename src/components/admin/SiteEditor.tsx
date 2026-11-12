@@ -447,8 +447,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
           description: 'Site updated successfully',
         });
       } else {
-        // Create new site
-        const { data: newSite, error } = await supabase
+        // Create new site. Slugs are unique across every org, so if this one
+        // is taken retry with -2, -3, … rather than failing the save.
+        const insertSite = (slug: string | null) => supabase
           .from('sites')
           .insert({
             tour_id: tourId,
@@ -461,7 +462,7 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
             address: formData.address || null,
             address_formatted: formData.address_formatted || null,
             is_published: formData.is_published,
-            slug: formData.slug || null,
+            slug,
             is_area: formData.is_area,
             area_radius_m: formData.area_radius_m,
             start_point: formData.is_area ? formData.start_point.trim() || null : null,
@@ -471,6 +472,12 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
           })
           .select()
           .single();
+
+        const baseSlug = formData.slug || null;
+        let { data: newSite, error } = await insertSite(baseSlug);
+        for (let n = 2; baseSlug && error?.code === '23505' && error.message.includes('slug') && n <= 20; n++) {
+          ({ data: newSite, error } = await insertSite(`${baseSlug}-${n}`));
+        }
 
         if (error) throw error;
 
@@ -507,9 +514,14 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
       onClose();
     } catch (err) {
       console.error('Save error:', err);
+      // Supabase errors are plain objects, not Error instances — surface their message too
+      const pgErr = err as { code?: string; message?: string };
+      const message = pgErr?.code === '23505' && pgErr.message?.includes('slug')
+        ? 'That URL slug is already used by another location. Change the URL Slug and try again.'
+        : err instanceof Error ? err.message : pgErr?.message || 'Failed to save site';
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to save site',
+        description: message,
         variant: 'destructive',
       });
     } finally {
