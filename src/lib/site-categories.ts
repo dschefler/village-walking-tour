@@ -46,7 +46,7 @@ export const SITE_CATEGORIES: CategoryDef[] = [
   { key: 'historic_building', label: 'Historic / Cultural / Landmark', description: 'Historic and cultural sites, landmark buildings and landmark status plaques', color: '#B91C1C', icon: Landmark },
   { key: 'public_art', label: 'Public Art & Murals', description: 'Art installations, sculptures, murals and notable public works', color: '#7C3AED', icon: Palette },
   { key: 'family', label: 'Family & Kids', description: 'Family and kid-friendly activities and stores', color: '#16A34A', icon: Smile },
-  { key: 'indigenous', label: 'Indigenous Art & Culture', description: 'Indigenous art and cultural history', color: '#8B5A2B', icon: Feather },
+  { key: 'indigenous', label: 'Indigenous Art & Cultural History', description: 'Indigenous art and cultural history', color: '#8B5A2B', icon: Feather },
   { key: 'plaza', label: 'Plaza / Arcade', description: 'Plazas, paseos and arcades', color: '#0891B2', icon: Columns3 },
   { key: 'photo_ops', label: 'Iconic Santa Barbara Photo Opportunities', description: 'Iconic, picture-perfect spots for photos', color: '#C026D3', icon: Camera },
   { key: 'women_of_vision', label: 'Women of Vision', description: 'Women of Vision', color: '#1E3A8A', icon: Sparkles, inMenu: false },
