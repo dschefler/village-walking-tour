@@ -5,6 +5,9 @@ import Map, { Marker, NavigationControl, type MapRef } from 'react-map-gl';
 import { Check } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { AreaCircles } from './AreaCircles';
+import { AmenityMarkers } from './AmenityMarkers';
+import { getOrgAmenities } from '@/lib/map-amenities';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 import { siteMarkerStyle } from '@/lib/site-categories';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -37,6 +40,7 @@ export function HistoricSitesMap({
 }: HistoricSitesMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const amenities = getOrgAmenities(useTenantOptional()?.organization.slug);
 
   // Calculate map bounds from sites
   const getBounds = useCallback(() => {
@@ -109,6 +113,9 @@ export function HistoricSitesMap({
       <NavigationControl position="top-right" />
 
       <AreaCircles sites={sites} />
+
+      {/* Parking / EV / bike layer sits under the tour-site pins */}
+      <AmenityMarkers amenities={amenities} />
 
       {sites.map((site) => {
         const isHovered = site.id === hoveredSiteId;

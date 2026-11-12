@@ -99,8 +99,9 @@ export function SiteEditor({ tourId, site, displayOrder, onClose, organizationId
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    latitude: 40.8843,
-    longitude: -72.3903,
+    // New locations start at the org's own town, not the Southampton default.
+    latitude: orgDefaultLocation?.latitude ?? 40.8843,
+    longitude: orgDefaultLocation?.longitude ?? -72.3903,
     audio_url: '',
     address: '',
     address_formatted: '',
