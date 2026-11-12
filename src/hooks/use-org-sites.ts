@@ -30,7 +30,7 @@ function loadSites(orgSlug?: string): Promise<OrgSiteItem[]> {
   return p;
 }
 
-/** Published sites for an org plus the categories they use (in SITE_CATEGORIES order) */
+/** Published sites for an org plus the categories they use that belong in the menu (SITE_CATEGORIES order) */
 export function useOrgSites(orgSlug?: string) {
   const [sites, setSites] = useState<OrgSiteItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +45,6 @@ export function useOrgSites(orgSlug?: string) {
   }, [orgSlug]);
 
   // Only tenant tours use categories; the un-prefixed Southampton site never does
-  const categories = !orgSlug ? [] : SITE_CATEGORIES.filter((c) => sites.some((s) => siteCategoryKeys(s).includes(c.key)));
+  const categories = !orgSlug ? [] : SITE_CATEGORIES.filter((c) => c.inMenu !== false && sites.some((s) => siteCategoryKeys(s).includes(c.key)));
   return { sites, categories, loading };
 }
