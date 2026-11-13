@@ -146,10 +146,10 @@ export default function TenantHistoricSitesPage() {
     <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
       <NavigationHeader orgSlug={orgSlug} />
 
-      <header className="bg-black text-white py-8">
+      <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">{pageTitle}</h1>
-          <p className="text-gray-300">
+          <p className="opacity-90">
             Explore {visibleSites.length}{byCategory ? '' : ' historic'} location{visibleSites.length !== 1 ? 's' : ''} in {orgName}
           </p>
         </div>
