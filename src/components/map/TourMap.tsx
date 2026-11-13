@@ -198,9 +198,12 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
                 style={style ? { background: style.background } : { backgroundColor: getMarkerColor(site) }}
               >
                 <PinIcon className={cn('text-white', style ? 'w-4 h-4' : 'w-5 h-5')} />
-                <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-gray-800 rounded-full">
-                  {site.display_order}
-                </span>
+                {/* Stop numbers only matter when the tour is walked in order */}
+                {showRoute && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-gray-800 rounded-full">
+                    {site.display_order}
+                  </span>
+                )}
               </div>
               {userLocation && (
                 <span className="mt-1 px-2 py-0.5 text-xs font-medium bg-white rounded-full shadow">
