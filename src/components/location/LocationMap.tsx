@@ -21,6 +21,8 @@ interface LocationMapProps {
   className?: string;
   isArea?: boolean;
   areaRadiusM?: number;
+  /** Lets a neighborhood with a known outline (area-shapes) draw it instead of a circle */
+  siteId?: string;
 }
 
 export function LocationMap({
@@ -31,6 +33,7 @@ export function LocationMap({
   className = '',
   isArea,
   areaRadiusM,
+  siteId,
 }: LocationMapProps) {
   const mapRef = useRef<MapRef>(null);
   const { userLocation } = useGeolocation();
@@ -66,7 +69,7 @@ export function LocationMap({
         <NavigationControl position="top-right" />
         <GeolocateControl position="top-right" trackUserLocation showUserHeading />
 
-        <AreaCircles sites={[{ id: 'location', latitude, longitude, is_area: isArea, area_radius_m: areaRadiusM }]} />
+        <AreaCircles sites={[{ id: siteId ?? 'location', latitude, longitude, is_area: isArea, area_radius_m: areaRadiusM }]} />
 
         <Marker
           longitude={longitude}

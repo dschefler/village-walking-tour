@@ -247,6 +247,7 @@ export default async function TenantLocationPage({
                   primaryImage={primaryImage}
                   isArea={location.is_area}
                   areaRadiusM={location.area_radius_m}
+                  siteId={location.id}
                 />
               </CardContent>
             </Card>

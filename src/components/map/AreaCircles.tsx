@@ -3,10 +3,12 @@
 import { Source, Layer } from 'react-map-gl';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { circleRing } from '@/lib/utils';
+import { getAreaShape } from '@/lib/area-shapes';
 
 type AreaSite = { id: string; latitude: number; longitude: number; is_area?: boolean; area_radius_m?: number };
 
-// Shaded circles for stops that are a neighborhood rather than one building.
+// Shaded circles (or exact outlines, see area-shapes) for stops that are a
+// neighborhood rather than one building.
 // Render inside a react-map-gl <Map>; layer ids are suffixed so several maps
 // on one page don't clash.
 export function AreaCircles({ sites, idSuffix = '' }: { sites: AreaSite[]; idSuffix?: string }) {
@@ -20,7 +22,10 @@ export function AreaCircles({ sites, idSuffix = '' }: { sites: AreaSite[]; idSuf
     features: areas.map((s) => ({
       type: 'Feature' as const,
       properties: { id: s.id },
-      geometry: { type: 'Polygon' as const, coordinates: [circleRing(s.latitude, s.longitude, s.area_radius_m || 150)] },
+      geometry: {
+        type: 'Polygon' as const,
+        coordinates: [getAreaShape(s.id) ?? circleRing(s.latitude, s.longitude, s.area_radius_m || 150)],
+      },
     })),
   };
 
