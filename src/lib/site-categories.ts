@@ -52,7 +52,7 @@ export const SITE_CATEGORIES: CategoryDef[] = [
   { key: 'women_of_vision', label: 'Women of Vision', description: 'Women of Vision', color: '#1E3A8A', icon: Sparkles, inMenu: false },
   { key: 'art_galleries', label: 'Art Gallery', description: 'Art galleries', color: '#DB2777', icon: Frame },
   { key: 'coffee_shops', label: 'Coffee Shop', description: 'Coffee shops', color: '#EA580C', icon: Coffee },
-  { key: 'music_cocktails', label: 'Music & Cocktails', description: 'Live music and cocktail bars', color: '#CA8A04', icon: Martini },
+  { key: 'music_cocktails', label: 'Music & Cocktails', description: 'Live music and cocktail bars', color: '#86198F', icon: Martini },
   { key: 'parking', label: 'Parking, EV & Bikes', description: 'Parking, electric vehicle charging and bike parking', color: '#2563EB', icon: SquareParking },
   { key: 'street_names', label: 'Street Names', description: 'Cross streets and the meaning of their names', color: '#0D9488', icon: Signpost },
 ];
