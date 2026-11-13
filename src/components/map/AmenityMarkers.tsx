@@ -126,7 +126,7 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
               type="button"
               onClick={() => toggle(kind)}
               aria-pressed={on}
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium shadow bg-white/95 border transition-opacity ${
+              className={`min-h-0 min-w-0 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium shadow bg-white/95 border transition-opacity ${
                 on ? 'opacity-100' : 'opacity-50'
               }`}
               style={{ borderColor: AMENITY_STYLES[kind].color }}

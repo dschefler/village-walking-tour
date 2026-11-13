@@ -41,8 +41,8 @@ interface CategoryDef {
   inMenu?: boolean;
 }
 
-/** Order here is the order of the filter chips and the editor options */
-export const SITE_CATEGORIES: CategoryDef[] = [
+/** Shown alphabetically everywhere (filter chips, Start Your Tour, menus, editor) */
+export const SITE_CATEGORIES: CategoryDef[] = ([
   { key: 'historic_building', label: 'Historic / Cultural / Landmark', description: 'Historic and cultural sites, landmark buildings and landmark status plaques', color: '#B91C1C', icon: Landmark },
   { key: 'public_art', label: 'Public Art & Murals', description: 'Art installations, sculptures, murals and notable public works', color: '#7C3AED', icon: Palette },
   { key: 'family', label: 'Family & Kids', description: 'Family and kid-friendly activities and stores', color: '#16A34A', icon: Smile },
@@ -55,7 +55,7 @@ export const SITE_CATEGORIES: CategoryDef[] = [
   { key: 'music_cocktails', label: 'Music & Cocktails', description: 'Live music and cocktail bars', color: '#86198F', icon: Martini },
   { key: 'parking', label: 'Parking, EV & Bikes', description: 'Parking, electric vehicle charging and bike parking', color: '#2563EB', icon: SquareParking },
   { key: 'street_names', label: 'Street Names', description: 'Cross streets and the meaning of their names', color: '#0D9488', icon: Signpost },
-];
+] satisfies CategoryDef[]).sort((a, b) => a.label.localeCompare(b.label));
 
 /** Marker color and icon for stops without a category (the previous default look) */
 export const UNCATEGORIZED = { color: '#000000', icon: MapPin };

@@ -3,9 +3,13 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import Map, { Marker, Popup, Source, Layer, NavigationControl, GeolocateControl, type MapRef, type LayerProps } from 'react-map-gl';
 import Image from 'next/image';
-import { MapPin, Navigation, User } from 'lucide-react';
+import { Check, MapPin, Navigation, User } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { AreaCircles } from './AreaCircles';
+import { AmenityMarkers } from './AmenityMarkers';
+import { getOrgAmenities } from '@/lib/map-amenities';
+import { useTenantOptional } from '@/lib/context/tenant-context';
+import { siteCategoryKeys, siteMarkerStyle } from '@/lib/site-categories';
 import { useTourStore } from '@/stores/tour-store';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { cn, calculateDistance, formatDistance } from '@/lib/utils';
@@ -35,6 +39,7 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
   const { userLocation, isTracking, startTracking } = useGeolocation();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [hoveredSite, setHoveredSite] = useState<(Site | SiteWithMedia) | null>(null);
+  const amenities = getOrgAmenities(useTenantOptional()?.organization.slug);
 
   const visitedSiteIds = currentTour
     ? tourProgress[currentTour.id]?.visitedSites || []
@@ -147,6 +152,7 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
         />
 
         <AreaCircles sites={sites} />
+        <AmenityMarkers amenities={amenities} />
 
         {/* Route line */}
         {routeGeoJSON && (
@@ -156,7 +162,15 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
         )}
 
         {/* Site markers */}
-        {sites.map((site) => (
+        {sites.map((site) => {
+          // Categorized stops match the All Sites map: category color and icon,
+          // a check once visited, and a ring on the current stop.
+          const categorized = siteCategoryKeys(site).length > 0;
+          const style = categorized ? siteMarkerStyle(site) : null;
+          const visited = visitedSiteIds.includes(site.id);
+          const PinIcon = style ? (visited ? Check : style.icon) : MapPin;
+
+          return (
           <Marker
             key={site.id}
             longitude={site.longitude}
@@ -176,10 +190,14 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
               onMouseLeave={() => setHoveredSite(null)}
             >
               <div
-                className="relative flex items-center justify-center w-8 h-8 rounded-full shadow-lg"
-                style={{ backgroundColor: getMarkerColor(site) }}
+                className={cn(
+                  'relative flex items-center justify-center w-8 h-8 rounded-full shadow-lg',
+                  style && 'border-2 border-white',
+                  style && selectedSite?.id === site.id && 'ring-2 ring-primary'
+                )}
+                style={style ? { background: style.background } : { backgroundColor: getMarkerColor(site) }}
               >
-                <MapPin className="w-5 h-5 text-white" />
+                <PinIcon className={cn('text-white', style ? 'w-4 h-4' : 'w-5 h-5')} />
                 <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-gray-800 rounded-full">
                   {site.display_order}
                 </span>
@@ -191,7 +209,8 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
               )}
             </div>
           </Marker>
-        ))}
+          );
+        })}
 
         {/* Hover popup */}
         {hoveredSite && (

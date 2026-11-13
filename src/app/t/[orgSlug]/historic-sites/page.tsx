@@ -196,11 +196,11 @@ export default function TenantHistoricSitesPage() {
         </div>
 
         {usedCategories.length > 0 && (
-          <div className="mb-6 flex flex-wrap items-center gap-2" role="group" aria-label="Filter by category">
+          <div className="mb-4 md:mb-6 -mx-4 px-4 md:mx-0 md:px-0 flex flex-nowrap md:flex-wrap items-center gap-1.5 overflow-x-auto md:overflow-visible pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="Filter by category">
             <button
               onClick={() => { setActiveCategories(new Set()); setPopupSite(null); }}
               aria-pressed={activeCategories.size === 0}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+              className={`shrink-0 min-h-0 min-w-0 text-xs font-semibold leading-none px-2.5 py-1 rounded-full border transition-colors ${
                 activeCategories.size === 0 ? 'bg-gray-900 border-gray-900 text-white' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
               }`}
             >
@@ -213,10 +213,10 @@ export default function TenantHistoricSitesPage() {
                   key={key}
                   onClick={() => toggleCategory(key)}
                   aria-pressed={active}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border-2 transition-colors"
+                  className="shrink-0 min-h-0 min-w-0 flex items-center gap-1 whitespace-nowrap text-xs font-semibold leading-none px-2 py-1 rounded-full border-[1.5px] transition-colors"
                   style={active ? { backgroundColor: color, borderColor: color, color: '#fff' } : { backgroundColor: '#fff', borderColor: color, color }}
                 >
-                  <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                  <Icon className="w-3 h-3" aria-hidden="true" />
                   {label}
                 </button>
               );
