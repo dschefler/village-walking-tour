@@ -38,6 +38,10 @@ import type { TourWithSites, Site, SiteWithMedia, FunFact } from '@/types';
 
 type ViewMode = 'map' | 'list';
 
+// Tours that collect every site rather than a walkable sequence; their map
+// shows pins only, without the connecting route line.
+const NO_ROUTE_TOURS = new Set(['historical-walking-tour-of-santa-barbara']);
+
 export default function TenantTourPage() {
   const params = useParams();
   const router = useRouter();
@@ -494,6 +498,7 @@ export default function TenantTourPage() {
           <TourMap
             sites={tour.sites}
             onSiteClick={handleSiteClick}
+            showRoute={!NO_ROUTE_TOURS.has(tour.slug ?? tourId)}
             className="h-full"
           />
         </div>
