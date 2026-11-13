@@ -48,7 +48,7 @@ export const SITE_CATEGORIES: CategoryDef[] = [
   { key: 'family', label: 'Family & Kids', description: 'Family and kid-friendly activities and stores', color: '#16A34A', icon: Smile },
   { key: 'indigenous', label: 'Indigenous Art & Cultural History', description: 'Indigenous art and cultural history', color: '#8B5A2B', icon: Feather },
   { key: 'plaza', label: 'Plaza / Arcade', description: 'Plazas, paseos and arcades', color: '#0891B2', icon: Columns3 },
-  { key: 'photo_ops', label: 'Iconic Santa Barbara Photo Opportunities', description: 'Iconic, picture-perfect spots for photos', color: '#C026D3', icon: Camera },
+  { key: 'photo_ops', label: 'Iconic Photo Opportunity', description: 'Iconic, picture-perfect spots for photos', color: '#C026D3', icon: Camera },
   { key: 'women_of_vision', label: 'Women of Vision', description: 'Women of Vision', color: '#1E3A8A', icon: Sparkles, inMenu: false },
   { key: 'art_galleries', label: 'Art Gallery', description: 'Art galleries', color: '#DB2777', icon: Frame },
   { key: 'coffee_shops', label: 'Coffee Shop', description: 'Coffee shops', color: '#EA580C', icon: Coffee },
