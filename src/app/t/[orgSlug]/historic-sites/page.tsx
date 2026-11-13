@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Volume2, ChevronRight, Loader2, Plus, Check, Route, X } from 'lucide-react';
+import { MapPin, Volume2, ChevronRight, Loader2, Plus, Check, Route, X, Search } from 'lucide-react';
 import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { HistoricSitesMap } from '@/components/map/HistoricSitesMap';
@@ -16,6 +16,9 @@ import { getStorageMediaUrl, siteAddressLabel } from '@/lib/utils';
 import { AreaBadge } from '@/components/location/AreaBadge';
 import { CategoryBadges } from '@/components/location/CategoryBadge';
 import { SITE_CATEGORIES, normalizeCategory, siteCategoryKeys, type SiteCategory } from '@/lib/site-categories';
+
+// Case- and accent-insensitive, so "banos" finds "Baños"
+const foldText = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 interface SiteItem {
   id: string;
@@ -63,6 +66,10 @@ export default function TenantHistoricSitesPage() {
     router.replace(`/t/${orgSlug}/historic-sites${query}`, { scroll: false });
   };
   const { pendingIds, toggle, clear } = useTourBuilderStore();
+  // Free-text search; ?q= seeds it and ?search=1 (the menu's search icon) focuses the box
+  const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const focusSearch = searchParams.get('search') === '1';
   const tenant = useTenantOptional();
   const orgName = tenant?.organization.app_name || tenant?.organization.name || 'this area';
 
@@ -82,13 +89,28 @@ export default function TenantHistoricSitesPage() {
     fetchSites();
   }, [orgSlug]);
 
+  useEffect(() => {
+    if (!loading && focusSearch) searchInputRef.current?.focus();
+  }, [loading, focusSearch]);
+
   const selectedIds = new Set(pendingIds);
 
   // Only offer chips for categories this tour actually uses
   const usedCategories = SITE_CATEGORIES.filter((c) => sites.some((s) => siteCategoryKeys(s).includes(c.key)));
-  const visibleSites = activeCategories.size === 0
+  const categorySites = activeCategories.size === 0
     ? sites
     : sites.filter((s) => siteCategoryKeys(s).some((c) => activeCategories.has(c)));
+  // Every word must appear somewhere in the name, description, address or category
+  const searchTerms = foldText(query).split(/\s+/).filter(Boolean);
+  const visibleSites = searchTerms.length === 0
+    ? categorySites
+    : categorySites.filter((s) => {
+        const haystack = foldText([
+          s.name, s.description, s.address, s.address_formatted, s.start_point,
+          ...siteCategoryKeys(s).map((k) => SITE_CATEGORIES.find((c) => c.key === k)?.label),
+        ].filter(Boolean).join(' '));
+        return searchTerms.every((term) => haystack.includes(term));
+      });
 
   const toggleCategory = (key: SiteCategory) => {
     const next = new Set(activeCategories);
@@ -147,6 +169,31 @@ export default function TenantHistoricSitesPage() {
             </button>
           </div>
         )}
+
+        <div className="mb-4 relative max-w-xl">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            inputMode="search"
+            enterKeyHint="search"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setPopupSite(null); }}
+            placeholder="Search locations, artists, streets…"
+            aria-label="Search locations"
+            className="w-full rounded-full border border-gray-300 bg-white pl-9 pr-9 py-2.5 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); searchInputRef.current?.focus(); }}
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
 
         {usedCategories.length > 0 && (
           <div className="mb-6 flex flex-wrap items-center gap-2" role="group" aria-label="Filter by category">
@@ -241,6 +288,14 @@ export default function TenantHistoricSitesPage() {
           <div className="space-y-4 min-w-0 w-full">
             <h2 className="text-xl font-semibold text-gray-900">{byCategory ? pageTitle : 'All Historic Sites'}</h2>
             <div className="space-y-3">
+              {visibleSites.length === 0 && searchTerms.length > 0 && (
+                <div className="bg-white rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-600">
+                  No locations match “{query.trim()}”.{' '}
+                  <button onClick={() => setQuery('')} className="text-primary font-medium underline">
+                    Clear search
+                  </button>
+                </div>
+              )}
               {visibleSites.map((site) => {
                 const primaryImage = site.media?.find((m) => m.is_primary) || site.media?.[0];
                 const isSelected = selectedIds.has(site.id);

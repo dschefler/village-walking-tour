@@ -5,7 +5,7 @@ import type { OrgCuratedTour } from '@/types';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info, Bookmark } from 'lucide-react';
+import { Menu, X, MapPin, HelpCircle, Mail, Route, RefreshCw, Info, Bookmark, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HistoricSitesDropdown } from './HistoricSitesDropdown';
 import { CuratedToursDropdown } from './CuratedToursDropdown';
@@ -111,6 +111,13 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
                 Contact
               </Link>
             </Button>
+            {isTenant && (
+              <Button variant="ghost" size="icon" asChild className={`${hoverClass} ${textClass}`}>
+                <Link href={`${prefix}/historic-sites?search=1`} title="Search" aria-label="Search">
+                  <Search className="w-4 h-4" />
+                </Link>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -125,6 +132,13 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
 
           {/* Mobile: refresh + hamburger always visible */}
           <div className="md:hidden flex items-center gap-1">
+            {isTenant && (
+              <Button variant="ghost" size="icon" asChild className={`${textClass} ${hoverClass}`}>
+                <Link href={`${prefix}/historic-sites?search=1`} title="Search" aria-label="Search">
+                  <Search className="w-5 h-5" />
+                </Link>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
