@@ -199,8 +199,8 @@ export default function TenantHistoricSitesPage() {
         {usedCategories.length > 0 && (
           <div className="mb-4 md:mb-6 rounded-lg border border-gray-200 bg-white px-3 py-2.5 shadow-sm" role="group" aria-label="Filter by category">
             {/* Legend doubles as the filter: nothing checked shows every category */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-              <label className="flex items-center gap-2 min-w-0 cursor-pointer text-xs font-semibold text-gray-900">
+            <div className="columns-2 gap-x-4 [&>label]:mb-1.5 [&>label:last-child]:mb-0">
+              <label className="flex items-center gap-2 min-w-0 break-inside-avoid cursor-pointer text-xs font-semibold text-gray-900">
                 <input
                   type="checkbox"
                   checked={activeCategories.size === 0}
@@ -210,7 +210,7 @@ export default function TenantHistoricSitesPage() {
                 <span className="truncate">All categories</span>
               </label>
               {usedCategories.map(({ key, label, color, icon: Icon }) => (
-                <label key={key} className="flex items-center gap-2 min-w-0 cursor-pointer text-xs text-gray-800">
+                <label key={key} className="flex items-center gap-2 min-w-0 break-inside-avoid cursor-pointer text-xs text-gray-800">
                   <input
                     type="checkbox"
                     checked={activeCategories.has(key)}
