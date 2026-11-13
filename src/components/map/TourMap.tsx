@@ -12,7 +12,7 @@ import { useTenantOptional } from '@/lib/context/tenant-context';
 import { siteCategoryKeys, siteMarkerStyle } from '@/lib/site-categories';
 import { useTourStore } from '@/stores/tour-store';
 import { useGeolocation } from '@/hooks/use-geolocation';
-import { cn, calculateDistance, formatDistance } from '@/lib/utils';
+import { cn, calculateDistance, formatDistance, getStorageMediaUrl } from '@/lib/utils';
 import type { Site, SiteWithMedia, Coordinates, Media } from '@/types';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -230,7 +230,7 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
               {getPrimaryImage(hoveredSite) && (
                 <div className="relative aspect-video w-full rounded-t overflow-hidden">
                   <Image
-                    src={getPrimaryImage(hoveredSite)!.storage_path}
+                    src={getStorageMediaUrl(getPrimaryImage(hoveredSite)!.storage_path)}
                     alt={getPrimaryImage(hoveredSite)!.alt_text || hoveredSite.name}
                     fill
                     className="object-cover"
