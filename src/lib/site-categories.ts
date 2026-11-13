@@ -1,7 +1,6 @@
 import {
   Landmark,
   Palette,
-  Smile,
   Coffee,
   Paintbrush,
   Martini,
@@ -12,8 +11,22 @@ import {
   SquareParking,
   Signpost,
   MapPin,
+  createLucideIcon,
   type LucideIcon,
 } from 'lucide-react';
+
+/** Two adults and a child, arms raised — Lucide has no family figure. Solid shapes so it reads at pin size. */
+const FamilyIcon = createLucideIcon('Family', [
+  ['circle', { cx: '6', cy: '3.6', r: '2.3', fill: 'currentColor', stroke: 'none', key: 'head-l' }],
+  ['circle', { cx: '18', cy: '3.6', r: '2.3', fill: 'currentColor', stroke: 'none', key: 'head-r' }],
+  ['circle', { cx: '12', cy: '11.4', r: '1.7', fill: 'currentColor', stroke: 'none', key: 'head-c' }],
+  ['path', { d: 'M6 8.2v7.3M18 8.2v7.3', strokeWidth: '3.8', key: 'bodies' }],
+  ['path', { d: 'M5.1 15v6M6.9 15v6M17.1 15v6M18.9 15v6', strokeWidth: '2', key: 'legs' }],
+  ['path', { d: 'M5 8.6 1.6 4.8M7 8.6 12 5.2 17 8.6M19 8.6l3.4-3.8', strokeWidth: '2.2', key: 'arms' }],
+  ['path', { d: 'M12 14.2v3.3', strokeWidth: '2.8', key: 'child-body' }],
+  ['path', { d: 'M11.4 17v4M12.6 17v4', strokeWidth: '1.4', key: 'child-legs' }],
+  ['path', { d: 'M11 14.6 9.2 12.4M13 14.6l1.8-2.2', strokeWidth: '1.5', key: 'child-arms' }],
+]);
 
 export type SiteCategory =
   | 'historic_building'
@@ -45,7 +58,7 @@ interface CategoryDef {
 export const SITE_CATEGORIES: CategoryDef[] = ([
   { key: 'historic_building', label: 'Historic / Cultural / Landmark', description: 'Historic and cultural sites, landmark buildings and landmark status plaques', color: '#B91C1C', icon: Landmark },
   { key: 'public_art', label: 'Public Art & Murals', description: 'Art installations, sculptures, murals and notable public works', color: '#7C3AED', icon: Palette },
-  { key: 'family', label: 'Family & Kids', description: 'Family and kid-friendly activities and stores', color: '#16A34A', icon: Smile },
+  { key: 'family', label: 'Family & Kids', description: 'Family and kid-friendly activities and stores', color: '#16A34A', icon: FamilyIcon },
   { key: 'indigenous', label: 'Indigenous Art & Cultural History', description: 'Indigenous art and cultural history', color: '#8B5A2B', icon: Feather },
   { key: 'plaza', label: 'Plaza / Arcade', description: 'Plazas, paseos and arcades', color: '#0891B2', icon: Columns3 },
   { key: 'photo_ops', label: 'Iconic Photo Opportunity', description: 'Iconic, picture-perfect spots for photos', color: '#D4AF37', icon: Camera },
