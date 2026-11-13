@@ -14,6 +14,7 @@ import { TourRouteMap } from '@/components/map/TourRouteMap';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { useProximityNotifications } from '@/hooks/use-proximity-notifications';
 import { useNotificationStore } from '@/stores/notification-store';
+import { useTourBuilderStore } from '@/stores/tour-builder-store';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { ProximityNotification } from '@/components/pwa/ProximityNotification';
 import type { ProximityAlert } from '@/types';
@@ -200,6 +201,7 @@ export default function TenantCreateYourTourPage() {
 
   const { startTracking, userLocation, heading } = useGeolocation({ maximumAge: 0, enableHighAccuracy: true });
   const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotificationStore();
+  const { pendingIds, clear: clearPending } = useTourBuilderStore();
 
   const prevStepRef = useRef(-1);
   const [isMuted, setMutedState] = useState(() => {
@@ -353,10 +355,10 @@ export default function TenantCreateYourTourPage() {
     return () => { cancelled = true; };
   }, [tourCreated, createdRoute, travelMode, savedLocation]);
 
-  const createTour = () => {
+  const createTour = (ids: Set<string> = selectedIds) => {
     warmUpSpeech(); // Unlock iOS audio session on user gesture before GPS starts
     // Create tour immediately — GPS tracking starts in the background
-    setCreatedRoute(optimizeRoute(sites.filter((s) => selectedIds.has(s.id)), null));
+    setCreatedRoute(optimizeRoute(sites.filter((s) => ids.has(s.id)), null));
     setNotificationsEnabled(true);
     setFollowMode(true);
     setTourCreated(true);
@@ -369,6 +371,17 @@ export default function TenantCreateYourTourPage() {
     }, 150);
   };
 
+  // Sites picked with "Add to Tour" on All Sites arrive here already chosen —
+  // select them and build the route straight away.
+  useEffect(() => {
+    if (sites.length === 0 || pendingIds.length === 0) return;
+    const valid = new Set(pendingIds.filter((id) => sites.some((s) => s.id === id)));
+    clearPending();
+    if (valid.size === 0) return;
+    setSelectedIds(valid);
+    createTour(valid);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sites]);
 
   const getImageUrl = getStorageMediaUrl;
 
@@ -521,7 +534,7 @@ export default function TenantCreateYourTourPage() {
                 </p>
                 <Button
                   size="lg"
-                  onClick={createTour}
+                  onClick={() => createTour()}
                   className="text-white gap-2"
                   style={{ backgroundColor: primaryColor }}
                 >
@@ -752,7 +765,7 @@ export default function TenantCreateYourTourPage() {
       {!tourCreated && selectedIds.size > 0 && (
         <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden">
           <button
-            onClick={createTour}
+            onClick={() => createTour()}
             className="w-full flex items-center justify-center gap-2 text-white rounded-xl py-4 text-base font-semibold shadow-2xl"
             style={{ backgroundColor: primaryColor }}
           >

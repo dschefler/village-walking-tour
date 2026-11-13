@@ -9,6 +9,7 @@ import { NavigationHeader } from '@/components/layout/NavigationHeader';
 import { Footer } from '@/components/layout/Footer';
 import { HistoricSitesMap } from '@/components/map/HistoricSitesMap';
 import { useTourBuilderStore } from '@/stores/tour-builder-store';
+import { warmUpSpeech } from '@/lib/speech';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { AudioPlayer } from '@/components/audio/AudioPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -161,7 +162,7 @@ export default function TenantHistoricSitesPage() {
             <span className="text-sm font-medium text-primary">{pendingIds.length} site{pendingIds.length !== 1 ? 's' : ''} selected for your tour</span>
             <button onClick={clear} className="text-xs text-gray-500 hover:text-gray-700 underline">Clear</button>
             <button
-              onClick={() => router.push(`/t/${orgSlug}/create-your-tour`)}
+              onClick={() => { warmUpSpeech(); router.push(`/t/${orgSlug}/create-your-tour`); }}
               className="ml-auto flex items-center gap-1.5 bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
             >
               <Route className="w-4 h-4" />
@@ -380,7 +381,7 @@ export default function TenantHistoricSitesPage() {
       {pendingIds.length > 0 && (
         <div className="fixed bottom-4 left-4 right-4 z-40 md:hidden">
           <button
-            onClick={() => router.push(`/t/${orgSlug}/create-your-tour`)}
+            onClick={() => { warmUpSpeech(); router.push(`/t/${orgSlug}/create-your-tour`); }}
             className="w-full flex items-center justify-center gap-2 bg-primary text-white text-sm font-bold py-3.5 rounded-xl shadow-xl hover:bg-primary/80 transition-colors"
           >
             <Route className="w-5 h-5" />
