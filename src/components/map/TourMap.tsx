@@ -2,7 +2,6 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react';
 import Map, { Marker, Popup, Source, Layer, NavigationControl, GeolocateControl, type MapRef, type LayerProps } from 'react-map-gl';
-import Image from 'next/image';
 import { Check, MapPin, Navigation, User } from 'lucide-react';
 import { MAPBOX_CONFIG } from '@/lib/mapbox/config';
 import { AreaCircles } from './AreaCircles';
@@ -12,8 +11,8 @@ import { useTenantOptional } from '@/lib/context/tenant-context';
 import { siteCategoryKeys, siteMarkerStyle } from '@/lib/site-categories';
 import { useTourStore } from '@/stores/tour-store';
 import { useGeolocation } from '@/hooks/use-geolocation';
-import { cn, calculateDistance, formatDistance, getStorageMediaUrl } from '@/lib/utils';
-import type { Site, SiteWithMedia, Coordinates, Media } from '@/types';
+import { cn, calculateDistance, formatDistance } from '@/lib/utils';
+import type { Site, SiteWithMedia, Coordinates } from '@/types';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface TourMapProps {
@@ -120,13 +119,6 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
     );
   };
 
-  const getPrimaryImage = (site: Site | SiteWithMedia): Media | undefined => {
-    if ('media' in site && site.media) {
-      return site.media.find((m) => m.is_primary) || site.media[0];
-    }
-    return undefined;
-  };
-
   return (
     <div className={cn('relative h-full w-full', className)}>
       <Map
@@ -221,33 +213,12 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
             longitude={hoveredSite.longitude}
             latitude={hoveredSite.latitude}
             anchor="bottom"
-            offset={[0, -45]}
+            offset={[0, -40]}
             closeButton={false}
             closeOnClick={false}
             className="tour-map-popup"
           >
-            <div className="min-w-[180px] max-w-[220px]">
-              {getPrimaryImage(hoveredSite) && (
-                <div className="relative aspect-video w-full rounded-t overflow-hidden">
-                  <Image
-                    src={getStorageMediaUrl(getPrimaryImage(hoveredSite)!.storage_path)}
-                    alt={getPrimaryImage(hoveredSite)!.alt_text || hoveredSite.name}
-                    fill
-                    className="object-cover"
-                    sizes="220px"
-                  />
-                </div>
-              )}
-              <div className="p-2">
-                <h4 className="font-semibold text-sm line-clamp-1">{hoveredSite.name}</h4>
-                {hoveredSite.is_area && <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Neighborhood</p>}
-                {userLocation && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {formatDistance(getDistanceToSite(hoveredSite, userLocation))} away
-                  </p>
-                )}
-              </div>
-            </div>
+            <p className="px-2 py-1 text-xs font-semibold whitespace-nowrap">{hoveredSite.name}</p>
           </Popup>
         )}
 

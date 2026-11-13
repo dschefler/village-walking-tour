@@ -9,7 +9,6 @@ import { AmenityMarkers } from './AmenityMarkers';
 import { getOrgAmenities } from '@/lib/map-amenities';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { siteMarkerStyle } from '@/lib/site-categories';
-import { getStorageMediaUrl } from '@/lib/utils';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface SiteItem {
@@ -22,7 +21,6 @@ interface SiteItem {
   area_radius_m?: number;
   category?: string | null;
   categories?: string[] | null;
-  media?: { storage_path: string; is_primary?: boolean | null; alt_text?: string | null }[] | null;
 }
 
 interface HistoricSitesMapProps {
@@ -161,25 +159,14 @@ export function HistoricSitesMap({
                 }
               </div>
 
-              {/* Photo and name on hover */}
-              {isHovered && (() => {
-                const img = site.media?.find((m) => m.is_primary) ?? site.media?.[0];
-                return (
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 w-28 rounded-md overflow-hidden bg-black shadow-lg pointer-events-none">
-                    {img && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={getStorageMediaUrl(img.storage_path)}
-                        alt={img.alt_text || site.name}
-                        className="w-full h-16 object-cover"
-                      />
-                    )}
-                    <div className="text-white text-[9px] leading-tight px-1 py-0.5 line-clamp-2">
-                      {site.name}
-                    </div>
+              {/* Label on hover */}
+              {isHovered && (
+                <div className="absolute left-1/2 -translate-x-1/2 -top-10 whitespace-nowrap">
+                  <div className="bg-black text-white text-xs px-2 py-1 rounded shadow-lg">
+                    {site.name}
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               {/* Pulse animation on hover */}
               {isHovered && (
