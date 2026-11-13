@@ -14,12 +14,13 @@ const ICONS: Record<AmenityKind, LucideIcon> = {
 const KINDS: AmenityKind[] = ['parking', 'ev', 'bike'];
 
 /**
- * Parking / EV / bike markers with a toggleable legend. Rendered inside a
- * react-map-gl <Map>; markers are square so they read as distinct from the
- * round tour-site pins.
+ * Parking / EV / bike markers with a one-line legend along the map's top edge.
+ * Markers are always shown; tapping a legend item makes every marker of that
+ * kind pulse so it's easy to spot. Rendered inside a react-map-gl <Map>;
+ * markers are square so they read as distinct from the round tour-site pins.
  */
 export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
-  const [enabled, setEnabled] = useState<Set<AmenityKind>>(() => new Set(KINDS));
+  const [highlighted, setHighlighted] = useState<Set<AmenityKind>>(() => new Set());
   const [open, setOpen] = useState<MapAmenity | null>(null);
 
   if (amenities.length === 0) return null;
@@ -27,7 +28,7 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
   const presentKinds = KINDS.filter((k) => amenities.some((a) => a.kinds.includes(k)));
 
   const toggle = (kind: AmenityKind) => {
-    setEnabled((prev) => {
+    setHighlighted((prev) => {
       const next = new Set(prev);
       if (next.has(kind)) next.delete(kind);
       else next.add(kind);
@@ -39,12 +40,12 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
   return (
     <>
       {amenities.map((amenity) => {
-        // Icon follows the first kind that's switched on, so a lot with
-        // chargers still shows (as EV) when Parking is hidden.
-        const shownKind = amenity.kinds.find((k) => enabled.has(k));
-        if (!shownKind) return null;
+        // A lot with chargers shows as EV while EV is highlighted
+        const litKind = amenity.kinds.find((k) => highlighted.has(k));
+        const shownKind = litKind ?? amenity.kinds[0];
         const Icon = ICONS[shownKind];
-        const hasEvBadge = shownKind !== 'ev' && amenity.kinds.includes('ev') && enabled.has('ev');
+        const color = AMENITY_STYLES[shownKind].color;
+        const hasEvBadge = shownKind !== 'ev' && amenity.kinds.includes('ev');
 
         return (
           <Marker
@@ -52,6 +53,7 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
             longitude={amenity.longitude}
             latitude={amenity.latitude}
             anchor="center"
+            style={{ zIndex: litKind ? 5 : undefined }}
             onClick={(e) => {
               e.originalEvent.stopPropagation();
               setOpen(amenity);
@@ -60,9 +62,14 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
             <button
               type="button"
               aria-label={amenity.name}
-              className="relative flex items-center justify-center w-4 h-4 rounded border border-white shadow cursor-pointer opacity-90 hover:opacity-100"
-              style={{ backgroundColor: AMENITY_STYLES[shownKind].color }}
+              className={`relative flex items-center justify-center w-4 h-4 rounded border border-white shadow cursor-pointer transition-transform ${
+                litKind ? 'scale-150' : 'opacity-90 hover:opacity-100'
+              }`}
+              style={{ backgroundColor: color }}
             >
+              {litKind && (
+                <span className="absolute inset-0 -z-10 rounded animate-ping" style={{ backgroundColor: color }} aria-hidden="true" />
+              )}
               <Icon className="w-2.5 h-2.5 text-white" />
               {hasEvBadge && (
                 <span
@@ -115,27 +122,26 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
         </Popup>
       )}
 
-      {/* Legend doubles as show/hide toggles */}
-      <div className="absolute top-2 left-2 z-10 flex flex-wrap gap-1.5 max-w-[calc(100%-1rem)]">
+      {/* Legend: one line on the map's top edge; tap to make that kind pulse */}
+      <div className="absolute top-0 left-0 right-10 z-10 flex items-center gap-3 overflow-x-auto whitespace-nowrap rounded-br-md bg-white/90 px-2 py-1 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {presentKinds.map((kind) => {
           const Icon = ICONS[kind];
-          const on = enabled.has(kind);
+          const on = highlighted.has(kind);
           return (
             <button
               key={kind}
               type="button"
               onClick={() => toggle(kind)}
               aria-pressed={on}
-              className={`min-h-0 min-w-0 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium shadow bg-white/95 border transition-opacity ${
-                on ? 'opacity-100' : 'opacity-50'
+              className={`min-h-0 min-w-0 shrink-0 inline-flex items-center gap-1 text-[11px] leading-none text-gray-800 ${
+                on ? 'font-bold underline underline-offset-2' : 'font-medium'
               }`}
-              style={{ borderColor: AMENITY_STYLES[kind].color }}
             >
               <span
-                className="flex items-center justify-center w-4 h-4 rounded"
+                className={`flex items-center justify-center w-3.5 h-3.5 rounded-sm ${on ? 'animate-pulse' : ''}`}
                 style={{ backgroundColor: AMENITY_STYLES[kind].color }}
               >
-                <Icon className="w-3 h-3 text-white" />
+                <Icon className="w-2.5 h-2.5 text-white" />
               </span>
               {AMENITY_STYLES[kind].label}
             </button>
