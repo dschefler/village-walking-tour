@@ -125,6 +125,14 @@
     min-height: 44px;
     min-width: 44px;
   }
+
+  /* Map pins and controls keep their drawn size */
+  .mapboxgl-marker button,
+  .mapboxgl-marker [role="button"],
+  .mapboxgl-ctrl button {
+    min-height: 0;
+    min-width: 0;
+  }
 }
 
 /* Prevent pull-to-refresh on mobile */
