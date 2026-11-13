@@ -97,6 +97,16 @@
   font-size: 10px !important;
 }
 
+/* Compact zoom / compass / locate buttons */
+.mapboxgl-ctrl-group button {
+  width: 22px;
+  height: 22px;
+}
+
+.mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+  background-size: 22px 22px;
+}
+
 /* Safe area for mobile */
 @supports (padding: max(0px)) {
   .safe-area-inset-bottom {

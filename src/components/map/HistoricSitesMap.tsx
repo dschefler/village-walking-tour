@@ -57,11 +57,17 @@ export function HistoricSitesMap({
     };
   }, [sites]);
 
+  // Parents often hand over a freshly filtered array on every render; key on
+  // the stops themselves so a hover or popup doesn't undo the visitor's zoom.
+  const sitesKey = sites.map((s) => `${s.id}:${s.latitude},${s.longitude}`).join('|');
+  const latest = useRef({ sites, getBounds });
+  latest.current = { sites, getBounds };
+
   // Fit map to sites on load
   useEffect(() => {
     if (!mapLoaded || !mapRef.current || sites.length === 0) return;
 
-    const bounds = getBounds();
+    const bounds = latest.current.getBounds();
     if (bounds) {
       mapRef.current.fitBounds(
         [
@@ -71,13 +77,13 @@ export function HistoricSitesMap({
         { padding: 50, duration: 1000 }
       );
     }
-  }, [mapLoaded, sites, getBounds]);
+  }, [mapLoaded, sitesKey]);
 
   // Fly to hovered site
   useEffect(() => {
     if (!mapLoaded || !mapRef.current || !hoveredSiteId) return;
 
-    const site = sites.find((s) => s.id === hoveredSiteId);
+    const site = latest.current.sites.find((s) => s.id === hoveredSiteId);
     if (site) {
       mapRef.current.flyTo({
         center: [site.longitude, site.latitude],
@@ -85,7 +91,7 @@ export function HistoricSitesMap({
         duration: 500,
       });
     }
-  }, [mapLoaded, hoveredSiteId, sites]);
+  }, [mapLoaded, hoveredSiteId]);
 
   const bounds = getBounds();
   const initialViewState = bounds

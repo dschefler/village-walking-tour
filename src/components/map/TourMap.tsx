@@ -55,11 +55,17 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
     };
   }, [sites]);
 
+  // Key on the stops themselves so a re-render with an equal list doesn't
+  // undo the visitor's zoom.
+  const sitesKey = sites.map((s) => `${s.id}:${s.latitude},${s.longitude}`).join('|');
+  const getBoundsRef = useRef(getBounds);
+  getBoundsRef.current = getBounds;
+
   // Fit map to sites
   useEffect(() => {
     if (!mapLoaded || !mapRef.current || sites.length === 0) return;
 
-    const bounds = getBounds();
+    const bounds = getBoundsRef.current();
     if (bounds) {
       mapRef.current.fitBounds(
         [
@@ -69,7 +75,7 @@ export function TourMap({ sites, onSiteClick, showRoute = true, className }: Tou
         { padding: 50, duration: 1000 }
       );
     }
-  }, [mapLoaded, sites, getBounds]);
+  }, [mapLoaded, sitesKey]);
 
   // Fly to selected site
   useEffect(() => {
