@@ -60,16 +60,16 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
             <button
               type="button"
               aria-label={amenity.name}
-              className="relative flex items-center justify-center w-6 h-6 rounded-md border-2 border-white shadow-md cursor-pointer"
+              className="relative flex items-center justify-center w-4 h-4 rounded border border-white shadow cursor-pointer opacity-90 hover:opacity-100"
               style={{ backgroundColor: AMENITY_STYLES[shownKind].color }}
             >
-              <Icon className="w-3.5 h-3.5 text-white" />
+              <Icon className="w-2.5 h-2.5 text-white" />
               {hasEvBadge && (
                 <span
-                  className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-3.5 h-3.5 rounded-full border border-white"
+                  className="absolute -top-1 -right-1 flex items-center justify-center w-2.5 h-2.5 rounded-full border border-white"
                   style={{ backgroundColor: AMENITY_STYLES.ev.color }}
                 >
-                  <Zap className="w-2 h-2 text-white" />
+                  <Zap className="w-1.5 h-1.5 text-white" />
                 </span>
               )}
             </button>
@@ -82,7 +82,7 @@ export function AmenityMarkers({ amenities }: { amenities: MapAmenity[] }) {
           longitude={open.longitude}
           latitude={open.latitude}
           anchor="bottom"
-          offset={16}
+          offset={10}
           closeOnClick={false}
           onClose={() => setOpen(null)}
           maxWidth="260px"
