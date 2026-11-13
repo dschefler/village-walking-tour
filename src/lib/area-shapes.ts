@@ -26,6 +26,23 @@ const AREA_SHAPES: Record<string, [number, number][]> = {
     [-119.6867684, 34.4143046], // Garden & Cabrillo
     [-119.689196, 34.4121844], // State & Cabrillo
   ],
+  // Santa Barbara Farmers Market — a cross of closed streets about 30 m wide:
+  // State from Cañon Perdido to Figueroa (900–1000 blocks) and Carrillo from
+  // Chapala to Anacapa (00 W. and 00 E. blocks)
+  'b014dc05-c5d1-4a16-a7a3-c5394db28712': [
+    [-119.7021288, 34.4214652],
+    [-119.7031423, 34.4204854], // Carrillo at Chapala
+    [-119.7028957, 34.4203086],
+    [-119.7018848, 34.421286],
+    [-119.7007103, 34.4204219], // State at Cañon Perdido
+    [-119.7004931, 34.4206231],
+    [-119.7016704, 34.4214894],
+    [-119.7006303, 34.4224573], // Carrillo at Anacapa
+    [-119.7008769, 34.4226341],
+    [-119.7019144, 34.4216686],
+    [-119.7030824, 34.4225252], // State at Figueroa
+    [-119.7032996, 34.422324],
+  ],
 };
 
 /** The area's outline as a closed GeoJSON ring, or null to fall back to a circle */
