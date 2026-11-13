@@ -12,6 +12,20 @@ const AREA_SHAPES: Record<string, [number, number][]> = {
     [-119.6946682, 34.4218649], // Garden & Ortega
     [-119.698062, 34.4186788], // State & Ortega
   ],
+  // Haley Corridor — State, Cota, Milpas and Montecito Streets
+  '14fc2ecb-c844-4958-8d5c-88944f1bf7ee': [
+    [-119.6967864, 34.417739], // State & Cota
+    [-119.6866413, 34.4272767], // Milpas & Cota
+    [-119.6827908, 34.4244583], // Milpas & Montecito
+    [-119.692935, 34.4149309], // State & Montecito
+  ],
+  // The Funk Zone — State, Montecito (US 101), Garden and Cabrillo
+  'ee7f7fde-82c9-45c9-974a-34266f67a27e': [
+    [-119.692935, 34.4149309], // State & Montecito
+    [-119.6893001, 34.417953], // Garden & Montecito (Garden passes under 101 here)
+    [-119.6867684, 34.4143046], // Garden & Cabrillo
+    [-119.689196, 34.4121844], // State & Cabrillo
+  ],
 };
 
 /** The area's outline as a closed GeoJSON ring, or null to fall back to a circle */
