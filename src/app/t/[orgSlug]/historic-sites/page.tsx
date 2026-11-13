@@ -144,7 +144,7 @@ export default function TenantHistoricSitesPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-clip">
       <NavigationHeader orgSlug={orgSlug} />
 
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8">
@@ -230,7 +230,7 @@ export default function TenantHistoricSitesPage() {
 
         <div className="grid lg:grid-cols-2 gap-8 min-w-0">
           {/* Map Section */}
-          <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-160px)] min-w-0 w-full">
+          <div className="lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-6rem)] min-w-0 w-full">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full min-h-[400px] relative w-full">
               <HistoricSitesMap
                 sites={visibleSites}
