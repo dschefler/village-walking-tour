@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { elevenLabsKeyFor, lockedVoiceFor } from '@/lib/elevenlabs';
 
 const VOICE_OPTIONS = [
   { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'Calm, authoritative female narrator' },
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
   // Resolve org — use provided org_id or fall back to first org user belongs to
   let orgId = org_id;
   let subscriptionTier = 'starter';
+  let orgSlug: string | null = null;
 
   if (orgId) {
     // Verify user is a member
@@ -59,16 +61,19 @@ export async function POST(request: NextRequest) {
 
     const { data: org } = await supabase
       .from('organizations')
-      .select('subscription_tier')
+      .select('subscription_tier, slug')
       .eq('id', orgId)
       .single();
 
-    if (org) subscriptionTier = org.subscription_tier;
+    if (org) {
+      subscriptionTier = org.subscription_tier;
+      orgSlug = org.slug;
+    }
   } else {
     // No org_id provided — look up from membership
     const { data: membership } = await supabase
       .from('organization_members')
-      .select('organization_id, organizations(subscription_tier)')
+      .select('organization_id, organizations(subscription_tier, slug)')
       .eq('user_id', user.id)
       .limit(1)
       .single();
@@ -76,6 +81,7 @@ export async function POST(request: NextRequest) {
     if (membership) {
       orgId = membership.organization_id;
       subscriptionTier = (membership.organizations as any)?.subscription_tier ?? 'starter';
+      orgSlug = (membership.organizations as any)?.slug ?? null;
     }
   }
 
@@ -107,7 +113,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Check API key
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const apiKey = elevenLabsKeyFor(orgSlug);
+  const voiceId = lockedVoiceFor(orgSlug) ?? voice_id;
   if (!apiKey) {
     return NextResponse.json(
       { error: 'TTS service not configured. Add ELEVENLABS_API_KEY to environment variables.' },
@@ -116,7 +123,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Generate audio via ElevenLabs
-  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`, {
+  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: 'POST',
     headers: {
       'xi-api-key': apiKey,

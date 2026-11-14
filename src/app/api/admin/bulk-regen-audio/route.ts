@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getRequesterMembership } from '@/lib/auth/membership';
+import { elevenLabsKeyFor, lockedVoiceFor } from '@/lib/elevenlabs';
 
-const CHUCK_NEWSWORTHY_VOICE_ID = '2RSrGXhRlTEUFC0nwaNn';
 const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel — fallback for tenants with no default set
 
 const PLAN_LIMITS: Record<string, number> = {
@@ -43,9 +43,6 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 503 });
-
   const { siteId, text, voiceId: requestedVoiceId } = await request.json();
   if (!siteId || !text?.trim()) return NextResponse.json({ error: 'siteId and text required' }, { status: 400 });
 
@@ -81,7 +78,9 @@ export async function POST(request: NextRequest) {
 
   const subscriptionTier = org?.subscription_tier ?? 'starter';
   const orgVoiceId = org?.default_tts_voice ?? null;
-  const isSouthampton = org?.slug === 'southampton';
+
+  const apiKey = elevenLabsKeyFor(org?.slug);
+  if (!apiKey) return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 503 });
 
   // Check monthly usage limit
   if (resolvedOrgId) {
@@ -111,11 +110,9 @@ export async function POST(request: NextRequest) {
   }
 
   // Determine which voice to use:
-  // 1. Southampton always uses Chuck Newsworthy
+  // 1. Tenants with their own voice (Southampton: Chuck Newsworthy) always use it
   // 2. Otherwise use: caller-provided voiceId → org default → Rachel fallback
-  const voiceId = isSouthampton
-    ? CHUCK_NEWSWORTHY_VOICE_ID
-    : (requestedVoiceId || orgVoiceId || DEFAULT_VOICE_ID);
+  const voiceId = lockedVoiceFor(org?.slug) ?? (requestedVoiceId || orgVoiceId || DEFAULT_VOICE_ID);
 
   const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: 'POST',

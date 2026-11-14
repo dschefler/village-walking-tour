@@ -37,6 +37,7 @@ import { MediaUploader } from '@/components/admin/MediaUploader';
 import { SiteEditor } from '@/components/admin/SiteEditor';
 import { QRCodeGenerator } from '@/components/admin/QRCodeGenerator';
 import { cn, slugify } from '@/lib/utils';
+import { lockedVoiceFor } from '@/lib/elevenlabs';
 import type { Tour, Site } from '@/types';
 
 export default function EditTourPage() {
@@ -738,7 +739,7 @@ export default function EditTourPage() {
             displayOrder={sites.length + 1}
             onClose={handleSiteEditorClose}
             organizationId={tour?.organization_id ?? undefined}
-            lockedVoiceId={org?.slug === 'southampton' ? '2RSrGXhRlTEUFC0nwaNn' : undefined}
+            lockedVoiceId={lockedVoiceFor(org?.slug)}
             defaultVoiceId={org?.default_tts_voice ?? undefined}
             orgDefaultLocation={
               org?.default_lat != null && org?.default_lng != null
