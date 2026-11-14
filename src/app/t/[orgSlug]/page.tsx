@@ -13,7 +13,7 @@ async function getOrgAndTour(orgSlug: string) {
   const supabase = createClient();
   const { data: org } = await supabase
     .from('organizations')
-    .select('id, primary_color, custom_domain, curated_tours_enabled, app_name, app_description, translations')
+    .select('id, primary_color, custom_domain, curated_tours_enabled, app_name, app_description')
     .eq('slug', orgSlug)
     .single();
 
