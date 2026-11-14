@@ -13,7 +13,7 @@ async function getOrgAndTour(orgSlug: string) {
   const supabase = createClient();
   const { data: org } = await supabase
     .from('organizations')
-    .select('id, primary_color, custom_domain, curated_tours_enabled')
+    .select('id, primary_color, custom_domain, curated_tours_enabled, app_name, app_description, translations')
     .eq('slug', orgSlug)
     .single();
 
@@ -44,6 +44,9 @@ export default async function TenantHomePage({
   params: { orgSlug: string };
 }) {
   const { org, tour, usesCategories } = await getOrgAndTour(params.orgSlug);
+  // The app name and description set in Settings lead the page; the tour's own text is the fallback
+  const heading = org?.app_name || tour?.name;
+  const intro = org?.app_description || tour?.description;
   const primaryColor = org?.primary_color || '#0B6E69';
   const curatedToursEnabled = org?.curated_tours_enabled ?? true;
 
@@ -89,11 +92,11 @@ export default async function TenantHomePage({
 
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
-            {tour?.name || 'Welcome to the Walking Tour'}
+            {heading || 'Welcome to the Walking Tour'}
           </h1>
-          {tour?.description && (
-            <p className="text-lg md:text-xl font-semibold mb-8 max-w-2xl mx-auto drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]">
-              {tour.description}
+          {intro && (
+            <p className="whitespace-pre-line text-lg md:text-xl font-semibold mb-8 max-w-2xl mx-auto drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]">
+              {intro}
             </p>
           )}
 
