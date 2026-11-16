@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { calculateDistance, formatDistance, getStorageMediaUrl } from '@/lib/utils';
 import type { Site, Media } from '@/types';
+import { useTenantOptional } from '@/lib/context/tenant-context';
 
 interface LocationWithMedia extends Site {
   media?: (Media & { is_primary: boolean; display_order: number })[];
@@ -32,12 +33,15 @@ export function NearbyLocations({
 }: NearbyLocationsProps) {
   const { userLocation } = useGeolocation();
   const [locations, setLocations] = useState<LocationWithMedia[]>([]);
+  // On a tenant tour, only show that tour's sites and link to its own pages
+  const orgSlug = useTenantOptional()?.organization.slug;
+  const prefix = orgSlug ? `/t/${orgSlug}` : '';
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchLocations() {
       try {
-        const response = await fetch('/api/locations');
+        const response = await fetch(orgSlug ? `/api/locations?orgSlug=${orgSlug}` : '/api/locations');
         if (!response.ok) throw new Error('Failed to fetch');
         const data: LocationWithMedia[] = await response.json();
 
@@ -66,7 +70,7 @@ export function NearbyLocations({
     }
 
     fetchLocations();
-  }, [currentLocationId, currentLatitude, currentLongitude, maxDistance, limit]);
+  }, [currentLocationId, currentLatitude, currentLongitude, maxDistance, limit, orgSlug]);
 
   if (loading) {
     return (
@@ -108,7 +112,7 @@ export function NearbyLocations({
           );
 
           return (
-            <Link key={location.id} href={`/location/${location.slug || location.id}`}>
+            <Link key={location.id} href={`${prefix}/location/${location.slug || location.id}`}>
               <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
                 {primaryImage ? (
                   <div className="relative aspect-video">
