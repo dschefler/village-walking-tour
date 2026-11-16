@@ -6,7 +6,15 @@ import { Footer } from '@/components/layout/Footer';
 import { createClient } from '@/lib/supabase/server';
 import { getOrgCategoryCounts } from '@/lib/org-categories';
 
-export const metadata = { title: 'Start Your Tour' };
+export async function generateMetadata({ params }: { params: { orgSlug: string } }) {
+  const { data: org } = await createClient()
+    .from('organizations')
+    .select('app_name, name')
+    .eq('slug', params.orgSlug)
+    .single();
+  const appName = org?.app_name || org?.name;
+  return { title: { absolute: appName ? `Start Your Tour — ${appName}` : 'Start Your Tour' } };
+}
 
 /** "Start Your Tour" — pick All Sites or one category, then browse them on the sites map */
 export default async function StartYourTourPage({ params }: { params: { orgSlug: string } }) {

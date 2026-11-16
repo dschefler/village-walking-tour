@@ -116,6 +116,14 @@ export async function generateMetadata({
   const location = await getLocation(params.locationId, params.orgSlug);
   if (!location) return { title: 'Location Not Found' };
 
+  // Tab title carries the app's name (e.g. PASEO), falling back to the tour's
+  const { data: org } = await createClient()
+    .from('organizations')
+    .select('app_name, name')
+    .eq('slug', params.orgSlug)
+    .single();
+  const appName = org?.app_name || location.tour_name || org?.name || 'Walking Tour';
+
   const slug = location.slug || location.id;
   const desc = (location.description || `Visit ${location.name} on a self-guided walking tour.`)
     .replace(/\s+/g, ' ')
@@ -127,7 +135,7 @@ export async function generateMetadata({
   const ogImage = path ? getStorageMediaUrl(path) : undefined;
 
   return {
-    title: { absolute: `${location.name} — ${location.tour_name ?? 'Walking Tour'}` },
+    title: { absolute: `${location.name} — ${appName}` },
     description: desc,
     alternates: { canonical: `/t/${params.orgSlug}/location/${slug}` },
     openGraph: {
