@@ -3,6 +3,7 @@ import {
   Palette,
   Coffee,
   Beer,
+  LandPlot,
   Paintbrush,
   Martini,
   Feather,
@@ -37,6 +38,7 @@ export type SiteCategory =
   | 'coffee_shops'
   | 'music_cocktails'
   | 'pubs'
+  | 'neighborhoods'
   | 'indigenous'
   | 'plaza'
   | 'photo_ops'
@@ -68,6 +70,7 @@ export const SITE_CATEGORIES: CategoryDef[] = ([
   { key: 'art_galleries', label: 'Art Gallery', description: 'Art galleries', color: '#DB2777', icon: Paintbrush },
   { key: 'coffee_shops', label: 'Coffee Shop', description: 'Coffee shops', color: '#EA580C', icon: Coffee },
   { key: 'music_cocktails', label: 'Music & Cocktails', description: 'Live music and cocktail bars', color: '#86198F', icon: Martini },
+  { key: 'neighborhoods', label: 'Neighborhoods', description: 'Neighborhoods and districts, outlined on the map', color: '#475569', icon: LandPlot },
   { key: 'pubs', label: 'Pubs', description: 'Pubs, taverns and taprooms', color: '#14532D', icon: Beer },
   { key: 'parking', label: 'Parking, EV & Bikes', description: 'Parking, electric vehicle charging and bike parking', color: '#2563EB', icon: SquareParking },
   { key: 'street_names', label: 'Street Names', description: 'Cross streets and the meaning of their names', color: '#0D9488', icon: Signpost },
