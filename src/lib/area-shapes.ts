@@ -78,3 +78,23 @@ export function getAreaShape(siteId: string): [number, number][] | null {
   const corners = AREA_SHAPES[siteId];
   return corners ? [...corners, corners[0]] : null;
 }
+
+/**
+ * Each neighborhood gets its own tint so neighboring areas can be told apart.
+ * Known areas are pinned to a color; any new area picks one from its id.
+ */
+const AREA_TINTS = ['#F59E0B', '#10B981', '#8B5CF6', '#EC4899', '#06B6D4', '#EF4444', '#84CC16', '#6366F1'];
+const AREA_TINT_BY_ID: Record<string, string> = {
+  '1da0313f-071c-4a6d-9985-c07f17161fc8': '#F59E0B', // Presidio Neighborhood — amber
+  '14fc2ecb-c844-4958-8d5c-88944f1bf7ee': '#10B981', // Haley Corridor — emerald
+  'ee7f7fde-82c9-45c9-974a-34266f67a27e': '#8B5CF6', // The Funk Zone — violet
+  'b014dc05-c5d1-4a16-a7a3-c5394db28712': '#EC4899', // Farmers Market — pink
+  '52f42fc1-f5c9-47c3-8216-83ab207cee2b': '#06B6D4', // Stearns Wharf — cyan
+};
+
+export function getAreaTint(siteId: string): string {
+  if (AREA_TINT_BY_ID[siteId]) return AREA_TINT_BY_ID[siteId];
+  let hash = 0;
+  for (const ch of siteId) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return AREA_TINTS[hash % AREA_TINTS.length];
+}

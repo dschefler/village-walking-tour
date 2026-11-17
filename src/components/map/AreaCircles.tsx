@@ -1,96 +1,93 @@
 'use client';
 
-import { useEffect } from 'react';
-import { Source, Layer, useMap } from 'react-map-gl';
+import { Source, Layer } from 'react-map-gl';
 import { useTenantOptional } from '@/lib/context/tenant-context';
 import { circleRing } from '@/lib/utils';
-import { getAreaShape } from '@/lib/area-shapes';
+import { getAreaShape, getAreaTint } from '@/lib/area-shapes';
 
-type AreaSite = { id: string; latitude: number; longitude: number; is_area?: boolean; area_radius_m?: number };
+type AreaSite = { id: string; name?: string; latitude: number; longitude: number; is_area?: boolean; area_radius_m?: number };
 
-// Dash patterns that, stepped through in order, slide the dashes along the
-// line ("marching ants", after Mapbox's animate-a-line example).
-const DASH_SEQUENCE = [
-  [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5], [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
-  [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5], [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5],
-];
-const DASH_STEP_MS = 90;
-
-/** Ring in clockwise order, so the dashes march clockwise around every area */
-function clockwise(ring: number[][]): number[][] {
-  let sum = 0;
-  for (let i = 0; i < ring.length - 1; i++) {
-    sum += (ring[i + 1][0] - ring[i][0]) * (ring[i + 1][1] + ring[i][1]);
-  }
-  return sum > 0 ? ring : [...ring].reverse();
+/** Middle of a closed ring (vertex average), where the area's name is drawn */
+function ringCenter(ring: number[][]): [number, number] {
+  const pts = ring.slice(0, -1);
+  return [
+    pts.reduce((sum, p) => sum + p[0], 0) / pts.length,
+    pts.reduce((sum, p) => sum + p[1], 0) / pts.length,
+  ];
 }
 
 // Shaded circles (or exact outlines, see area-shapes) for stops that are a
-// neighborhood rather than one building. The outline sits on a white casing
-// and its dashes slowly march clockwise so the boundary stands out on the map.
+// neighborhood rather than one building. Each area has its own tint and its
+// name in the middle; the edge is a dashed line in the tour's two colors.
 // Render inside a react-map-gl <Map>; layer ids are suffixed so several maps
 // on one page don't clash.
 export function AreaCircles({ sites, idSuffix = '' }: { sites: AreaSite[]; idSuffix?: string }) {
   const tenant = useTenantOptional();
-  const { current: map } = useMap();
   const areas = sites.filter((s) => s.is_area);
-  const dashId = `area-outline${idSuffix}`;
-
-  useEffect(() => {
-    if (!map || areas.length === 0) return;
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    let frame = 0;
-    let lastStep = -1;
-    const tick = (time: number) => {
-      const step = Math.floor(time / DASH_STEP_MS) % DASH_SEQUENCE.length;
-      if (step !== lastStep && map.getLayer(dashId)) {
-        map.getMap().setPaintProperty(dashId, 'line-dasharray', DASH_SEQUENCE[step]);
-        lastStep = step;
-      }
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [map, dashId, areas.length]);
-
   if (areas.length === 0) return null;
 
-  const color = tenant?.organization.secondary_color || tenant?.organization.primary_color || '#3B82F6';
-  // Dashes in the primary color march over a track in the area color, so the edge reads in two colors
+  const trackColor = tenant?.organization.secondary_color || tenant?.organization.primary_color || '#3B82F6';
   const dashColor = tenant?.organization.primary_color || '#1E3A8A';
+  const shapes = areas.map((s) => ({
+    site: s,
+    ring: getAreaShape(s.id) ?? circleRing(s.latitude, s.longitude, s.area_radius_m || 150),
+  }));
+
   const data = {
     type: 'FeatureCollection' as const,
-    features: areas.map((s) => ({
+    features: shapes.map(({ site, ring }) => ({
       type: 'Feature' as const,
-      properties: { id: s.id },
-      geometry: {
-        type: 'Polygon' as const,
-        coordinates: [clockwise(getAreaShape(s.id) ?? circleRing(s.latitude, s.longitude, s.area_radius_m || 150))],
-      },
+      properties: { id: site.id, tint: getAreaTint(site.id) },
+      geometry: { type: 'Polygon' as const, coordinates: [ring] },
     })),
+  };
+  const labels = {
+    type: 'FeatureCollection' as const,
+    features: shapes
+      .filter(({ site }) => site.name)
+      .map(({ site, ring }) => ({
+        type: 'Feature' as const,
+        properties: { name: site.name!.trim() },
+        geometry: { type: 'Point' as const, coordinates: ringCenter(ring) },
+      })),
   };
 
   return (
-    <Source id={`area-circles${idSuffix}`} type="geojson" data={data}>
-      <Layer id={`area-fill${idSuffix}`} type="fill" paint={{ 'fill-color': color, 'fill-opacity': 0.2 }} />
-      <Layer
-        id={`area-casing${idSuffix}`}
-        type="line"
-        layout={{ 'line-join': 'round' }}
-        paint={{ 'line-color': '#FFFFFF', 'line-width': 5, 'line-opacity': 0.9 }}
-      />
-      <Layer
-        id={`area-track${idSuffix}`}
-        type="line"
-        layout={{ 'line-join': 'round' }}
-        paint={{ 'line-color': color, 'line-width': 3, 'line-opacity': 0.8 }}
-      />
-      <Layer
-        id={dashId}
-        type="line"
-        layout={{ 'line-join': 'round' }}
-        paint={{ 'line-color': dashColor, 'line-width': 3, 'line-dasharray': DASH_SEQUENCE[0] }}
-      />
-    </Source>
+    <>
+      <Source id={`area-circles${idSuffix}`} type="geojson" data={data}>
+        <Layer id={`area-fill${idSuffix}`} type="fill" paint={{ 'fill-color': ['get', 'tint'], 'fill-opacity': 0.22 }} />
+        <Layer
+          id={`area-track${idSuffix}`}
+          type="line"
+          layout={{ 'line-join': 'round' }}
+          paint={{ 'line-color': trackColor, 'line-width': 3, 'line-opacity': 0.8 }}
+        />
+        <Layer
+          id={`area-outline${idSuffix}`}
+          type="line"
+          layout={{ 'line-join': 'round' }}
+          paint={{ 'line-color': dashColor, 'line-width': 3, 'line-dasharray': [2, 2] }}
+        />
+      </Source>
+      {labels.features.length > 0 && (
+        <Source id={`area-labels${idSuffix}`} type="geojson" data={labels}>
+          <Layer
+            id={`area-label${idSuffix}`}
+            type="symbol"
+            minzoom={13}
+            layout={{
+              'text-field': ['get', 'name'],
+              'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+              'text-size': ['interpolate', ['linear'], ['zoom'], 13, 11, 17, 15],
+              'text-transform': 'uppercase',
+              'text-letter-spacing': 0.08,
+              'text-max-width': 8,
+              'text-allow-overlap': true,
+            }}
+            paint={{ 'text-color': dashColor, 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.5 }}
+          />
+        </Source>
+      )}
+    </>
   );
 }
