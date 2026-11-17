@@ -37,6 +37,14 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
   const prefix = orgSlug ? `/t/${orgSlug}` : '';
   const isTenant = !!orgSlug;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // The open menu scrolls on its own; keep the page behind it still
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [mobileMenuOpen]);
   const { categories: siteCategories } = useOrgSites(orgSlug);
   const [curatedTours, setCuratedTours] = useState<OrgCuratedTour[]>([]);
 
@@ -163,7 +171,7 @@ export function NavigationHeader({ transparent = false, orgSlug }: NavigationHea
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className={`md:hidden py-4 space-y-2 ${transparent ? 'bg-black/80 rounded-lg px-2' : 'border-t'}`}>
+          <nav className={`md:hidden py-4 space-y-2 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain ${transparent ? 'bg-black/80 rounded-lg px-2' : 'border-t'}`}>
             <Link
               href={`${prefix}/about`}
               className={`flex items-center gap-3 px-2 py-2 rounded-lg ${hoverClass} ${textClass}`}
