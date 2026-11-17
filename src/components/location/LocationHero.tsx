@@ -6,6 +6,7 @@ import type { Media } from '@/types';
 import { getStorageMediaUrl } from '@/lib/utils';
 import { AreaBadge } from './AreaBadge';
 import { CategoryBadges } from './CategoryBadge';
+import { siteCategoryKeys } from '@/lib/site-categories';
 
 interface LocationHeroProps {
   name: string;
@@ -17,6 +18,10 @@ interface LocationHeroProps {
 }
 
 const getImageUrl = getStorageMediaUrl;
+
+// Street name stops are about the street itself, so the address line under the title is left off
+const hidesAddress = (site: { category?: string | null; categories?: string[] | null }) =>
+  siteCategoryKeys(site).includes('street_names');
 
 export function LocationHero({ name, primaryImage, address, isArea, category, categories }: LocationHeroProps) {
   return (
@@ -55,7 +60,7 @@ export function LocationHero({ name, primaryImage, address, isArea, category, ca
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
             {name}
           </h1>
-          {address && (
+          {address && !hidesAddress({ category, categories }) && (
             <p className="flex items-center gap-2 text-white/80 text-lg">
               <MapPin className="w-5 h-5" />
               {address}
