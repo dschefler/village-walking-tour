@@ -143,6 +143,12 @@ function buildThemeCSS(org: Organization): string {
 // instead of letting the browser fake a bold version.
 const SINGLE_WEIGHT_FONTS = ['Italiana'];
 
+// Per-font heading adjustments. Italiana's hairline strokes read thin, so a
+// faint outline thickens it slightly and a little tracking opens up the letters.
+const HEADING_FONT_TWEAKS: Record<string, string> = {
+  Italiana: ' -webkit-text-stroke: 0.025em currentColor; letter-spacing: 0.05em;',
+};
+
 function getGoogleFontUrl(fontFamily: string): string | null {
   if (!fontFamily || fontFamily === 'Inter') return null;
   const encoded = fontFamily.replace(/\s+/g, '+');
@@ -207,7 +213,7 @@ export default async function TenantLayout({
       {headingFont && (
         <style
           dangerouslySetInnerHTML={{
-            __html: `.tenant-theme :is(h1, h2, h3, h4, h5, h6) { font-family: "${headingFont.replace(/[^\w\s-]/g, '')}", Georgia, serif;${SINGLE_WEIGHT_FONTS.includes(headingFont) ? ' font-weight: 400;' : ''} }`,
+            __html: `.tenant-theme :is(h1, h2, h3, h4, h5, h6) { font-family: "${headingFont.replace(/[^\w\s-]/g, '')}", Georgia, serif;${SINGLE_WEIGHT_FONTS.includes(headingFont) ? ' font-weight: 400;' : ''}${HEADING_FONT_TWEAKS[headingFont] ?? ''} }`,
           }}
         />
       )}
