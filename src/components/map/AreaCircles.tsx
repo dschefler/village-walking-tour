@@ -17,7 +17,7 @@ const DASH_SEQUENCE = [
 const DASH_STEP_MS = 90;
 
 /** Ring in clockwise order, so the dashes march clockwise around every area */
-function clockwise(ring: [number, number][]): [number, number][] {
+function clockwise(ring: number[][]): number[][] {
   let sum = 0;
   for (let i = 0; i < ring.length - 1; i++) {
     sum += (ring[i + 1][0] - ring[i][0]) * (ring[i + 1][1] + ring[i][1]);
