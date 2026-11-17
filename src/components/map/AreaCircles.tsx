@@ -56,6 +56,8 @@ export function AreaCircles({ sites, idSuffix = '' }: { sites: AreaSite[]; idSuf
   if (areas.length === 0) return null;
 
   const color = tenant?.organization.secondary_color || tenant?.organization.primary_color || '#3B82F6';
+  // Dashes in the primary color march over a track in the area color, so the edge reads in two colors
+  const dashColor = tenant?.organization.primary_color || '#1E3A8A';
   const data = {
     type: 'FeatureCollection' as const,
     features: areas.map((s) => ({
@@ -81,13 +83,13 @@ export function AreaCircles({ sites, idSuffix = '' }: { sites: AreaSite[]; idSuf
         id={`area-track${idSuffix}`}
         type="line"
         layout={{ 'line-join': 'round' }}
-        paint={{ 'line-color': color, 'line-width': 3, 'line-opacity': 0.3 }}
+        paint={{ 'line-color': color, 'line-width': 3, 'line-opacity': 0.8 }}
       />
       <Layer
         id={dashId}
         type="line"
         layout={{ 'line-join': 'round' }}
-        paint={{ 'line-color': color, 'line-width': 3, 'line-dasharray': DASH_SEQUENCE[0] }}
+        paint={{ 'line-color': dashColor, 'line-width': 3, 'line-dasharray': DASH_SEQUENCE[0] }}
       />
     </Source>
   );
