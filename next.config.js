@@ -93,19 +93,23 @@ const nextConfig = {
     ];
   },
   async redirects() {
+    // Southampton's short links; a tenant's own domain maps these itself (middleware)
+    const notTenantDomain = [{ type: 'host', value: '(www\\.)?explorestatestreet\\.com' }];
     return [
       // Static tenant pages not duplicated in (public) routes
-      { source: '/about', destination: '/t/southampton/about', permanent: false },
+      { source: '/about', destination: '/t/southampton/about', permanent: false, missing: notTenantDomain },
       // Dynamic Southampton routes → tenant-scoped (need org data)
       {
         source: '/tour/:id',
         destination: '/t/southampton/tour/:id',
         permanent: true,
+        missing: notTenantDomain,
       },
       {
         source: '/location/:id',
         destination: '/t/southampton/location/:id',
         permanent: true,
+        missing: notTenantDomain,
       },
     ];
   },

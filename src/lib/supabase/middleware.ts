@@ -1,6 +1,11 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+/** Tenants with their own domain (www. is stripped before lookup) */
+const TENANT_DOMAINS: Record<string, string> = {
+  'explorestatestreet.com': 'state-street',
+};
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -75,6 +80,19 @@ export async function updateSession(request: NextRequest) {
 
   if (isWTBDomain && pathname === '/') {
     return NextResponse.rewrite(new URL('/product', request.url));
+  }
+
+  // A tenant's own domain serves its app at the root (explorestatestreet.com/
+  // → /t/state-street). App links keep their /t/<slug>/… paths, which work
+  // as-is; any other page path is mapped into the tenant.
+  const tenantSlug = TENANT_DOMAINS[hostname.split(':')[0].replace(/^www\./, '')];
+  if (
+    tenantSlug &&
+    !pathname.startsWith('/t/') &&
+    !/^\/(api|_next|auth|login|signup|dashboard|admin)(\/|$)/.test(pathname) &&
+    !/\.[a-z0-9]+$/i.test(pathname)
+  ) {
+    return NextResponse.rewrite(new URL(`/t/${tenantSlug}${pathname === '/' ? '' : pathname}`, request.url));
   }
 
   // --- /admin/tours/[id]/edit is the per-tour editor (cover image, sites,
