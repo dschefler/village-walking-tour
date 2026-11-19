@@ -96,6 +96,13 @@ const nextConfig = {
     // Southampton's short links; a tenant's own domain maps these itself (middleware)
     const notTenantDomain = [{ type: 'host', value: '(www\\.)?explorestatestreet\\.com' }];
     return [
+      // Paseo's old address → its own domain (old QR codes and bookmarks)
+      {
+        source: '/t/state-street/:path*',
+        destination: 'https://explorestatestreet.com/t/state-street/:path*',
+        has: [{ type: 'host', value: '(www\\.)?walkingtourbuilder\\.com' }],
+        permanent: false,
+      },
       // Static tenant pages not duplicated in (public) routes
       { source: '/about', destination: '/t/southampton/about', permanent: false, missing: notTenantDomain },
       // Dynamic Southampton routes → tenant-scoped (need org data)
